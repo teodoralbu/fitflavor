@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { createClient } from '@/lib/supabase'
 import { useAuth } from '@/context/auth-context'
+import { useToast } from '@/context/ToastContext'
 import { XP_VALUES } from '@/lib/constants'
 
 type RepForm = 'progress' | 'pr' | 'checkin' | null
@@ -51,6 +52,7 @@ function VisPicker({ value, onChange }: { value: Visibility; onChange: (v: Visib
 export default function RepPage() {
   const router = useRouter()
   const { user } = useAuth()
+  const { showToast } = useToast()
   const [activeForm, setActiveForm] = useState<RepForm>(null)
   const [submitting, setSubmitting] = useState(false)
   const [uploadingPhoto, setUploadingPhoto] = useState(false)
@@ -63,6 +65,7 @@ export default function RepPage() {
   const [progressPhotoFile, setProgressPhotoFile] = useState<File | null>(null)
   const [progressPhotoPreview, setProgressPhotoPreview] = useState<string | null>(null)
   const progressFileRef = useRef<HTMLInputElement>(null)
+  const progressLibraryRef = useRef<HTMLInputElement>(null)
 
   // PR
   const [prExercise, setPrExercise] = useState('')
@@ -115,6 +118,7 @@ export default function RepPage() {
 
     setSubmitting(false)
     setPosted(true)
+    showToast(`🔥 +${xp} XP earned!`)
     setTimeout(() => router.push('/'), 1200)
   }
 
@@ -240,22 +244,47 @@ export default function RepPage() {
         <form onSubmit={handleProgressSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '18px' }}>
           <div>
             <label style={labelStyle}>Photo (required)</label>
-            <div onClick={() => progressFileRef.current?.click()} style={{
-              border: '2px dashed var(--border)', borderRadius: 'var(--radius-md)',
-              padding: '28px', textAlign: 'center', cursor: 'pointer',
-              backgroundColor: 'var(--bg-elevated)', WebkitTapHighlightColor: 'transparent',
-            }}>
-              {progressPhotoPreview ? (
-                // eslint-disable-next-line @next/next/no-img-element
-                <img src={progressPhotoPreview} alt="Preview" style={{ maxWidth: '100%', maxHeight: '220px', objectFit: 'cover', borderRadius: 'var(--radius-sm)', display: 'block', margin: '0 auto' }} />
-              ) : (
-                <>
-                  <div style={{ fontSize: '32px', marginBottom: '8px' }}>📷</div>
-                  <div style={{ fontSize: '13px', color: 'var(--text-dim)' }}>Tap to select a photo</div>
-                </>
-              )}
+            {/* Preview area */}
+            {progressPhotoPreview && (
+              <div style={{ marginBottom: '12px' }}>
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img src={progressPhotoPreview} alt="Preview" style={{ maxWidth: '100%', maxHeight: '220px', objectFit: 'cover', borderRadius: 'var(--radius-sm)', display: 'block' }} />
+              </div>
+            )}
+            {/* Two photo buttons */}
+            <div style={{ display: 'flex', gap: '10px' }}>
+              <button
+                type="button"
+                onClick={() => progressFileRef.current?.click()}
+                style={{
+                  ...btn, flex: 1, padding: '12px',
+                  backgroundColor: 'var(--bg-elevated)', border: '1px solid var(--border)',
+                  borderRadius: 'var(--radius-sm)', fontSize: '13px', fontWeight: 600,
+                  color: 'var(--text-dim)', display: 'flex', alignItems: 'center',
+                  justifyContent: 'center', gap: '6px',
+                }}
+              >
+                📷 Take Photo
+              </button>
+              <button
+                type="button"
+                onClick={() => progressLibraryRef.current?.click()}
+                style={{
+                  ...btn, flex: 1, padding: '12px',
+                  backgroundColor: 'var(--bg-elevated)', border: '1px solid var(--border)',
+                  borderRadius: 'var(--radius-sm)', fontSize: '13px', fontWeight: 600,
+                  color: 'var(--text-dim)', display: 'flex', alignItems: 'center',
+                  justifyContent: 'center', gap: '6px',
+                }}
+              >
+                🖼️ Library
+              </button>
             </div>
-            <input ref={progressFileRef} type="file" accept="image/*" style={{ display: 'none' }}
+            {/* Camera input */}
+            <input ref={progressFileRef} type="file" accept="image/*" capture="environment" style={{ display: 'none' }}
+              onChange={(e) => { const f = e.target.files?.[0]; if (f) { setProgressPhotoFile(f); setProgressPhotoPreview(URL.createObjectURL(f)) } }} />
+            {/* Library input (no capture attribute) */}
+            <input ref={progressLibraryRef} type="file" accept="image/*" style={{ display: 'none' }}
               onChange={(e) => { const f = e.target.files?.[0]; if (f) { setProgressPhotoFile(f); setProgressPhotoPreview(URL.createObjectURL(f)) } }} />
           </div>
           <div>

@@ -115,13 +115,17 @@ function XpBadge({ xp }: { xp: number }) {
   )
 }
 
-function RepCard({ item }: { item: FeedItem }) {
+function RepCard({ item, index = 0 }: { item: FeedItem; index?: number }) {
   const repType = item.type
+  const delay = `${Math.min(index, 5) * 40}ms`
 
   return (
     <div style={{
       backgroundColor: 'var(--bg-card)',
       borderBottom: '1px solid var(--border-soft)',
+      animation: 'feedIn 0.2s ease forwards',
+      animationDelay: delay,
+      opacity: 0,
     }}>
       <AvatarHeader user={item.user} createdAt={item.created_at} />
 
@@ -175,11 +179,12 @@ function RepCard({ item }: { item: FeedItem }) {
   )
 }
 
-export function FeedCard({ rating, item, initialLiked = false, initialLikeCount = 0 }: {
+export function FeedCard({ rating, item, initialLiked = false, initialLikeCount = 0, index = 0 }: {
   rating?: FeedRating | FeedItem
   item?: FeedItem
   initialLiked?: boolean
   initialLikeCount?: number
+  index?: number
 }) {
   // Resolve the actual feed item — support both `item` prop and legacy `rating` prop
   const feedItem = item ?? (rating as FeedItem | undefined)
@@ -188,7 +193,7 @@ export function FeedCard({ rating, item, initialLiked = false, initialLikeCount 
 
   // Route to RepCard for rep type items
   if (feedItem._type === 'rep') {
-    return <RepCard item={feedItem} />
+    return <RepCard item={feedItem} index={index} />
   }
 
   // Render rating card (original behavior)
@@ -197,11 +202,15 @@ export function FeedCard({ rating, item, initialLiked = false, initialLikeCount 
   const brand = product?.brands
   const score = ratingData.overall_score ?? 0
   const scoreColor = getScoreColor(score)
+  const delay = `${Math.min(index, 5) * 40}ms`
 
   return (
     <div style={{
       backgroundColor: 'var(--bg-card)',
       borderBottom: '1px solid var(--border-soft)',
+      animation: 'feedIn 0.2s ease forwards',
+      animationDelay: delay,
+      opacity: 0,
     }}>
       {/* Header: avatar + username + time */}
       <div style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '9px 12px 7px' }}>

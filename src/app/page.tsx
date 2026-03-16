@@ -68,7 +68,19 @@ export default async function Home({ searchParams }: { searchParams: Promise<{ f
         {/* Compact greeting */}
         <div style={{ padding: '12px 16px 4px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
           <div style={{ fontSize: '20px', fontWeight: 900, color: 'var(--text)', letterSpacing: '-0.02em' }}>GymTaste</div>
-          <Link href="/browse" style={{ fontSize: '12px', color: 'var(--accent)', fontWeight: 600 }}>Browse →</Link>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '14px' }}>
+            <Link
+              href="/notifications"
+              style={{ color: 'var(--text-dim)', display: 'flex', alignItems: 'center', WebkitTapHighlightColor: 'transparent' }}
+              aria-label="Notifications"
+            >
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9" />
+                <path d="M13.73 21a2 2 0 0 1-3.46 0" />
+              </svg>
+            </Link>
+            <Link href="/browse" style={{ fontSize: '12px', color: 'var(--accent)', fontWeight: 600 }}>Browse →</Link>
+          </div>
         </div>
 
         {/* Feed tabs */}
@@ -117,8 +129,8 @@ export default async function Home({ searchParams }: { searchParams: Promise<{ f
           </div>
         ) : (
           <div style={{ display: 'flex', flexDirection: 'column' }}>
-            {feedItems.map((feedItem: any) => (
-              <FeedCard key={feedItem.id} item={feedItem} initialLikeCount={0} initialLiked={false} />
+            {feedItems.map((feedItem: any, idx: number) => (
+              <FeedCard key={feedItem.id} item={feedItem} initialLikeCount={0} initialLiked={false} index={idx} />
             ))}
           </div>
         )}

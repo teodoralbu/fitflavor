@@ -2,6 +2,7 @@ import type { Metadata } from 'next'
 import './globals.css'
 import { AuthProvider } from '@/context/auth-context'
 import { ThemeProvider } from '@/context/theme-context'
+import { ToastProvider } from '@/context/ToastContext'
 import { Navbar } from '@/components/layout/Navbar'
 import { Footer } from '@/components/layout/Footer'
 import { BottomNav } from '@/components/layout/BottomNav'
@@ -40,16 +41,18 @@ export default function RootLayout({
       <body className="antialiased flex flex-col min-h-screen">
         <ThemeProvider>
           <AuthProvider>
-            <Navbar />
-            <PageTransition>
-              <main className="flex-1 pb-[calc(64px+env(safe-area-inset-bottom))] sm:pb-0">
-                {children}
-              </main>
-            </PageTransition>
-            <div className="hidden sm:block">
-              <Footer />
-            </div>
-            <BottomNav />
+            <ToastProvider>
+              <Navbar />
+              <PageTransition>
+                <main className="flex-1 pb-[calc(64px+env(safe-area-inset-bottom))] sm:pb-0">
+                  {children}
+                </main>
+              </PageTransition>
+              <div className="hidden sm:block">
+                <Footer />
+              </div>
+              <BottomNav />
+            </ToastProvider>
           </AuthProvider>
         </ThemeProvider>
       </body>

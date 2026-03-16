@@ -4,6 +4,7 @@ import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase'
 import { useAuth } from '@/context/auth-context'
+import { useToast } from '@/context/ToastContext'
 
 interface Props {
   ratingId: string
@@ -14,15 +15,20 @@ interface Props {
 export function LikeButton({ ratingId, initialCount, initialLiked }: Props) {
   const { user } = useAuth()
   const router = useRouter()
+  const { showToast } = useToast()
   const [liked, setLiked] = useState(initialLiked)
   const [count, setCount] = useState(initialCount)
   const [loading, setLoading] = useState(false)
+  const [animating, setAnimating] = useState(false)
 
   async function toggle() {
     if (!user) {
       router.push('/login')
       return
     }
+
+    // Haptic feedback on both like and unlike
+    navigator.vibrate?.(30)
 
     setLoading(true)
     const supabase = createClient()
@@ -34,11 +40,16 @@ export function LikeButton({ ratingId, initialCount, initialLiked }: Props) {
         .eq('user_id', user.id)
         .eq('rating_id', ratingId)
       setLiked(false)
-      setCount((c) => c - 1)
+      setCount((c: number) => c - 1)
+      showToast('Unliked')
     } else {
       await db.from('review_likes').insert({ user_id: user.id, rating_id: ratingId })
       setLiked(true)
-      setCount((c) => c + 1)
+      setCount((c: number) => c + 1)
+      // Trigger animation only on like (unliked → liked)
+      setAnimating(true)
+      setTimeout(() => setAnimating(false), 300)
+      showToast('❤️ Liked')
     }
 
     setLoading(false)
@@ -57,9 +68,13 @@ export function LikeButton({ ratingId, initialCount, initialLiked }: Props) {
         backgroundColor: liked ? '#00B4FF14' : 'transparent',
         color: liked ? '#00B4FF' : '#555',
         transition: 'all 0.15s',
+        fontFamily: 'inherit',
+        WebkitTapHighlightColor: 'transparent',
       }}
     >
-      <span>{liked ? '♥' : '♡'}</span>
+      <span className={animating ? 'heart-pop' : undefined} style={{ display: 'inline-block' }}>
+        {liked ? '♥' : '♡'}
+      </span>
       {count > 0 && <span>{count}</span>}
     </button>
   )

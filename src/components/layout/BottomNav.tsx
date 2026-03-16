@@ -3,6 +3,7 @@
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { useAuth } from '@/context/auth-context'
+import { useEffect, useRef, useState } from 'react'
 
 const tabs = [
   {
@@ -60,6 +61,28 @@ const tabs = [
 export function BottomNav() {
   const pathname = usePathname()
   const { profile } = useAuth()
+  const [visible, setVisible] = useState(true)
+  const lastScrollY = useRef(0)
+
+  useEffect(() => {
+    function handleScroll() {
+      const currentY = window.scrollY
+      if (currentY < 60) {
+        // Always show when near top
+        setVisible(true)
+      } else if (currentY > lastScrollY.current) {
+        // Scrolling down — hide
+        setVisible(false)
+      } else {
+        // Scrolling up — show
+        setVisible(true)
+      }
+      lastScrollY.current = currentY
+    }
+
+    window.addEventListener('scroll', handleScroll, { passive: true })
+    return () => window.removeEventListener('scroll', handleScroll)
+  }, [])
 
   const profileTab = {
     label: 'Profile',
@@ -97,6 +120,8 @@ export function BottomNav() {
         paddingBottom: 'env(safe-area-inset-bottom)',
         display: 'flex',
         alignItems: 'stretch',
+        transform: visible ? 'translateY(0)' : 'translateY(100%)',
+        transition: 'transform 0.25s ease',
       }}
     >
       {allTabs.map((tab) => {
