@@ -1,8 +1,8 @@
 export const dynamic = 'force-dynamic'
 
 import Link from 'next/link'
-import { getLeaderboard } from '@/lib/queries'
-import { getScoreColor } from '@/lib/constants'
+import { getLeaderboard, getTopUsers } from '@/lib/queries'
+import { getScoreColor, getRankFromXP, RANK_TIERS } from '@/lib/constants'
 
 const PODIUM_ACCENTS: Record<number, { color: string; label: string; glow: string }> = {
   1: { color: '#FFD700', label: 'Gold',   glow: 'rgba(255,215,0,0.15)' },
@@ -11,13 +11,16 @@ const PODIUM_ACCENTS: Record<number, { color: string; label: string; glow: strin
 }
 
 export default async function LeaderboardPage() {
-  const leaderboard = await getLeaderboard(50)
+  const [leaderboard, topUsers] = await Promise.all([
+    getLeaderboard(50),
+    getTopUsers(10),
+  ])
 
   return (
     <div style={{ maxWidth: '860px', margin: '0 auto', padding: 'clamp(16px, 5vw, 48px) 16px 96px' }}>
 
       {/* Header */}
-      <div style={{ marginBottom: '48px' }}>
+      <div style={{ marginBottom: '40px' }}>
         <div style={{
           fontSize: '11px',
           fontWeight: 700,
@@ -26,7 +29,7 @@ export default async function LeaderboardPage() {
           textTransform: 'uppercase',
           marginBottom: '10px',
         }}>
-          Community Rankings
+          GymTaste
         </div>
         <h1 style={{
           fontSize: 'clamp(26px, 5vw, 44px)',
@@ -35,7 +38,7 @@ export default async function LeaderboardPage() {
           color: 'var(--text)',
           lineHeight: 1.1,
         }}>
-          Top Rated Flavors
+          Leaderboards
         </h1>
         <p style={{
           fontSize: '14px',
@@ -43,6 +46,140 @@ export default async function LeaderboardPage() {
           margin: 0,
           lineHeight: 1.6,
         }}>
+          Top members and highest-rated flavors.
+        </p>
+      </div>
+
+      {/* ── Top Members by XP ── */}
+      {topUsers.length > 0 && (
+        <div style={{ marginBottom: '56px' }}>
+          <div style={{ marginBottom: '20px' }}>
+            <div style={{
+              fontSize: '11px',
+              fontWeight: 700,
+              color: 'var(--accent)',
+              letterSpacing: '0.12em',
+              textTransform: 'uppercase',
+              marginBottom: '8px',
+            }}>
+              Member Rankings
+            </div>
+            <h2 style={{
+              fontSize: 'clamp(20px, 4vw, 28px)',
+              fontWeight: 900,
+              margin: '0 0 6px',
+              color: 'var(--text)',
+              lineHeight: 1.1,
+            }}>
+              Top Members
+            </h2>
+            <p style={{ fontSize: '13px', color: 'var(--text-muted)', margin: 0 }}>
+              Ranked by total XP earned across all activity.
+            </p>
+          </div>
+
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+            {topUsers.map((member, idx) => {
+              const rankKey = getRankFromXP(member.xp ?? 0)
+              const rank = RANK_TIERS[rankKey]
+              const position = idx + 1
+              return (
+                <Link
+                  key={member.id}
+                  href={`/users/${member.username}`}
+                  style={{ textDecoration: 'none', color: 'inherit' }}
+                >
+                  <div
+                    className="card-hover"
+                    style={{
+                      backgroundColor: position <= 3 ? 'var(--bg-elevated)' : 'var(--bg-card)',
+                      border: position <= 3
+                        ? `1px solid color-mix(in srgb, ${rank.color} 30%, var(--border))`
+                        : '1px solid var(--border)',
+                      borderRadius: 'var(--radius-md)',
+                      padding: position <= 3 ? '16px 20px' : '12px 16px',
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '12px',
+                      transition: 'box-shadow var(--transition-fast, 150ms ease), transform var(--transition-fast, 150ms ease)',
+                    }}
+                  >
+                    {/* Position */}
+                    <div style={{
+                      width: '28px',
+                      textAlign: 'center',
+                      flexShrink: 0,
+                      fontSize: position <= 3 ? '18px' : '12px',
+                      fontWeight: 700,
+                      color: position <= 3 ? rank.color : 'var(--text-faint)',
+                    }}>
+                      {position === 1 ? '🥇' : position === 2 ? '🥈' : position === 3 ? '🥉' : `#${position}`}
+                    </div>
+
+                    {/* Avatar */}
+                    <div style={{
+                      width: '36px', height: '36px', borderRadius: '50%', flexShrink: 0,
+                      backgroundColor: 'var(--bg-elevated)', border: '1px solid var(--border)',
+                      display: 'flex', alignItems: 'center', justifyContent: 'center',
+                      fontSize: '13px', fontWeight: 800, color: 'var(--accent)', overflow: 'hidden',
+                    }}>
+                      {member.avatar_url ? (
+                        // eslint-disable-next-line @next/next/no-img-element
+                        <img src={member.avatar_url} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                      ) : (
+                        member.username?.[0]?.toUpperCase() ?? '?'
+                      )}
+                    </div>
+
+                    {/* Name + rank */}
+                    <div style={{ flex: 1, minWidth: 0 }}>
+                      <div style={{ fontSize: '14px', fontWeight: 700, color: 'var(--text)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                        {member.username}
+                      </div>
+                      <div style={{ fontSize: '11px', fontWeight: 600, color: rank.color, marginTop: '2px' }}>
+                        {rank.name}
+                      </div>
+                    </div>
+
+                    {/* XP */}
+                    <div style={{ textAlign: 'right', flexShrink: 0 }}>
+                      <div style={{ fontSize: '18px', fontWeight: 900, color: 'var(--accent)', lineHeight: 1, letterSpacing: '-0.02em' }}>
+                        {(member.xp ?? 0).toLocaleString()}
+                      </div>
+                      <div style={{ fontSize: '10px', color: 'var(--text-faint)', marginTop: '2px', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+                        XP
+                      </div>
+                    </div>
+                  </div>
+                </Link>
+              )
+            })}
+          </div>
+        </div>
+      )}
+
+      {/* ── Flavor Leaderboard ── */}
+      <div style={{ marginBottom: '20px' }}>
+        <div style={{
+          fontSize: '11px',
+          fontWeight: 700,
+          color: 'var(--accent)',
+          letterSpacing: '0.12em',
+          textTransform: 'uppercase',
+          marginBottom: '8px',
+        }}>
+          Flavor Rankings
+        </div>
+        <h2 style={{
+          fontSize: 'clamp(20px, 4vw, 28px)',
+          fontWeight: 900,
+          margin: '0 0 6px',
+          color: 'var(--text)',
+          lineHeight: 1.1,
+        }}>
+          Top Rated Flavors
+        </h2>
+        <p style={{ fontSize: '13px', color: 'var(--text-muted)', margin: '0 0 20px' }}>
           Ranked by community score across all verified ratings.
         </p>
       </div>

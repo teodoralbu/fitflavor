@@ -2,7 +2,7 @@ export const dynamic = 'force-dynamic'
 
 import Link from 'next/link'
 import { createServerSupabaseClient } from '@/lib/supabase-server'
-import { getLeaderboard, getRecentRatings, getFollowingFeed } from '@/lib/queries'
+import { getLeaderboard, getUnifiedFeed, getFollowingUnifiedFeed } from '@/lib/queries'
 import { FeedCard } from '@/components/feed/FeedCard'
 import { getScoreColor, BADGE_TIERS } from '@/lib/constants'
 
@@ -46,8 +46,8 @@ export default async function Home({ searchParams }: { searchParams: Promise<{ f
   const [stats, leaderboard, globalFeed, followingFeed] = await Promise.all([
     getStats(),
     getLeaderboard(5),
-    getRecentRatings(20),
-    isFollowingTab && user ? getFollowingFeed(user.id, 20) : Promise.resolve([]),
+    getUnifiedFeed(20),
+    isFollowingTab && user ? getFollowingUnifiedFeed(user.id, 20) : Promise.resolve([]),
   ])
 
   const feedItems = isFollowingTab ? followingFeed : globalFeed
@@ -117,8 +117,8 @@ export default async function Home({ searchParams }: { searchParams: Promise<{ f
           </div>
         ) : (
           <div style={{ display: 'flex', flexDirection: 'column' }}>
-            {feedItems.map((rating: any) => (
-              <FeedCard key={rating.id} rating={rating} initialLikeCount={0} initialLiked={false} />
+            {feedItems.map((feedItem: any) => (
+              <FeedCard key={feedItem.id} item={feedItem} initialLikeCount={0} initialLiked={false} />
             ))}
           </div>
         )}

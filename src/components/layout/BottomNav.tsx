@@ -9,6 +9,7 @@ const tabs = [
     label: 'Home',
     href: '/',
     exact: true,
+    isRep: false,
     icon: (
       <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
         <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" />
@@ -17,15 +18,15 @@ const tabs = [
     ),
   },
   {
-    label: 'Browse',
-    href: '/browse',
+    label: 'Rep',
+    href: '/rep',
     exact: false,
+    isRep: true,
     icon: (
-      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-        <rect x="3" y="3" width="7" height="7" rx="1" />
-        <rect x="14" y="3" width="7" height="7" rx="1" />
-        <rect x="3" y="14" width="7" height="7" rx="1" />
-        <rect x="14" y="14" width="7" height="7" rx="1" />
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+        <circle cx="12" cy="12" r="10" />
+        <line x1="12" y1="8" x2="12" y2="16" />
+        <line x1="8" y1="12" x2="16" y2="12" />
       </svg>
     ),
   },
@@ -33,6 +34,7 @@ const tabs = [
     label: 'Top',
     href: '/leaderboard',
     exact: false,
+    isRep: false,
     icon: (
       <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
         <polyline points="18 20 18 10" />
@@ -45,6 +47,7 @@ const tabs = [
     label: 'Search',
     href: '/search',
     exact: false,
+    isRep: false,
     icon: (
       <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
         <circle cx="11" cy="11" r="8" />
@@ -62,6 +65,7 @@ export function BottomNav() {
     label: 'Profile',
     href: profile?.username ? `/users/${profile.username}` : '/login',
     exact: false,
+    isRep: false,
     icon: (
       <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
         <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
@@ -97,6 +101,7 @@ export function BottomNav() {
     >
       {allTabs.map((tab) => {
         const active = isActive(tab)
+        const isRepTab = tab.isRep
         return (
           <Link
             key={tab.href}
@@ -109,7 +114,7 @@ export function BottomNav() {
               justifyContent: 'center',
               gap: '4px',
               padding: '10px 4px 10px',
-              color: active ? 'var(--accent)' : 'var(--text-faint)',
+              color: isRepTab ? 'var(--accent)' : active ? 'var(--accent)' : 'var(--text-faint)',
               textDecoration: 'none',
               WebkitTapHighlightColor: 'transparent',
               transition: 'color 0.15s ease',
@@ -125,7 +130,7 @@ export function BottomNav() {
               }}
             >
               {tab.icon}
-              {active && (
+              {active && !isRepTab && (
                 <span
                   style={{
                     position: 'absolute',
@@ -143,7 +148,7 @@ export function BottomNav() {
             <span
               style={{
                 fontSize: '10px',
-                fontWeight: active ? 700 : 500,
+                fontWeight: active || isRepTab ? 700 : 500,
                 lineHeight: 1,
                 letterSpacing: '0.01em',
                 marginTop: '4px',

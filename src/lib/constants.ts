@@ -1,3 +1,30 @@
+export const RANK_TIERS = {
+  newbie:   { name: 'Newbie',  min: 0,    max: 199,  color: '#808080' },
+  gym_rat:  { name: 'Gym Rat', min: 200,  max: 999,  color: '#64B5F6' },
+  athlete:  { name: 'Athlete', min: 1000, max: 2999, color: '#00E676' },
+  beast:    { name: 'Beast',   min: 3000, max: 7999, color: '#FFD600' },
+  legend:   { name: 'Legend',  min: 8000, max: Infinity, color: '#FF3D00' },
+} as const
+
+export type RankTier = keyof typeof RANK_TIERS
+
+export function getRankFromXP(xp: number): RankTier {
+  if (xp >= 8000) return 'legend'
+  if (xp >= 3000) return 'beast'
+  if (xp >= 1000) return 'athlete'
+  if (xp >= 200)  return 'gym_rat'
+  return 'newbie'
+}
+
+export const XP_VALUES = {
+  rating:   50,
+  progress: 30,
+  pr:       40,
+  checkin:  20,
+  comment:  5,
+  like_received: 2,
+} as const
+
 export const BADGE_TIERS = {
   fresh_meat: {
     name: 'Fresh Meat',

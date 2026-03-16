@@ -259,6 +259,22 @@ export async function getProductsWithFlavors(categorySlug?: string) {
   return (products ?? []) as (Product & { brands: Brand; categories: { name: string; slug: string; icon: string } })[]
 }
 
+// ─── Top Users by XP ────────────────────────────────────────────────────────
+
+export async function getTopUsers(limit = 10) {
+  const supabase = await createServerSupabaseClient()
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const db = supabase as any
+
+  const { data: users } = await db
+    .from('users')
+    .select('id, username, avatar_url, xp')
+    .order('xp', { ascending: false })
+    .limit(limit)
+
+  return (users ?? []) as { id: string; username: string; avatar_url: string | null; xp: number }[]
+}
+
 // ─── Recent Ratings ──────────────────────────────────────────────────────────
 
 export async function getRecentRatings(limit = 20) {
@@ -305,6 +321,189 @@ export async function getRecentRatings(limit = 20) {
     flavor: flavorMap[r.flavor_id] ?? null,
     user: userMap[r.user_id] ?? null,
   }))
+}
+
+// ─── Unified Feed (ratings + reps) ──────────────────────────────────────────
+
+export async function getUnifiedFeed(limit = 30) {
+  const supabase = await createServerSupabaseClient()
+  const db = supabase as any
+
+  const [ratingsResult, repsResult] = await Promise.all([
+    db
+      .from('ratings')
+      .select('id, overall_score, would_buy_again, review_text, created_at, flavor_id, user_id, photo_url')
+      .order('created_at', { ascending: false })
+      .limit(limit),
+    db
+      .from('reps')
+      .select('id, type, content, photo_url, pr_exercise, pr_value, pr_unit, gym_name, xp_earned, visibility, created_at, user_id')
+      .order('created_at', { ascending: false })
+      .limit(limit),
+  ])
+
+  const ratings: any[] = ratingsResult.data ?? []
+  const reps: any[] = repsResult.data ?? []
+
+  // Fetch enrichment data for ratings
+  let enrichedRatings: any[] = []
+  if (ratings.length > 0) {
+    const flavorIds = ratings.map((r: any) => r.flavor_id)
+    const userIds = ratings.map((r: any) => r.user_id)
+    const ratingIds = ratings.map((r: any) => r.id)
+
+    const [{ data: flavors }, { data: ratingUsers }, { data: commentCounts }] = await Promise.all([
+      db.from('flavors').select('id, name, slug, product_id, products(id, name, slug, image_url, brands(name))').in('id', flavorIds),
+      db.from('users').select('id, username, avatar_url, xp').in('id', userIds),
+      db.from('comments').select('rating_id').in('rating_id', ratingIds),
+    ])
+
+    const flavorMap: Record<string, any> = {}
+    for (const f of (flavors ?? []) as any[]) flavorMap[f.id] = f
+
+    const ratingUserMap: Record<string, any> = {}
+    for (const u of (ratingUsers ?? []) as any[]) ratingUserMap[u.id] = u
+
+    const commentCountMap: Record<string, number> = {}
+    for (const c of (commentCounts ?? []) as any[]) {
+      commentCountMap[c.rating_id] = (commentCountMap[c.rating_id] ?? 0) + 1
+    }
+
+    enrichedRatings = ratings.map((r: any) => ({
+      _type: 'rating' as const,
+      id: r.id as string,
+      overall_score: r.overall_score as number,
+      would_buy_again: r.would_buy_again as boolean,
+      review_text: r.review_text as string | null,
+      photo_url: r.photo_url as string | null,
+      created_at: r.created_at as string,
+      comment_count: commentCountMap[r.id] ?? 0,
+      flavor: flavorMap[r.flavor_id] ?? null,
+      user: ratingUserMap[r.user_id] ?? null,
+    }))
+  }
+
+  // Fetch enrichment data for reps
+  let enrichedReps: any[] = []
+  if (reps.length > 0) {
+    const repUserIds = reps.map((r: any) => r.user_id)
+    const { data: repUsers } = await db.from('users').select('id, username, avatar_url, xp').in('id', repUserIds)
+    const repUserMap: Record<string, any> = {}
+    for (const u of (repUsers ?? []) as any[]) repUserMap[u.id] = u
+
+    enrichedReps = reps.map((r: any) => ({
+      _type: 'rep' as const,
+      id: r.id as string,
+      type: r.type as 'progress' | 'pr' | 'checkin',
+      content: r.content as string | null,
+      photo_url: r.photo_url as string | null,
+      pr_exercise: r.pr_exercise as string | null,
+      pr_value: r.pr_value as number | null,
+      pr_unit: r.pr_unit as string | null,
+      gym_name: r.gym_name as string | null,
+      xp_earned: r.xp_earned as number,
+      visibility: r.visibility as string,
+      created_at: r.created_at as string,
+      user: repUserMap[r.user_id] ?? null,
+    }))
+  }
+
+  const merged = [...enrichedRatings, ...enrichedReps]
+  merged.sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())
+  return merged.slice(0, limit)
+}
+
+export async function getFollowingUnifiedFeed(userId: string, limit = 30) {
+  const supabase = await createServerSupabaseClient()
+  const db = supabase as any
+
+  const { data: follows } = await db.from('follows').select('following_id').eq('follower_id', userId)
+  if (!follows || follows.length === 0) return []
+
+  const followingIds = (follows as any[]).map((f: any) => f.following_id)
+
+  const [ratingsResult, repsResult] = await Promise.all([
+    db
+      .from('ratings')
+      .select('id, overall_score, would_buy_again, review_text, created_at, flavor_id, user_id, photo_url')
+      .in('user_id', followingIds)
+      .order('created_at', { ascending: false })
+      .limit(limit),
+    db
+      .from('reps')
+      .select('id, type, content, photo_url, pr_exercise, pr_value, pr_unit, gym_name, xp_earned, visibility, created_at, user_id')
+      .in('user_id', followingIds)
+      .order('created_at', { ascending: false })
+      .limit(limit),
+  ])
+
+  const ratings: any[] = ratingsResult.data ?? []
+  const reps: any[] = repsResult.data ?? []
+
+  let enrichedRatings: any[] = []
+  if (ratings.length > 0) {
+    const flavorIds = ratings.map((r: any) => r.flavor_id)
+    const userIds = ratings.map((r: any) => r.user_id)
+    const ratingIds = ratings.map((r: any) => r.id)
+
+    const [{ data: flavors }, { data: ratingUsers }, { data: commentCounts }] = await Promise.all([
+      db.from('flavors').select('id, name, slug, product_id, products(id, name, slug, image_url, brands(name))').in('id', flavorIds),
+      db.from('users').select('id, username, avatar_url, xp').in('id', userIds),
+      db.from('comments').select('rating_id').in('rating_id', ratingIds),
+    ])
+
+    const flavorMap: Record<string, any> = {}
+    for (const f of (flavors ?? []) as any[]) flavorMap[f.id] = f
+
+    const ratingUserMap: Record<string, any> = {}
+    for (const u of (ratingUsers ?? []) as any[]) ratingUserMap[u.id] = u
+
+    const commentCountMap: Record<string, number> = {}
+    for (const c of (commentCounts ?? []) as any[]) {
+      commentCountMap[c.rating_id] = (commentCountMap[c.rating_id] ?? 0) + 1
+    }
+
+    enrichedRatings = ratings.map((r: any) => ({
+      _type: 'rating' as const,
+      id: r.id as string,
+      overall_score: r.overall_score as number,
+      would_buy_again: r.would_buy_again as boolean,
+      review_text: r.review_text as string | null,
+      photo_url: r.photo_url as string | null,
+      created_at: r.created_at as string,
+      comment_count: commentCountMap[r.id] ?? 0,
+      flavor: flavorMap[r.flavor_id] ?? null,
+      user: ratingUserMap[r.user_id] ?? null,
+    }))
+  }
+
+  let enrichedReps: any[] = []
+  if (reps.length > 0) {
+    const repUserIds = reps.map((r: any) => r.user_id)
+    const { data: repUsers } = await db.from('users').select('id, username, avatar_url, xp').in('id', repUserIds)
+    const repUserMap: Record<string, any> = {}
+    for (const u of (repUsers ?? []) as any[]) repUserMap[u.id] = u
+
+    enrichedReps = reps.map((r: any) => ({
+      _type: 'rep' as const,
+      id: r.id as string,
+      type: r.type as 'progress' | 'pr' | 'checkin',
+      content: r.content as string | null,
+      photo_url: r.photo_url as string | null,
+      pr_exercise: r.pr_exercise as string | null,
+      pr_value: r.pr_value as number | null,
+      pr_unit: r.pr_unit as string | null,
+      gym_name: r.gym_name as string | null,
+      xp_earned: r.xp_earned as number,
+      visibility: r.visibility as string,
+      created_at: r.created_at as string,
+      user: repUserMap[r.user_id] ?? null,
+    }))
+  }
+
+  const merged = [...enrichedRatings, ...enrichedReps]
+  merged.sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())
+  return merged.slice(0, limit)
 }
 
 export async function getFollowingFeed(userId: string, limit = 20) {

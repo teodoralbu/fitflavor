@@ -6,6 +6,38 @@ import { getScoreColor } from '@/lib/constants'
 import { LikeButton } from '@/components/rating/LikeButton'
 import { CommentsSection } from '@/components/rating/CommentsSection'
 
+export interface FeedItem {
+  _type: 'rating' | 'rep'
+  id: string
+  created_at: string
+  user: { username: string; avatar_url: string | null; xp?: number } | null
+  // rating fields (optional)
+  overall_score?: number
+  would_buy_again?: boolean
+  review_text?: string | null
+  photo_url?: string | null
+  comment_count?: number
+  flavor?: {
+    name: string
+    slug: string
+    products: {
+      name: string
+      slug: string
+      image_url: string | null
+      brands: { name: string }
+    }
+  } | null
+  // rep fields (optional)
+  type?: 'progress' | 'pr' | 'checkin'
+  content?: string | null
+  pr_exercise?: string | null
+  pr_value?: number | null
+  pr_unit?: string | null
+  gym_name?: string | null
+  xp_earned?: number
+}
+
+// Legacy interface for backward compatibility
 interface FeedRating {
   id: string
   overall_score: number
@@ -31,14 +63,140 @@ interface FeedRating {
   } | null
 }
 
-export function FeedCard({ rating, initialLiked = false, initialLikeCount = 0 }: {
-  rating: FeedRating
+function AvatarHeader({ user, createdAt }: {
+  user: FeedItem['user']
+  createdAt: string
+}) {
+  return (
+    <div style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '9px 12px 7px' }}>
+      <Link href={user?.username ? `/users/${user.username}` : '#'} style={{ textDecoration: 'none', flexShrink: 0 }}>
+        <div style={{
+          width: '30px', height: '30px', borderRadius: '50%',
+          backgroundColor: 'var(--bg-elevated)', border: '1px solid var(--border)',
+          display: 'flex', alignItems: 'center', justifyContent: 'center',
+          fontSize: '11px', fontWeight: 800, color: 'var(--accent)', overflow: 'hidden',
+        }}>
+          {user?.avatar_url ? (
+            // eslint-disable-next-line @next/next/no-img-element
+            <img src={user.avatar_url} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+          ) : (
+            user?.username?.[0]?.toUpperCase() ?? '?'
+          )}
+        </div>
+      </Link>
+      <div style={{ flex: 1, minWidth: 0 }}>
+        <Link href={user?.username ? `/users/${user.username}` : '#'} style={{ textDecoration: 'none' }}>
+          <span style={{ fontSize: '12px', fontWeight: 700, color: 'var(--text)' }}>
+            {user?.username ?? 'Anonymous'}
+          </span>
+        </Link>
+        <span style={{ fontSize: '11px', color: 'var(--text-faint)', marginLeft: '5px' }}>
+          {timeAgo(createdAt)}
+        </span>
+      </div>
+    </div>
+  )
+}
+
+function XpBadge({ xp }: { xp: number }) {
+  return (
+    <span style={{
+      fontSize: '10px',
+      fontWeight: 700,
+      color: 'var(--accent)',
+      backgroundColor: 'var(--accent-dim)',
+      border: '1px solid color-mix(in srgb, var(--accent) 25%, transparent)',
+      borderRadius: '999px',
+      padding: '2px 7px',
+      flexShrink: 0,
+    }}>
+      +{xp} XP
+    </span>
+  )
+}
+
+function RepCard({ item }: { item: FeedItem }) {
+  const repType = item.type
+
+  return (
+    <div style={{
+      backgroundColor: 'var(--bg-card)',
+      borderBottom: '1px solid var(--border-soft)',
+    }}>
+      <AvatarHeader user={item.user} createdAt={item.created_at} />
+
+      {/* Rep body */}
+      <div style={{ padding: '0 12px 9px' }}>
+
+        {/* Progress Photo */}
+        {repType === 'progress' && item.photo_url && (
+          <div style={{ marginBottom: '8px' }}>
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
+              src={item.photo_url}
+              alt="Progress photo"
+              style={{ width: '100%', borderRadius: '8px', maxHeight: '340px', objectFit: 'cover', display: 'block' }}
+            />
+          </div>
+        )}
+
+        {/* PR display */}
+        {repType === 'pr' && (
+          <div style={{ marginBottom: '6px' }}>
+            <div style={{ fontSize: '20px', fontWeight: 900, color: 'var(--text)', letterSpacing: '-0.02em' }}>
+              🏋️ {item.pr_exercise}: {item.pr_value}{item.pr_unit}
+            </div>
+          </div>
+        )}
+
+        {/* Check-in display */}
+        {repType === 'checkin' && (
+          <div style={{ marginBottom: '6px' }}>
+            <div style={{ fontSize: '16px', fontWeight: 800, color: 'var(--text)' }}>
+              📍 {item.gym_name}
+            </div>
+          </div>
+        )}
+
+        {/* Caption / note */}
+        {item.content && (
+          <p style={{ margin: '4px 0 0', fontSize: '13px', color: 'var(--text-muted)', lineHeight: 1.5 }}>
+            {item.content}
+          </p>
+        )}
+      </div>
+
+      {/* Actions row */}
+      <div style={{ padding: '3px 12px 8px', display: 'flex', alignItems: 'center', gap: '12px', borderTop: '1px solid var(--border-soft)' }}>
+        <div style={{ flex: 1 }} />
+        {item.xp_earned ? <XpBadge xp={item.xp_earned} /> : null}
+      </div>
+    </div>
+  )
+}
+
+export function FeedCard({ rating, item, initialLiked = false, initialLikeCount = 0 }: {
+  rating?: FeedRating | FeedItem
+  item?: FeedItem
   initialLiked?: boolean
   initialLikeCount?: number
 }) {
-  const product = (rating.flavor as any)?.products
+  // Resolve the actual feed item — support both `item` prop and legacy `rating` prop
+  const feedItem = item ?? (rating as FeedItem | undefined)
+
+  if (!feedItem) return null
+
+  // Route to RepCard for rep type items
+  if (feedItem._type === 'rep') {
+    return <RepCard item={feedItem} />
+  }
+
+  // Render rating card (original behavior)
+  const ratingData = feedItem as FeedItem
+  const product = (ratingData.flavor as any)?.products
   const brand = product?.brands
-  const scoreColor = getScoreColor(rating.overall_score)
+  const score = ratingData.overall_score ?? 0
+  const scoreColor = getScoreColor(score)
 
   return (
     <div style={{
@@ -47,32 +205,32 @@ export function FeedCard({ rating, initialLiked = false, initialLikeCount = 0 }:
     }}>
       {/* Header: avatar + username + time */}
       <div style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '9px 12px 7px' }}>
-        <Link href={`/users/${rating.user?.username}`} style={{ textDecoration: 'none', flexShrink: 0 }}>
+        <Link href={`/users/${ratingData.user?.username}`} style={{ textDecoration: 'none', flexShrink: 0 }}>
           <div style={{
             width: '30px', height: '30px', borderRadius: '50%',
             backgroundColor: 'var(--bg-elevated)', border: '1px solid var(--border)',
             display: 'flex', alignItems: 'center', justifyContent: 'center',
             fontSize: '11px', fontWeight: 800, color: 'var(--accent)', overflow: 'hidden',
           }}>
-            {rating.user?.avatar_url ? (
+            {ratingData.user?.avatar_url ? (
               // eslint-disable-next-line @next/next/no-img-element
-              <img src={rating.user.avatar_url} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+              <img src={ratingData.user.avatar_url} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
             ) : (
-              rating.user?.username?.[0]?.toUpperCase() ?? '?'
+              ratingData.user?.username?.[0]?.toUpperCase() ?? '?'
             )}
           </div>
         </Link>
         <div style={{ flex: 1, minWidth: 0 }}>
-          <Link href={`/users/${rating.user?.username}`} style={{ textDecoration: 'none' }}>
+          <Link href={`/users/${ratingData.user?.username}`} style={{ textDecoration: 'none' }}>
             <span style={{ fontSize: '12px', fontWeight: 700, color: 'var(--text)' }}>
-              {rating.user?.username ?? 'Anonymous'}
+              {ratingData.user?.username ?? 'Anonymous'}
             </span>
           </Link>
           <span style={{ fontSize: '11px', color: 'var(--text-faint)', marginLeft: '5px' }}>
-            {timeAgo(rating.created_at)}
+            {timeAgo(ratingData.created_at)}
           </span>
         </div>
-        {rating.would_buy_again && (
+        {ratingData.would_buy_again && (
           <span style={{ fontSize: '9px', color: 'var(--green)', fontWeight: 700, backgroundColor: 'color-mix(in srgb, var(--green) 10%, transparent)', padding: '2px 7px', borderRadius: '999px', border: '1px solid color-mix(in srgb, var(--green) 25%, transparent)', flexShrink: 0 }}>
             WBA
           </span>
@@ -80,7 +238,7 @@ export function FeedCard({ rating, initialLiked = false, initialLikeCount = 0 }:
       </div>
 
       {/* Product + Score block */}
-      <Link href={`/flavors/${rating.flavor?.slug ?? ''}`} style={{ textDecoration: 'none', color: 'inherit', display: 'block', padding: '0 12px 9px' }}>
+      <Link href={`/flavors/${ratingData.flavor?.slug ?? ''}`} style={{ textDecoration: 'none', color: 'inherit', display: 'block', padding: '0 12px 9px' }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
           {/* Product image */}
           <div style={{
@@ -99,7 +257,7 @@ export function FeedCard({ rating, initialLiked = false, initialLikeCount = 0 }:
           {/* Flavor + product info */}
           <div style={{ flex: 1, minWidth: 0 }}>
             <div style={{ fontSize: '13px', fontWeight: 800, color: 'var(--text)', marginBottom: '2px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-              {rating.flavor?.name ?? 'Unknown flavor'}
+              {ratingData.flavor?.name ?? 'Unknown flavor'}
             </div>
             <div style={{ fontSize: '10px', color: 'var(--text-faint)', textTransform: 'uppercase', letterSpacing: '0.05em', fontWeight: 600 }}>
               {brand?.name} · {product?.name}
@@ -109,27 +267,27 @@ export function FeedCard({ rating, initialLiked = false, initialLikeCount = 0 }:
           {/* Score */}
           <div style={{ textAlign: 'right', flexShrink: 0 }}>
             <div style={{ fontSize: '28px', fontWeight: 900, lineHeight: 1, color: scoreColor, letterSpacing: '-0.03em' }}>
-              {rating.overall_score.toFixed(1)}
+              {score.toFixed(1)}
             </div>
           </div>
         </div>
       </Link>
 
       {/* Review text */}
-      {rating.review_text && (
+      {ratingData.review_text && (
         <div style={{ padding: '0 12px 8px' }}>
           <p style={{ margin: 0, fontSize: '13px', color: 'var(--text-muted)', lineHeight: 1.5 }}>
-            &ldquo;{rating.review_text}&rdquo;
+            &ldquo;{ratingData.review_text}&rdquo;
           </p>
         </div>
       )}
 
       {/* Review photo */}
-      {rating.photo_url && (
+      {ratingData.photo_url && (
         <div style={{ padding: '0 12px 8px' }}>
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img
-            src={rating.photo_url}
+            src={ratingData.photo_url}
             alt="Review photo"
             style={{ width: '100%', borderRadius: '8px', maxHeight: '200px', objectFit: 'cover', display: 'block' }}
           />
@@ -138,11 +296,11 @@ export function FeedCard({ rating, initialLiked = false, initialLikeCount = 0 }:
 
       {/* Actions: like + comments count */}
       <div style={{ padding: '3px 12px 8px', display: 'flex', alignItems: 'center', gap: '12px', borderTop: '1px solid var(--border-soft)' }}>
-        <LikeButton ratingId={rating.id} initialCount={initialLikeCount} initialLiked={initialLiked} />
+        <LikeButton ratingId={ratingData.id} initialCount={initialLikeCount} initialLiked={initialLiked} />
       </div>
 
       {/* Comments */}
-      <CommentsSection ratingId={rating.id} initialCount={rating.comment_count} />
+      <CommentsSection ratingId={ratingData.id} initialCount={ratingData.comment_count ?? 0} />
     </div>
   )
 }
