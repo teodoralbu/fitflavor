@@ -1,4 +1,4 @@
-export const dynamic = 'force-dynamic'
+export const revalidate = 300
 
 import Link from 'next/link'
 import { getLeaderboard, getTopReviewers } from '@/lib/queries'
@@ -125,7 +125,7 @@ export default async function LeaderboardPage() {
                     }}>
                       {member.avatar_url ? (
                         // eslint-disable-next-line @next/next/no-img-element
-                        <img src={member.avatar_url} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                        <img src={member.avatar_url} alt="" loading="lazy" decoding="async" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
                       ) : (
                         member.username?.[0]?.toUpperCase() ?? '?'
                       )}

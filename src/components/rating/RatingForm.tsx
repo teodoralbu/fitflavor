@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, memo, useCallback } from 'react'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase'
 import { useAuth } from '@/context/auth-context'
@@ -36,6 +36,40 @@ function calcOverall(scores: Record<string, number>): number {
   return RATING_DIMENSIONS.reduce((sum, dim) => sum + (scores[dim.key] ?? 5) * dim.weight, 0)
 }
 
+interface SliderCardProps {
+  dim: typeof RATING_DIMENSIONS[number]
+  value: number
+  onChange: (key: string, value: number) => void
+}
+
+const SliderCard = memo(function SliderCard({ dim, value, onChange }: SliderCardProps) {
+  const color = getScoreColor(value)
+  return (
+    <div className="card" style={{ padding: '16px 18px' }}>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px' }}>
+        <div>
+          <span style={{ fontWeight: 700, fontSize: '14px', color: 'var(--text)' }}>{dim.label}</span>
+          <span style={{ fontSize: '11px', color: 'var(--text-faint)', marginLeft: '7px', fontWeight: 500, textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+            ×{dim.weight}
+          </span>
+        </div>
+        <span style={{ fontSize: '22px', fontWeight: 900, color, minWidth: '44px', textAlign: 'right', transition: 'color 0.2s', letterSpacing: '-0.02em', lineHeight: 1 }}>
+          {value.toFixed(1)}
+        </span>
+      </div>
+      <input
+        type="range" min={1} max={10} step={0.5} value={value}
+        onChange={(e) => onChange(dim.key, parseFloat(e.target.value))}
+        style={{ width: '100%', accentColor: color, cursor: 'pointer', height: '4px', display: 'block' }}
+      />
+      <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '10px', color: 'var(--text-faint)', marginTop: '6px', letterSpacing: '0.02em' }}>
+        <span>1 — Terrible</span>
+        <span>10 — Perfect</span>
+      </div>
+    </div>
+  )
+})
+
 export function RatingForm({ flavor }: Props) {
   const { user } = useAuth()
   const router = useRouter()
@@ -54,6 +88,10 @@ export function RatingForm({ flavor }: Props) {
   const scoreColor = getScoreColor(overall)
   const charsLeft = MAX_REVIEW_LENGTH - reviewText.length
   const charsNearLimit = charsLeft < 40
+
+  const handleScoreChange = useCallback((key: string, value: number) => {
+    setScores((prev) => ({ ...prev, [key]: value }))
+  }, [])
 
   function toggleContextTag(tag: string) {
     setContextTags((prev) =>
@@ -104,7 +142,6 @@ export function RatingForm({ flavor }: Props) {
     }
 
     router.push(`/flavors/${flavor.slug}`)
-    router.refresh()
     setSubmitting(false)
   }
 
@@ -211,94 +248,14 @@ export function RatingForm({ flavor }: Props) {
 
         {/* Sliders */}
         <div style={{ display: 'flex', flexDirection: 'column', gap: '24px', marginBottom: '36px' }}>
-          {RATING_DIMENSIONS.map((dim) => {
-            const val = scores[dim.key] ?? 7
-            const color = getScoreColor(val)
-            return (
-              <div
-                key={dim.key}
-                className="card"
-                style={{ padding: '16px 18px' }}
-              >
-                <div
-                  style={{
-                    display: 'flex',
-                    justifyContent: 'space-between',
-                    alignItems: 'center',
-                    marginBottom: '12px',
-                  }}
-                >
-                  <div>
-                    <span
-                      style={{
-                        fontWeight: 700,
-                        fontSize: '14px',
-                        color: 'var(--text)',
-                      }}
-                    >
-                      {dim.label}
-                    </span>
-                    <span
-                      style={{
-                        fontSize: '11px',
-                        color: 'var(--text-faint)',
-                        marginLeft: '7px',
-                        fontWeight: 500,
-                        textTransform: 'uppercase',
-                        letterSpacing: '0.05em',
-                      }}
-                    >
-                      ×{dim.weight}
-                    </span>
-                  </div>
-                  <span
-                    style={{
-                      fontSize: '22px',
-                      fontWeight: 900,
-                      color,
-                      minWidth: '44px',
-                      textAlign: 'right',
-                      transition: 'color 0.2s',
-                      letterSpacing: '-0.02em',
-                      lineHeight: 1,
-                    }}
-                  >
-                    {val.toFixed(1)}
-                  </span>
-                </div>
-                <input
-                  type="range"
-                  min={1}
-                  max={10}
-                  step={0.5}
-                  value={val}
-                  onChange={(e) =>
-                    setScores((prev) => ({ ...prev, [dim.key]: parseFloat(e.target.value) }))
-                  }
-                  style={{
-                    width: '100%',
-                    accentColor: color,
-                    cursor: 'pointer',
-                    height: '4px',
-                    display: 'block',
-                  }}
-                />
-                <div
-                  style={{
-                    display: 'flex',
-                    justifyContent: 'space-between',
-                    fontSize: '10px',
-                    color: 'var(--text-faint)',
-                    marginTop: '6px',
-                    letterSpacing: '0.02em',
-                  }}
-                >
-                  <span>1 — Terrible</span>
-                  <span>10 — Perfect</span>
-                </div>
-              </div>
-            )
-          })}
+          {RATING_DIMENSIONS.map((dim) => (
+            <SliderCard
+              key={dim.key}
+              dim={dim}
+              value={scores[dim.key] ?? 7}
+              onChange={handleScoreChange}
+            />
+          ))}
         </div>
 
         {/* Would buy again */}
@@ -375,11 +332,12 @@ export function RatingForm({ flavor }: Props) {
                   type="button"
                   onClick={() => toggleContextTag(tag.value)}
                   style={{
-                    padding: '6px 14px',
+                    padding: '10px 16px',
                     borderRadius: '999px',
                     fontSize: '12px',
                     fontWeight: 600,
                     cursor: 'pointer',
+                    touchAction: 'manipulation',
                     transition: 'all 0.15s',
                     border: active ? '1px solid var(--accent)' : '1px solid var(--border)',
                     backgroundColor: active

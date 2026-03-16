@@ -1,4 +1,4 @@
-export const dynamic = 'force-dynamic'
+export const revalidate = 120
 
 import Link from 'next/link'
 import type { Metadata } from 'next'
@@ -217,6 +217,7 @@ export default async function BrowsePage({ searchParams }: BrowseProps) {
                         // eslint-disable-next-line @next/next/no-img-element
                         <img
                           src={product.image_url} alt={product.name}
+                          loading="lazy" decoding="async"
                           style={{ width: '100%', height: '100%', objectFit: 'contain', padding: '6px' }}
                         />
                       ) : (

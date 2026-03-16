@@ -26,6 +26,7 @@ async function getStats() {
   }
 }
 
+// Static — derived from constants, computed once at module load
 const tiers = Object.entries(BADGE_TIERS).map(([, v]) => ({
   name: v.name,
   req: v.max === Infinity ? `${v.min}+` : `${v.min}–${v.max}`,

@@ -80,7 +80,7 @@ function AvatarHeader({ user, createdAt }: {
         }}>
           {user?.avatar_url ? (
             // eslint-disable-next-line @next/next/no-img-element
-            <img src={user.avatar_url} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+            <img src={user.avatar_url} alt="" loading="lazy" decoding="async" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
           ) : (
             user?.username?.[0]?.toUpperCase() ?? '?'
           )}
@@ -225,7 +225,7 @@ export function FeedCard({ rating, item, initialLiked = false, initialLikeCount 
           }}>
             {ratingData.user?.avatar_url ? (
               // eslint-disable-next-line @next/next/no-img-element
-              <img src={ratingData.user.avatar_url} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+              <img src={ratingData.user.avatar_url} alt="" loading="lazy" decoding="async" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
             ) : (
               ratingData.user?.username?.[0]?.toUpperCase() ?? '?'
             )}
@@ -259,7 +259,7 @@ export function FeedCard({ rating, item, initialLiked = false, initialLikeCount 
           }}>
             {product?.image_url ? (
               // eslint-disable-next-line @next/next/no-img-element
-              <img src={product.image_url} alt="" style={{ width: '100%', height: '100%', objectFit: 'contain', padding: '4px' }} />
+              <img src={product.image_url} alt="" loading="lazy" decoding="async" style={{ width: '100%', height: '100%', objectFit: 'contain', padding: '4px' }} />
             ) : (
               <span style={{ fontSize: '18px' }}>⚡</span>
             )}
@@ -300,6 +300,8 @@ export function FeedCard({ rating, item, initialLiked = false, initialLikeCount 
           <img
             src={ratingData.photo_url}
             alt="Review photo"
+            loading="lazy"
+            decoding="async"
             style={{ width: '100%', borderRadius: '8px', maxHeight: '200px', objectFit: 'cover', display: 'block' }}
           />
         </div>

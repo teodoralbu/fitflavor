@@ -1,4 +1,4 @@
-import type { Metadata } from 'next'
+import type { Metadata, Viewport } from 'next'
 import { Inter } from 'next/font/google'
 import './globals.css'
 
@@ -15,6 +15,14 @@ import { Navbar } from '@/components/layout/Navbar'
 import { Footer } from '@/components/layout/Footer'
 import { BottomNav } from '@/components/layout/BottomNav'
 import { PageTransition } from '@/components/layout/PageTransition'
+
+export const viewport: Viewport = {
+  width: 'device-width',
+  initialScale: 1,
+  viewportFit: 'cover',
+  maximumScale: 1,
+  themeColor: '#0D0F14',
+}
 
 export const metadata: Metadata = {
   title: 'GYMTASTE — Rate it before you waste it.',
@@ -43,8 +51,9 @@ export default function RootLayout({
   return (
     <html lang="en" className={`dark ${inter.variable}`}>
       <head>
-        <meta name="theme-color" content="#0D0F14" />
         <meta name="mobile-web-app-capable" content="yes" />
+        {/* Prevent flash of wrong theme before React hydrates */}
+        <script dangerouslySetInnerHTML={{ __html: `try{var t=localStorage.getItem('theme');if(!t)t=window.matchMedia('(prefers-color-scheme:dark)').matches?'dark':'light';document.documentElement.className=t==='light'?'${inter.variable}':'dark ${inter.variable}'}catch(e){}` }} />
       </head>
       <body className="antialiased flex flex-col min-h-screen">
         <ThemeProvider>

@@ -61,25 +61,31 @@ export function BottomNav() {
   const { profile } = useAuth()
   const [visible, setVisible] = useState(true)
   const lastScrollY = useRef(0)
+  const debounceTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
 
   useEffect(() => {
     function handleScroll() {
       const currentY = window.scrollY
-      if (currentY < 60) {
-        // Always show when near top
-        setVisible(true)
-      } else if (currentY > lastScrollY.current) {
-        // Scrolling down — hide
-        setVisible(false)
-      } else {
-        // Scrolling up — show
-        setVisible(true)
-      }
+      const prev = lastScrollY.current
       lastScrollY.current = currentY
+
+      if (debounceTimer.current) clearTimeout(debounceTimer.current)
+      debounceTimer.current = setTimeout(() => {
+        if (currentY < 60) {
+          setVisible(true)
+        } else if (currentY > prev) {
+          setVisible(false)
+        } else {
+          setVisible(true)
+        }
+      }, 80)
     }
 
     window.addEventListener('scroll', handleScroll, { passive: true })
-    return () => window.removeEventListener('scroll', handleScroll)
+    return () => {
+      window.removeEventListener('scroll', handleScroll)
+      if (debounceTimer.current) clearTimeout(debounceTimer.current)
+    }
   }, [])
 
   const profileTab = {
@@ -136,10 +142,12 @@ export function BottomNav() {
               alignItems: 'center',
               justifyContent: 'center',
               gap: '4px',
-              padding: '10px 4px 10px',
+              padding: '12px 4px',
+              minHeight: '48px',
               color: isRepTab ? 'var(--accent)' : active ? 'var(--accent)' : 'var(--text-faint)',
               textDecoration: 'none',
               WebkitTapHighlightColor: 'transparent',
+              touchAction: 'manipulation',
               transition: 'color 0.15s ease',
               userSelect: 'none',
             }}

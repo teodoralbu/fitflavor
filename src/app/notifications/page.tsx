@@ -199,7 +199,7 @@ export default async function NotificationsPage() {
                 }}>
                   {notif.actor_avatar ? (
                     // eslint-disable-next-line @next/next/no-img-element
-                    <img src={notif.actor_avatar} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                    <img src={notif.actor_avatar} alt="" loading="lazy" decoding="async" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
                   ) : (
                     notif.actor_username[0]?.toUpperCase() ?? '?'
                   )}
