@@ -5,6 +5,7 @@ import Link from 'next/link'
 import { createServerSupabaseClient } from '@/lib/supabase-server'
 import { Badge } from '@/components/ui/Badge'
 import { FollowButton } from '@/components/user/FollowButton'
+import { AvatarUpload } from '@/components/user/AvatarUpload'
 import { BADGE_TIERS, getScoreColor } from '@/lib/constants'
 
 interface Props {
@@ -85,33 +86,30 @@ export default async function UserProfilePage({ params }: Props) {
         }}>
 
           {/* Avatar */}
-          <div style={{
-            width: '76px',
-            height: '76px',
-            borderRadius: '50%',
-            backgroundColor: 'var(--bg-elevated)',
-            border: `2px solid ${tierData.color}`,
-            boxShadow: `0 0 16px ${tierData.color}44`,
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            fontSize: '28px',
-            fontWeight: 900,
-            color: tierData.color,
-            flexShrink: 0,
-            overflow: 'hidden',
-          }}>
-            {profile.avatar_url ? (
-              // eslint-disable-next-line @next/next/no-img-element
-              <img
-                src={profile.avatar_url}
-                alt={profile.username}
-                style={{ width: '100%', height: '100%', objectFit: 'cover' }}
-              />
-            ) : (
-              profile.username[0].toUpperCase()
-            )}
-          </div>
+          {currentUser?.id === profile.id ? (
+            <AvatarUpload
+              currentAvatarUrl={profile.avatar_url}
+              username={profile.username}
+              tierColor={tierData.color}
+            />
+          ) : (
+            <div style={{
+              width: '76px', height: '76px', borderRadius: '50%',
+              backgroundColor: 'var(--bg-elevated)',
+              border: `2px solid ${tierData.color}`,
+              boxShadow: `0 0 16px ${tierData.color}44`,
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
+              fontSize: '28px', fontWeight: 900, color: tierData.color,
+              flexShrink: 0, overflow: 'hidden',
+            }}>
+              {profile.avatar_url ? (
+                // eslint-disable-next-line @next/next/no-img-element
+                <img src={profile.avatar_url} alt={profile.username} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+              ) : (
+                profile.username[0].toUpperCase()
+              )}
+            </div>
+          )}
 
           {/* Name + badge + follow */}
           <div style={{ flex: 1, minWidth: 0 }}>
