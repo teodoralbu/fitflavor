@@ -2,11 +2,24 @@ export const dynamic = 'force-dynamic'
 
 import { notFound } from 'next/navigation'
 import Link from 'next/link'
+import type { Metadata } from 'next'
 import { createServerSupabaseClient } from '@/lib/supabase-server'
 import { getScoreColor } from '@/lib/constants'
 
 interface Props {
   params: Promise<{ slug: string }>
+}
+
+export async function generateMetadata({ params }: Props): Promise<Metadata> {
+  const { slug } = await params
+  const supabase = await createServerSupabaseClient()
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const { data: brand } = await (supabase as any).from('brands').select('name').eq('slug', slug).single()
+  if (!brand) return {}
+  return {
+    title: `${brand.name} Pre-Workout Flavors | GymTaste`,
+    description: `All ${brand.name} products and flavor ratings on GymTaste. Find the best-tasting pre-workout from ${brand.name}.`,
+  }
 }
 
 export default async function BrandPage({ params }: Props) {

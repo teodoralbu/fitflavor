@@ -79,14 +79,33 @@ export default function RepPage() {
   const [checkinNote, setCheckinNote] = useState('')
   const [checkinVis, setCheckinVis] = useState<Visibility>('public')
 
+  async function compressImage(file: File): Promise<File> {
+    return new Promise((resolve) => {
+      const img = new Image()
+      img.onload = () => {
+        const MAX = 1080
+        const scale = Math.min(1, MAX / Math.max(img.width, img.height))
+        const canvas = document.createElement('canvas')
+        canvas.width = Math.round(img.width * scale)
+        canvas.height = Math.round(img.height * scale)
+        canvas.getContext('2d')!.drawImage(img, 0, 0, canvas.width, canvas.height)
+        canvas.toBlob(
+          (blob) => resolve(new File([blob!], 'photo.jpg', { type: 'image/jpeg' })),
+          'image/jpeg', 0.82
+        )
+      }
+      img.src = URL.createObjectURL(file)
+    })
+  }
+
   async function uploadPhoto(file: File): Promise<string | null> {
     setUploadingPhoto(true)
+    const compressed = await compressImage(file)
     const supabase = createClient()
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const db = supabase as any
-    const ext = file.name.split('.').pop()
-    const filename = `${user!.id}/${Date.now()}.${ext}`
-    const { error: uploadError } = await db.storage.from('rep-photo').upload(filename, file)
+    const filename = `${user!.id}/${Date.now()}.jpg`
+    const { error: uploadError } = await db.storage.from('rep-photo').upload(filename, compressed, { contentType: 'image/jpeg' })
     setUploadingPhoto(false)
     if (uploadError) { setError('Photo upload failed: ' + uploadError.message); return null }
     const { data } = db.storage.from('rep-photo').getPublicUrl(filename)

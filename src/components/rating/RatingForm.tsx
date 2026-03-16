@@ -74,20 +74,6 @@ export function RatingForm({ flavor }: Props) {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const db = supabase as any
 
-    // Check for duplicate
-    const { data: existing } = await db
-      .from('ratings')
-      .select('id')
-      .eq('user_id', user.id)
-      .eq('flavor_id', flavor.id)
-      .maybeSingle()
-
-    if (existing) {
-      setError('You already rated this flavor.')
-      setSubmitting(false)
-      return
-    }
-
     let photoUrl: string | null = null
     if (photoFile && user) {
       const ext = photoFile.name.split('.').pop()

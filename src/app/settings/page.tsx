@@ -124,10 +124,10 @@ export default function SettingsPage() {
       <h1 className="text-2xl font-black mb-8">Settings</h1>
 
       {/* Avatar */}
-      <section className="mb-8 pb-8 border-b border-[#2A2A2A]">
-        <h2 className="text-xs font-semibold text-[#555] uppercase tracking-wider mb-4">Avatar</h2>
+      <section className="mb-8 pb-8" style={{ borderBottom: '1px solid var(--border)' }}>
+        <h2 className="text-xs font-semibold uppercase tracking-wider mb-4" style={{ color: 'var(--text-dim)' }}>Avatar</h2>
         <div className="flex items-center gap-4">
-          <div className="w-16 h-16 rounded-full bg-[#1E1E1E] border border-[#2A2A2A] overflow-hidden flex items-center justify-center text-xl font-bold text-[#00B4FF] flex-shrink-0">
+          <div className="w-16 h-16 rounded-full overflow-hidden flex items-center justify-center text-xl font-bold flex-shrink-0" style={{ backgroundColor: 'var(--bg-elevated)', border: '1px solid var(--border)', color: 'var(--accent)' }}>
             {profile.avatar_url ? (
               // eslint-disable-next-line @next/next/no-img-element
               <img
@@ -148,7 +148,7 @@ export default function SettingsPage() {
             >
               Upload photo
             </Button>
-            <p className="text-xs text-[#555] mt-1.5">JPG, PNG, WebP · Max 5MB</p>
+            <p className="text-xs mt-1.5" style={{ color: 'var(--text-dim)' }}>JPG, PNG, WebP · Max 5MB</p>
           </div>
           <input
             ref={fileInputRef}
@@ -161,8 +161,8 @@ export default function SettingsPage() {
       </section>
 
       {/* Profile form */}
-      <section className="mb-8 pb-8 border-b border-[#2A2A2A]">
-        <h2 className="text-xs font-semibold text-[#555] uppercase tracking-wider mb-4">Profile</h2>
+      <section className="mb-8 pb-8" style={{ borderBottom: '1px solid var(--border)' }}>
+        <h2 className="text-xs font-semibold uppercase tracking-wider mb-4" style={{ color: 'var(--text-dim)' }}>Profile</h2>
         <form onSubmit={handleSave} className="flex flex-col gap-4">
           <Input
             label="Username"
@@ -171,16 +171,17 @@ export default function SettingsPage() {
             hint="Lowercase letters, numbers, underscores only"
           />
           <div className="flex flex-col gap-1.5">
-            <label className="text-sm font-medium text-white">Bio</label>
+            <label className="text-sm font-medium" style={{ color: 'var(--text)' }}>Bio</label>
             <textarea
               value={form.bio}
               onChange={(e) => setForm({ ...form, bio: e.target.value })}
               maxLength={MAX_BIO_LENGTH}
               placeholder="Tell the community about yourself..."
               rows={3}
-              className="w-full px-4 py-2.5 rounded-lg bg-[#141414] border border-[#2A2A2A] text-white placeholder-[#555] text-sm outline-none focus:border-[#00B4FF] transition-colors resize-none"
+              className="input"
+              style={{ resize: 'none', fontFamily: 'inherit' }}
             />
-            <p className="text-xs text-[#555] text-right">
+            <p className="text-xs text-right" style={{ color: 'var(--text-dim)' }}>
               {form.bio.length}/{MAX_BIO_LENGTH}
             </p>
           </div>
@@ -203,8 +204,8 @@ export default function SettingsPage() {
       </section>
 
       {/* Badge */}
-      <section className="mb-8 pb-8 border-b border-[#2A2A2A]">
-        <h2 className="text-xs font-semibold text-[#555] uppercase tracking-wider mb-4">
+      <section className="mb-8 pb-8" style={{ borderBottom: '1px solid var(--border)' }}>
+        <h2 className="text-xs font-semibold uppercase tracking-wider mb-4" style={{ color: 'var(--text-dim)' }}>
           Your Badge
         </h2>
         <Badge tier={profile.badge_tier} size="lg" />
@@ -212,8 +213,8 @@ export default function SettingsPage() {
 
       {/* Account */}
       <section>
-        <h2 className="text-xs font-semibold text-[#555] uppercase tracking-wider mb-4">Account</h2>
-        <p className="text-sm text-[#666] mb-4">{user.email}</p>
+        <h2 className="text-xs font-semibold uppercase tracking-wider mb-4" style={{ color: 'var(--text-dim)' }}>Account</h2>
+        <p className="text-sm mb-4" style={{ color: 'var(--text-muted)' }}>{user.email}</p>
         <Button variant="danger" size="sm" onClick={handleSignOut}>
           Sign out
         </Button>

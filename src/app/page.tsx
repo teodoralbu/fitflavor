@@ -11,16 +11,18 @@ async function getStats() {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const db = supabase as any
 
-  const [{ count: flavorCount }, { count: ratingCount }, { count: productCount }] = await Promise.all([
+  const [{ count: flavorCount }, { count: ratingCount }, { count: productCount }, { count: brandCount }] = await Promise.all([
     db.from('flavors').select('*', { count: 'exact', head: true }),
     db.from('ratings').select('*', { count: 'exact', head: true }),
     db.from('products').select('*', { count: 'exact', head: true }).eq('is_approved', true),
+    db.from('brands').select('*', { count: 'exact', head: true }),
   ])
 
   return {
     flavors: flavorCount ?? 0,
     ratings: ratingCount ?? 0,
     products: productCount ?? 0,
+    brands: brandCount ?? 0,
   }
 }
 
@@ -46,7 +48,7 @@ export default async function Home({ searchParams }: { searchParams: Promise<{ f
   const [stats, leaderboard, globalFeed, followingFeed] = await Promise.all([
     getStats(),
     getLeaderboard(5),
-    getUnifiedFeed(20),
+    getUnifiedFeed(20, user?.id),
     isFollowingTab && user ? getFollowingUnifiedFeed(user.id, 20) : Promise.resolve([]),
   ])
 
@@ -54,7 +56,7 @@ export default async function Home({ searchParams }: { searchParams: Promise<{ f
 
   const statItems = [
     { value: `${stats.flavors}+`, label: 'Flavors rated' },
-    { value: '10', label: 'Brands covered' },
+    { value: `${stats.brands}`, label: 'Brands covered' },
     { value: `${stats.products}`, label: 'Products listed' },
     { value: `${stats.ratings}`, label: 'Community ratings' },
   ]
@@ -65,7 +67,7 @@ export default async function Home({ searchParams }: { searchParams: Promise<{ f
       {/* ── Mobile feed (hidden on desktop) ── */}
       <div className="sm:hidden" style={{ padding: '0 0 16px' }}>
 
-        {/* Compact greeting */}
+        {/* Compact header */}
         <div style={{ padding: '12px 16px 4px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
           <div style={{ fontSize: '20px', fontWeight: 900, color: 'var(--text)', letterSpacing: '-0.02em' }}>GymTaste</div>
           <div style={{ display: 'flex', alignItems: 'center', gap: '14px' }}>
@@ -83,6 +85,52 @@ export default async function Home({ searchParams }: { searchParams: Promise<{ f
           </div>
         </div>
 
+        {/* Mobile hero — only for logged-out users */}
+        {!user && (
+          <div style={{
+            margin: '8px 16px 12px',
+            padding: '16px',
+            borderRadius: 'var(--radius-lg)',
+            backgroundColor: 'var(--bg-card)',
+            border: '1px solid var(--border)',
+          }}>
+            <div style={{ fontSize: '11px', fontWeight: 700, color: 'var(--accent)', letterSpacing: '0.1em', textTransform: 'uppercase', marginBottom: '6px' }}>
+              Rated by real lifters
+            </div>
+            <p style={{ fontSize: '14px', fontWeight: 700, color: 'var(--text)', margin: '0 0 4px', lineHeight: 1.3 }}>
+              Find pre-workouts that actually taste good.
+            </p>
+            <p style={{ fontSize: '12px', color: 'var(--text-dim)', margin: '0 0 12px', lineHeight: 1.5 }}>
+              Community flavor ratings — before you waste $60 on something that tastes like chalk.
+            </p>
+            <div style={{ display: 'flex', gap: '8px' }}>
+              <Link
+                href="/browse"
+                style={{
+                  flex: 1, textAlign: 'center', padding: '9px 12px',
+                  backgroundColor: 'var(--accent)', color: '#000',
+                  borderRadius: 'var(--radius-md)', fontSize: '13px', fontWeight: 700,
+                  textDecoration: 'none',
+                }}
+              >
+                Browse Products
+              </Link>
+              <Link
+                href="/leaderboard"
+                style={{
+                  flex: 1, textAlign: 'center', padding: '9px 12px',
+                  backgroundColor: 'var(--bg-elevated)', color: 'var(--text)',
+                  border: '1px solid var(--border)',
+                  borderRadius: 'var(--radius-md)', fontSize: '13px', fontWeight: 600,
+                  textDecoration: 'none',
+                }}
+              >
+                Top Rated
+              </Link>
+            </div>
+          </div>
+        )}
+
         {/* Feed tabs */}
         <div style={{ display: 'flex', borderBottom: '1px solid var(--border)', marginBottom: '0' }}>
           <Link
@@ -98,7 +146,7 @@ export default async function Home({ searchParams }: { searchParams: Promise<{ f
             For You
           </Link>
           <Link
-            href="/?feed=following"
+            href={user ? '/?feed=following' : '/login'}
             style={{
               flex: 1, textAlign: 'center', padding: '12px 0',
               fontSize: '13px', fontWeight: 700, textDecoration: 'none',
@@ -120,6 +168,19 @@ export default async function Home({ searchParams }: { searchParams: Promise<{ f
             </p>
             <Link href="/leaderboard" style={{ color: 'var(--accent)', fontSize: '13px', fontWeight: 600 }}>
               Discover reviewers →
+            </Link>
+          </div>
+        ) : !user && feed === 'following' ? (
+          <div style={{ padding: '48px 16px', textAlign: 'center' }}>
+            <p style={{ color: 'var(--text-dim)', fontSize: '14px', margin: '0 0 16px' }}>
+              Log in to see reviews from people you follow.
+            </p>
+            <Link href="/login" style={{
+              display: 'inline-block', backgroundColor: 'var(--accent)', color: '#000',
+              fontWeight: 700, fontSize: '13px', padding: '10px 20px',
+              borderRadius: 'var(--radius-md)', textDecoration: 'none',
+            }}>
+              Log in
             </Link>
           </div>
         ) : feedItems.length === 0 ? (

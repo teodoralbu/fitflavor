@@ -16,24 +16,45 @@ export function AvatarUpload({ currentAvatarUrl, username, tierColor }: Props) {
   const [avatarUrl, setAvatarUrl] = useState(currentAvatarUrl)
   const [uploading, setUploading] = useState(false)
 
+  const compress = (file: File): Promise<File> =>
+    new Promise((resolve) => {
+      const img = new Image()
+      img.onload = () => {
+        const SIZE = 256
+        const canvas = document.createElement('canvas')
+        canvas.width = SIZE; canvas.height = SIZE
+        const ctx = canvas.getContext('2d')!
+        const min = Math.min(img.width, img.height)
+        const sx = (img.width - min) / 2
+        const sy = (img.height - min) / 2
+        ctx.drawImage(img, sx, sy, min, min, 0, 0, SIZE, SIZE)
+        canvas.toBlob(
+          (blob) => resolve(new File([blob!], 'avatar.jpg', { type: 'image/jpeg' })),
+          'image/jpeg', 0.88
+        )
+      }
+      img.src = URL.createObjectURL(file)
+    })
+
   const handleFile = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]
     if (!file || !user) return
 
     setUploading(true)
+    const compressed = await compress(file)
     const supabase = createClient()
-    const ext = file.name.split('.').pop()
-    const path = `${user.id}/avatar.${ext}`
+    const path = `${user.id}/avatar.jpg`
 
     const { error: uploadError } = await supabase.storage
       .from('avatars')
-      .upload(path, file, { upsert: true })
+      .upload(path, compressed, { upsert: true, contentType: 'image/jpeg' })
 
     if (!uploadError) {
       const { data: { publicUrl } } = supabase.storage.from('avatars').getPublicUrl(path)
+      const urlWithBust = publicUrl + '?t=' + Date.now()
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       await (supabase as any).from('users').update({ avatar_url: publicUrl }).eq('id', user.id)
-      setAvatarUrl(publicUrl + '?t=' + Date.now())
+      setAvatarUrl(urlWithBust)
       await refreshProfile()
     }
 

@@ -17,6 +17,8 @@ export interface FeedItem {
   review_text?: string | null
   photo_url?: string | null
   comment_count?: number
+  like_count?: number
+  user_has_liked?: boolean
   flavor?: {
     name: string
     slug: string
@@ -303,9 +305,15 @@ export function FeedCard({ rating, item, initialLiked = false, initialLikeCount 
         </div>
       )}
 
-      {/* Actions: like + comments count */}
+      {/* Actions: like */}
       <div style={{ padding: '3px 12px 8px', display: 'flex', alignItems: 'center', gap: '12px', borderTop: '1px solid var(--border-soft)' }}>
-        <LikeButton ratingId={ratingData.id} initialCount={initialLikeCount} initialLiked={initialLiked} />
+        <LikeButton
+          targetId={ratingData.id}
+          targetTable="review_likes"
+          targetColumn="rating_id"
+          initialCount={ratingData.like_count ?? initialLikeCount}
+          initialLiked={ratingData.user_has_liked ?? initialLiked}
+        />
       </div>
 
       {/* Comments */}

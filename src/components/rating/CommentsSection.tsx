@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useMemo, useCallback } from 'react'
 import Link from 'next/link'
 import { createClient } from '@/lib/supabase'
 import { useAuth } from '@/context/auth-context'
@@ -23,23 +23,30 @@ export function CommentsSection({ ratingId, initialCount }: Props) {
   const [comments, setComments] = useState<Comment[]>([])
   const [text, setText] = useState('')
   const [loading, setLoading] = useState(false)
+  const [loadingComments, setLoadingComments] = useState(false)
   const [expanded, setExpanded] = useState(false)
   const [count, setCount] = useState(initialCount)
-  const supabase = createClient()
+  const [submitError, setSubmitError] = useState('')
 
-  const loadComments = async () => {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const db = supabase as any
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const db = useMemo(() => createClient() as any, [])
+
+  const loadComments = useCallback(async () => {
+    setLoadingComments(true)
     const { data } = await db
-      .from('comments')
+      .from('review_comments')
       .select('id, text, created_at, user_id')
       .eq('rating_id', ratingId)
       .order('created_at', { ascending: true })
       .limit(20)
 
-    if (!data || data.length === 0) { setComments([]); return }
+    if (!data || data.length === 0) {
+      setComments([])
+      setLoadingComments(false)
+      return
+    }
 
-    const userIds = data.map((c: any) => c.user_id)
+    const userIds = [...new Set(data.map((c: any) => c.user_id))]
     const { data: users } = await db.from('users').select('id, username, avatar_url').in('id', userIds)
     const userMap: Record<string, any> = {}
     for (const u of (users ?? []) as any[]) userMap[u.id] = u
@@ -50,21 +57,21 @@ export function CommentsSection({ ratingId, initialCount }: Props) {
       created_at: c.created_at,
       user: userMap[c.user_id] ?? null,
     })))
-    setCount(data.length)
-  }
+    setLoadingComments(false)
+  }, [db, ratingId])
 
   const handleExpand = () => {
-    if (!expanded) loadComments()
-    setExpanded(!expanded)
+    const next = !expanded
+    setExpanded(next)
+    if (next && comments.length === 0) loadComments()
   }
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     if (!user || !text.trim()) return
     setLoading(true)
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const db = supabase as any
-    const { error } = await db.from('comments').insert({
+    setSubmitError('')
+    const { error } = await db.from('review_comments').insert({
       rating_id: ratingId,
       user_id: user.id,
       text: text.trim().slice(0, 280),
@@ -73,13 +80,15 @@ export function CommentsSection({ ratingId, initialCount }: Props) {
       setText('')
       setCount(c => c + 1)
       await loadComments()
+    } else {
+      setSubmitError('Failed to post. Try again.')
     }
     setLoading(false)
   }
 
   return (
     <div style={{ borderTop: '1px solid var(--border-soft)' }}>
-      {/* Toggle comments */}
+      {/* Toggle */}
       <button
         onClick={handleExpand}
         style={{
@@ -89,7 +98,7 @@ export function CommentsSection({ ratingId, initialCount }: Props) {
           fontWeight: 600, fontFamily: 'inherit', WebkitTapHighlightColor: 'transparent',
         }}
       >
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
           <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
         </svg>
         {count > 0 ? `${count} comment${count !== 1 ? 's' : ''}` : 'Comment'}
@@ -97,8 +106,13 @@ export function CommentsSection({ ratingId, initialCount }: Props) {
 
       {expanded && (
         <div style={{ padding: '0 16px 12px' }}>
-          {/* Comment list */}
-          {comments.map((comment) => (
+          {loadingComments && (
+            <div style={{ padding: '8px 0', display: 'flex', justifyContent: 'center' }}>
+              <div style={{ width: '16px', height: '16px', borderRadius: '50%', border: '2px solid var(--border)', borderTopColor: 'var(--accent)', animation: 'spin 0.7s linear infinite' }} />
+            </div>
+          )}
+
+          {!loadingComments && comments.map((comment) => (
             <div key={comment.id} style={{ display: 'flex', gap: '8px', marginBottom: '10px' }}>
               <Link href={`/users/${comment.user?.username}`} style={{ textDecoration: 'none', flexShrink: 0 }}>
                 <div style={{
@@ -116,10 +130,7 @@ export function CommentsSection({ ratingId, initialCount }: Props) {
                 </div>
               </Link>
               <div style={{ flex: 1, minWidth: 0 }}>
-                <div style={{
-                  backgroundColor: 'var(--bg-elevated)', borderRadius: '10px',
-                  padding: '7px 10px',
-                }}>
+                <div style={{ backgroundColor: 'var(--bg-elevated)', borderRadius: '10px', padding: '7px 10px' }}>
                   <div style={{ fontSize: '12px', fontWeight: 700, color: 'var(--text)', marginBottom: '2px' }}>
                     {comment.user?.username ?? 'anon'}
                     <span style={{ fontSize: '11px', color: 'var(--text-faint)', fontWeight: 400, marginLeft: '6px' }}>
@@ -134,41 +145,46 @@ export function CommentsSection({ ratingId, initialCount }: Props) {
             </div>
           ))}
 
-          {/* Input */}
           {user ? (
-            <form onSubmit={handleSubmit} style={{ display: 'flex', gap: '8px', marginTop: '8px' }}>
-              <div style={{
-                width: '26px', height: '26px', borderRadius: '50%', flexShrink: 0,
-                backgroundColor: 'var(--bg-elevated)', border: '1px solid var(--border)',
-                display: 'flex', alignItems: 'center', justifyContent: 'center',
-                fontSize: '10px', fontWeight: 800, color: 'var(--accent)',
-              }}>
-                {profile?.username?.[0]?.toUpperCase() ?? '?'}
+            <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '6px', marginTop: '8px' }}>
+              {submitError && (
+                <p style={{ fontSize: '12px', color: 'var(--red)', margin: 0 }}>{submitError}</p>
+              )}
+              <div style={{ display: 'flex', gap: '8px' }}>
+                <div style={{
+                  width: '26px', height: '26px', borderRadius: '50%', flexShrink: 0,
+                  backgroundColor: 'var(--bg-elevated)', border: '1px solid var(--border)',
+                  display: 'flex', alignItems: 'center', justifyContent: 'center',
+                  fontSize: '10px', fontWeight: 800, color: 'var(--accent)',
+                }}>
+                  {profile?.username?.[0]?.toUpperCase() ?? '?'}
+                </div>
+                <input
+                  value={text}
+                  onChange={(e) => setText(e.target.value)}
+                  placeholder="Add a comment..."
+                  maxLength={280}
+                  style={{
+                    flex: 1, background: 'var(--bg-elevated)', border: '1px solid var(--border)',
+                    borderRadius: '20px', padding: '6px 14px', fontSize: '13px',
+                    color: 'var(--text)', outline: 'none', fontFamily: 'inherit',
+                  }}
+                />
+                <button
+                  type="submit"
+                  disabled={!text.trim() || loading}
+                  style={{
+                    padding: '6px 14px', borderRadius: '20px', fontSize: '12px',
+                    fontWeight: 700, border: 'none', cursor: 'pointer',
+                    backgroundColor: text.trim() ? 'var(--accent)' : 'var(--bg-elevated)',
+                    color: text.trim() ? '#000' : 'var(--text-faint)',
+                    transition: 'all 0.15s', fontFamily: 'inherit',
+                    WebkitTapHighlightColor: 'transparent',
+                  }}
+                >
+                  {loading ? '...' : 'Post'}
+                </button>
               </div>
-              <input
-                value={text}
-                onChange={(e) => setText(e.target.value)}
-                placeholder="Add a comment..."
-                maxLength={280}
-                style={{
-                  flex: 1, background: 'var(--bg-elevated)', border: '1px solid var(--border)',
-                  borderRadius: '20px', padding: '6px 14px', fontSize: '13px',
-                  color: 'var(--text)', outline: 'none', fontFamily: 'inherit',
-                }}
-              />
-              <button
-                type="submit"
-                disabled={!text.trim() || loading}
-                style={{
-                  padding: '6px 14px', borderRadius: '20px', fontSize: '12px',
-                  fontWeight: 700, border: 'none', cursor: 'pointer',
-                  backgroundColor: text.trim() ? 'var(--accent)' : 'var(--bg-elevated)',
-                  color: text.trim() ? '#000' : 'var(--text-faint)',
-                  transition: 'all 0.15s', fontFamily: 'inherit',
-                }}
-              >
-                {loading ? '...' : 'Post'}
-              </button>
             </form>
           ) : (
             <Link href="/login" style={{ fontSize: '12px', color: 'var(--accent)', display: 'block', marginTop: '8px' }}>

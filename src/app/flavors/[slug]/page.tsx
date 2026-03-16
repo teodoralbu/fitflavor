@@ -2,12 +2,27 @@ export const dynamic = 'force-dynamic'
 
 import { notFound } from 'next/navigation'
 import Link from 'next/link'
+import type { Metadata } from 'next'
 import { getFlavorBySlug } from '@/lib/queries'
 import { getScoreColor } from '@/lib/constants'
 import { ReviewCard } from '@/components/rating/ReviewCard'
 
 interface Props {
   params: Promise<{ slug: string }>
+}
+
+export async function generateMetadata({ params }: Props): Promise<Metadata> {
+  const { slug } = await params
+  const data = await getFlavorBySlug(slug)
+  if (!data) return {}
+  const { flavor } = data
+  const product = flavor.product
+  const brand = (product as any).brands
+  const score = flavor.avg_overall_score !== null ? ` · ${flavor.avg_overall_score.toFixed(1)}/10` : ''
+  return {
+    title: `${flavor.name} — ${product.name} | GymTaste`,
+    description: `Community ratings for ${flavor.name} by ${brand?.name ?? product.name}${score}. ${flavor.rating_count} review${flavor.rating_count !== 1 ? 's' : ''} from real lifters.`,
+  }
 }
 
 export default async function FlavorPage({ params }: Props) {

@@ -2,11 +2,24 @@ export const dynamic = 'force-dynamic'
 
 import { notFound } from 'next/navigation'
 import Link from 'next/link'
+import type { Metadata } from 'next'
 import { getProductBySlug } from '@/lib/queries'
 import { getScoreColor } from '@/lib/constants'
 
 interface Props {
   params: Promise<{ slug: string }>
+}
+
+export async function generateMetadata({ params }: Props): Promise<Metadata> {
+  const { slug } = await params
+  const data = await getProductBySlug(slug)
+  if (!data) return {}
+  const { product, flavors } = data
+  const brand = (product as any).brands
+  return {
+    title: `${product.name} — ${brand?.name ?? ''} | GymTaste`,
+    description: `${flavors.length} flavor${flavors.length !== 1 ? 's' : ''} of ${product.name} by ${brand?.name ?? 'brand'}. Read community ratings and find the best flavor.`,
+  }
 }
 
 export default async function ProductPage({ params }: Props) {

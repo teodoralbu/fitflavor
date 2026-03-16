@@ -113,7 +113,9 @@ export function ReviewCard({ rating }: ReviewCardProps) {
           )}
 
           <LikeButton
-            ratingId={rating.id}
+            targetId={rating.id}
+            targetTable="review_likes"
+            targetColumn="rating_id"
             initialCount={rating.like_count}
             initialLiked={rating.user_has_liked}
           />

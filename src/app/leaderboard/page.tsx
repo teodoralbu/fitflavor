@@ -1,8 +1,8 @@
 export const dynamic = 'force-dynamic'
 
 import Link from 'next/link'
-import { getLeaderboard, getTopUsers } from '@/lib/queries'
-import { getScoreColor, getRankFromXP, RANK_TIERS } from '@/lib/constants'
+import { getLeaderboard, getTopReviewers } from '@/lib/queries'
+import { getScoreColor, getBadgeTier, BADGE_TIERS } from '@/lib/constants'
 
 const PODIUM_ACCENTS: Record<number, { color: string; label: string; glow: string }> = {
   1: { color: '#FFD700', label: 'Gold',   glow: 'rgba(255,215,0,0.15)' },
@@ -11,9 +11,9 @@ const PODIUM_ACCENTS: Record<number, { color: string; label: string; glow: strin
 }
 
 export default async function LeaderboardPage() {
-  const [leaderboard, topUsers] = await Promise.all([
+  const [leaderboard, topReviewers] = await Promise.all([
     getLeaderboard(50),
-    getTopUsers(10),
+    getTopReviewers(10),
   ])
 
   return (
@@ -50,8 +50,8 @@ export default async function LeaderboardPage() {
         </p>
       </div>
 
-      {/* ── Top Members by XP ── */}
-      {topUsers.length > 0 && (
+      {/* ── Top Members by rating count ── */}
+      {topReviewers.length > 0 && (
         <div style={{ marginBottom: '56px' }}>
           <div style={{ marginBottom: '20px' }}>
             <div style={{
@@ -74,14 +74,14 @@ export default async function LeaderboardPage() {
               Top Members
             </h2>
             <p style={{ fontSize: '13px', color: 'var(--text-muted)', margin: 0 }}>
-              Ranked by total XP earned across all activity.
+              Ranked by number of flavor ratings submitted.
             </p>
           </div>
 
           <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
-            {topUsers.map((member, idx) => {
-              const rankKey = getRankFromXP(member.xp ?? 0)
-              const rank = RANK_TIERS[rankKey]
+            {topReviewers.map((member, idx) => {
+              const tierKey = getBadgeTier(member.rating_count ?? 0)
+              const rank = BADGE_TIERS[tierKey]
               const position = idx + 1
               return (
                 <Link
@@ -141,13 +141,13 @@ export default async function LeaderboardPage() {
                       </div>
                     </div>
 
-                    {/* XP */}
+                    {/* Rating count */}
                     <div style={{ textAlign: 'right', flexShrink: 0 }}>
                       <div style={{ fontSize: '18px', fontWeight: 900, color: 'var(--accent)', lineHeight: 1, letterSpacing: '-0.02em' }}>
-                        {(member.xp ?? 0).toLocaleString()}
+                        {(member.rating_count ?? 0).toLocaleString()}
                       </div>
                       <div style={{ fontSize: '10px', color: 'var(--text-faint)', marginTop: '2px', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
-                        XP
+                        ratings
                       </div>
                     </div>
                   </div>
@@ -201,7 +201,7 @@ export default async function LeaderboardPage() {
             Be the first to rate a flavor and claim the top spot.
           </p>
           <Link
-            href="/products"
+            href="/browse"
             style={{
               display: 'inline-flex',
               alignItems: 'center',

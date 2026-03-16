@@ -90,6 +90,7 @@ export interface Rating {
   would_buy_again: boolean
   context_tags: string[]
   review_text: string | null
+  photo_url: string | null
   created_at: string
 }
 

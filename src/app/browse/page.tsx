@@ -1,8 +1,14 @@
 export const dynamic = 'force-dynamic'
 
 import Link from 'next/link'
+import type { Metadata } from 'next'
 import { createServerSupabaseClient } from '@/lib/supabase-server'
 import { getScoreColor } from '@/lib/constants'
+
+export const metadata: Metadata = {
+  title: 'Browse Pre-Workout Supplements — GymTaste',
+  description: 'Browse all pre-workout supplements with community flavor ratings. Find the best-tasting pre-workout before you buy.',
+}
 
 async function getProductsWithStats() {
   const supabase = await createServerSupabaseClient()
@@ -60,8 +66,27 @@ async function getProductsWithStats() {
   })
 }
 
-export default async function BrowsePage() {
-  const products = await getProductsWithStats()
+interface BrowseProps {
+  searchParams: Promise<{ q?: string; brand?: string }>
+}
+
+export default async function BrowsePage({ searchParams }: BrowseProps) {
+  const { q, brand } = await searchParams
+  const query = (q ?? '').toLowerCase().trim()
+  const allProducts = await getProductsWithStats()
+
+  // Filter by search query and/or brand slug
+  const products = allProducts.filter((p) => {
+    const matchesQuery = !query ||
+      p.name.toLowerCase().includes(query) ||
+      (p.brand?.name ?? '').toLowerCase().includes(query)
+    const matchesBrand = !brand || (p.brand as any)?.slug === brand
+    return matchesQuery && matchesBrand
+  })
+
+  const activeBrandName = brand
+    ? allProducts.find((p) => (p.brand as any)?.slug === brand)?.brand?.name
+    : null
 
   const byBrand: Record<string, typeof products> = {}
   for (const p of products) {
@@ -75,52 +100,77 @@ export default async function BrowsePage() {
     <div style={{ maxWidth: '960px', margin: '0 auto', padding: 'clamp(16px, 5vw, 48px) clamp(16px, 3vw, 24px) 80px' }}>
 
       {/* Header */}
-      <div style={{ marginBottom: '48px' }}>
+      <div style={{ marginBottom: '28px' }}>
         <div style={{ fontSize: '12px', fontWeight: 700, color: 'var(--accent)', letterSpacing: '0.12em', textTransform: 'uppercase', marginBottom: '12px' }}>
           ⚡ Pre-Workout
         </div>
         <h1 style={{ fontSize: 'clamp(28px, 5vw, 44px)', fontWeight: 900, margin: '0 0 10px', color: 'var(--text)' }}>
-          Browse Products
+          {activeBrandName ? activeBrandName : 'Browse Products'}
         </h1>
         <p style={{ color: 'var(--text-dim)', fontSize: '15px', margin: 0 }}>
-          {products.length} products · {products.reduce((s, p) => s + p.flavor_count, 0)} flavors
+          {allProducts.length} products · {allProducts.reduce((s, p) => s + p.flavor_count, 0)} flavors
         </p>
       </div>
 
-      {/* Category filter */}
-      <div className="cat-scroll" style={{
-        display: 'flex', gap: '8px', overflowX: 'auto', paddingBottom: '8px',
-        marginBottom: '32px', scrollbarWidth: 'none',
-      }}>
-        <style>{`.cat-scroll::-webkit-scrollbar{display:none}`}</style>
-        {[
-          { label: '⚡ Pre-Workout', active: true },
-          { label: '💪 Protein', active: false },
-          { label: '🔋 Energy Drinks', active: false },
-          { label: '🏋️ Gyms', active: false },
-          { label: '🥊 Equipment', active: false },
-          { label: '👟 Trainers', active: false },
-        ].map((cat) => (
-          <div
-            key={cat.label}
+      {/* Search */}
+      <form action="/browse" method="GET" style={{ marginBottom: '20px' }}>
+        {brand && <input type="hidden" name="brand" value={brand} />}
+        <div style={{ position: 'relative' }}>
+          <svg
+            width="16" height="16" viewBox="0 0 24 24" fill="none"
+            stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"
+            style={{ position: 'absolute', left: '14px', top: '50%', transform: 'translateY(-50%)', color: 'var(--text-faint)', pointerEvents: 'none' }}
+          >
+            <circle cx="11" cy="11" r="8" /><line x1="21" y1="21" x2="16.65" y2="16.65" />
+          </svg>
+          <input
+            name="q"
+            defaultValue={q ?? ''}
+            placeholder="Search products..."
+            autoComplete="off"
+            className="input"
+            style={{ paddingLeft: '40px', paddingRight: query ? '40px' : '14px' }}
+          />
+          {query && (
+            <a
+              href={brand ? `/browse?brand=${brand}` : '/browse'}
+              style={{
+                position: 'absolute', right: '14px', top: '50%', transform: 'translateY(-50%)',
+                color: 'var(--text-faint)', fontSize: '18px', lineHeight: 1, textDecoration: 'none',
+              }}
+            >×</a>
+          )}
+        </div>
+      </form>
+
+      {/* Active brand filter pill */}
+      {activeBrandName && (
+        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '20px' }}>
+          <span style={{ fontSize: '12px', color: 'var(--text-dim)' }}>Filtered by:</span>
+          <a
+            href={q ? `/browse?q=${q}` : '/browse'}
             style={{
-              flexShrink: 0,
-              padding: '7px 16px',
-              borderRadius: '999px',
-              fontSize: '13px',
-              fontWeight: 600,
-              whiteSpace: 'nowrap',
-              backgroundColor: cat.active ? 'var(--accent)' : 'var(--bg-elevated)',
-              color: cat.active ? '#000' : 'var(--text-dim)',
-              border: cat.active ? 'none' : '1px solid var(--border)',
-              opacity: cat.active ? 1 : 0.6,
-              cursor: cat.active ? 'pointer' : 'not-allowed',
+              display: 'inline-flex', alignItems: 'center', gap: '5px',
+              padding: '4px 12px', borderRadius: '999px', fontSize: '12px', fontWeight: 600,
+              backgroundColor: 'var(--accent-dim)', color: 'var(--accent)',
+              border: '1px solid color-mix(in srgb, var(--accent) 25%, transparent)',
+              textDecoration: 'none',
             }}
           >
-            {cat.label}{!cat.active && ' · soon'}
-          </div>
-        ))}
-      </div>
+            {activeBrandName} ×
+          </a>
+        </div>
+      )}
+
+      {/* No results */}
+      {products.length === 0 && (
+        <div style={{ textAlign: 'center', padding: '48px 16px' }}>
+          <p style={{ color: 'var(--text-dim)', fontSize: '15px', margin: '0 0 12px' }}>
+            No products found.
+          </p>
+          <a href="/browse" style={{ fontSize: '13px', color: 'var(--accent)' }}>Clear filters</a>
+        </div>
+      )}
 
       {brands.map((brandName, bi) => (
         <div key={brandName} style={{ marginBottom: '56px' }}>
