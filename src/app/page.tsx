@@ -2,7 +2,8 @@ export const dynamic = 'force-dynamic'
 
 import Link from 'next/link'
 import { createServerSupabaseClient } from '@/lib/supabase-server'
-import { getLeaderboard, getRecentRatings } from '@/lib/queries'
+import { getLeaderboard, getRecentRatings, getFollowingFeed } from '@/lib/queries'
+import { FeedCard } from '@/components/feed/FeedCard'
 import { getScoreColor, BADGE_TIERS } from '@/lib/constants'
 
 async function getStats() {
@@ -35,8 +36,21 @@ const categories = [
   { icon: '🔋', name: 'Energy Drinks', status: 'Coming soon', active: false },
 ]
 
-export default async function Home() {
-  const [stats, leaderboard, recentRatings] = await Promise.all([getStats(), getLeaderboard(5), getRecentRatings(20)])
+export default async function Home({ searchParams }: { searchParams: Promise<{ feed?: string }> }) {
+  const { feed } = await searchParams
+  const supabase = await createServerSupabaseClient()
+  const { data: { user } } = await supabase.auth.getUser()
+
+  const isFollowingTab = feed === 'following' && !!user
+
+  const [stats, leaderboard, globalFeed, followingFeed] = await Promise.all([
+    getStats(),
+    getLeaderboard(5),
+    getRecentRatings(20),
+    isFollowingTab && user ? getFollowingFeed(user.id, 20) : Promise.resolve([]),
+  ])
+
+  const feedItems = isFollowingTab ? followingFeed : globalFeed
 
   const statItems = [
     { value: `${stats.flavors}+`, label: 'Flavors rated' },
@@ -51,94 +65,60 @@ export default async function Home() {
       {/* ── Mobile feed (hidden on desktop) ── */}
       <div className="sm:hidden" style={{ padding: '0 0 16px' }}>
 
-        {/* Compact stats */}
-        <div style={{
-          display: 'flex',
-          gap: '0',
-          borderBottom: '1px solid var(--border)',
-          borderTop: '1px solid var(--border)',
-          marginBottom: '20px',
-        }}>
-          {statItems.slice(0, 3).map((stat, i) => (
-            <div key={stat.label} style={{
-              flex: 1,
-              textAlign: 'center',
-              padding: '14px 8px',
-              borderRight: i < 2 ? '1px solid var(--border)' : 'none',
-            }}>
-              <div style={{ fontSize: '22px', fontWeight: 900, color: 'var(--accent)', lineHeight: 1 }}>{stat.value}</div>
-              <div style={{ fontSize: '10px', color: 'var(--text-faint)', marginTop: '4px', textTransform: 'uppercase', letterSpacing: '0.06em', fontWeight: 500 }}>{stat.label}</div>
-            </div>
-          ))}
+        {/* Compact greeting */}
+        <div style={{ padding: '12px 16px 4px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+          <div style={{ fontSize: '20px', fontWeight: 900, color: 'var(--text)', letterSpacing: '-0.02em' }}>GymTaste</div>
+          <Link href="/browse" style={{ fontSize: '12px', color: 'var(--accent)', fontWeight: 600 }}>Browse →</Link>
         </div>
 
-        {/* Feed header */}
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px', padding: '0 16px' }}>
-          <div style={{ fontSize: '13px', fontWeight: 800, color: 'var(--text)' }}>Recent Reviews</div>
-          <Link href="/leaderboard" style={{ fontSize: '12px', color: 'var(--accent)', fontWeight: 600 }}>Top Rated →</Link>
+        {/* Feed tabs */}
+        <div style={{ display: 'flex', borderBottom: '1px solid var(--border)', marginBottom: '0' }}>
+          <Link
+            href="/?feed=global"
+            style={{
+              flex: 1, textAlign: 'center', padding: '12px 0',
+              fontSize: '13px', fontWeight: 700, textDecoration: 'none',
+              color: !isFollowingTab ? 'var(--accent)' : 'var(--text-faint)',
+              borderBottom: !isFollowingTab ? '2px solid var(--accent)' : '2px solid transparent',
+              transition: 'color 0.15s',
+            }}
+          >
+            For You
+          </Link>
+          <Link
+            href="/?feed=following"
+            style={{
+              flex: 1, textAlign: 'center', padding: '12px 0',
+              fontSize: '13px', fontWeight: 700, textDecoration: 'none',
+              color: isFollowingTab ? 'var(--accent)' : 'var(--text-faint)',
+              borderBottom: isFollowingTab ? '2px solid var(--accent)' : '2px solid transparent',
+              transition: 'color 0.15s',
+            }}
+          >
+            Following
+          </Link>
         </div>
 
         {/* Feed items */}
-        {recentRatings.length === 0 ? (
+        {feedItems.length === 0 && isFollowingTab ? (
+          <div style={{ padding: '48px 16px', textAlign: 'center' }}>
+            <div style={{ fontSize: '32px', marginBottom: '12px', opacity: 0.4 }}>👥</div>
+            <p style={{ color: 'var(--text-dim)', fontSize: '14px', margin: '0 0 16px' }}>
+              Follow people to see their reviews here.
+            </p>
+            <Link href="/leaderboard" style={{ color: 'var(--accent)', fontSize: '13px', fontWeight: 600 }}>
+              Discover reviewers →
+            </Link>
+          </div>
+        ) : feedItems.length === 0 ? (
           <div style={{ padding: '40px 16px', textAlign: 'center' }}>
             <p style={{ color: 'var(--text-dim)', fontSize: '14px', margin: '0 0 16px' }}>No reviews yet.</p>
             <Link href="/browse" className="btn btn-primary" style={{ padding: '10px 20px', fontSize: '13px' }}>Browse products</Link>
           </div>
         ) : (
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '1px', backgroundColor: 'var(--border-soft)' }}>
-            {recentRatings.map((rating: any) => (
-              <Link
-                key={rating.id}
-                href={`/flavors/${rating.flavor?.slug ?? ''}`}
-                style={{ textDecoration: 'none', color: 'inherit', display: 'block', backgroundColor: 'var(--bg)' }}
-              >
-                <div style={{ padding: '12px 16px', display: 'flex', alignItems: 'center', gap: '12px' }}>
-                  {/* Avatar */}
-                  <div style={{
-                    width: '36px', height: '36px', borderRadius: '50%', flexShrink: 0,
-                    backgroundColor: 'var(--bg-elevated)', border: '1px solid var(--border)',
-                    display: 'flex', alignItems: 'center', justifyContent: 'center',
-                    fontSize: '13px', fontWeight: 800, color: 'var(--accent)', overflow: 'hidden',
-                  }}>
-                    {rating.user?.avatar_url ? (
-                      // eslint-disable-next-line @next/next/no-img-element
-                      <img src={rating.user.avatar_url} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-                    ) : (
-                      rating.user?.username?.[0]?.toUpperCase() ?? '?'
-                    )}
-                  </div>
-
-                  {/* Content */}
-                  <div style={{ flex: 1, minWidth: 0 }}>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '2px' }}>
-                      <span style={{ fontSize: '13px', fontWeight: 700, color: 'var(--text)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                        {rating.flavor?.name ?? 'Unknown'}
-                      </span>
-                      {rating.would_buy_again && (
-                        <span style={{ fontSize: '10px', color: 'var(--green)', fontWeight: 700, flexShrink: 0 }}>✓ WBA</span>
-                      )}
-                    </div>
-                    <div style={{ fontSize: '11px', color: 'var(--text-faint)', marginBottom: rating.review_text ? '3px' : 0 }}>
-                      {(rating.flavor as any)?.products?.brands?.name} · {(rating.flavor as any)?.products?.name}
-                    </div>
-                    {rating.review_text && (
-                      <div style={{ fontSize: '12px', color: 'var(--text-dim)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                        {rating.review_text}
-                      </div>
-                    )}
-                  </div>
-
-                  {/* Score */}
-                  <div style={{ textAlign: 'right', flexShrink: 0 }}>
-                    <div style={{ fontSize: '24px', fontWeight: 900, lineHeight: 1, color: getScoreColor(rating.overall_score), letterSpacing: '-0.02em' }}>
-                      {rating.overall_score.toFixed(1)}
-                    </div>
-                    <div style={{ fontSize: '10px', color: 'var(--text-faint)', marginTop: '2px' }}>
-                      {rating.user?.username ?? 'anon'}
-                    </div>
-                  </div>
-                </div>
-              </Link>
+          <div style={{ display: 'flex', flexDirection: 'column' }}>
+            {feedItems.map((rating: any) => (
+              <FeedCard key={rating.id} rating={rating} initialLikeCount={0} initialLiked={false} />
             ))}
           </div>
         )}

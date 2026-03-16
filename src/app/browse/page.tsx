@@ -87,6 +87,41 @@ export default async function BrowsePage() {
         </p>
       </div>
 
+      {/* Category filter */}
+      <div className="cat-scroll" style={{
+        display: 'flex', gap: '8px', overflowX: 'auto', paddingBottom: '8px',
+        marginBottom: '32px', scrollbarWidth: 'none',
+      }}>
+        <style>{`.cat-scroll::-webkit-scrollbar{display:none}`}</style>
+        {[
+          { label: '⚡ Pre-Workout', active: true },
+          { label: '💪 Protein', active: false },
+          { label: '🔋 Energy Drinks', active: false },
+          { label: '🏋️ Gyms', active: false },
+          { label: '🥊 Equipment', active: false },
+          { label: '👟 Trainers', active: false },
+        ].map((cat) => (
+          <div
+            key={cat.label}
+            style={{
+              flexShrink: 0,
+              padding: '7px 16px',
+              borderRadius: '999px',
+              fontSize: '13px',
+              fontWeight: 600,
+              whiteSpace: 'nowrap',
+              backgroundColor: cat.active ? 'var(--accent)' : 'var(--bg-elevated)',
+              color: cat.active ? '#000' : 'var(--text-dim)',
+              border: cat.active ? 'none' : '1px solid var(--border)',
+              opacity: cat.active ? 1 : 0.6,
+              cursor: cat.active ? 'pointer' : 'not-allowed',
+            }}
+          >
+            {cat.label}{!cat.active && ' · soon'}
+          </div>
+        ))}
+      </div>
+
       {brands.map((brandName, bi) => (
         <div key={brandName} style={{ marginBottom: '56px' }}>
           <div style={{

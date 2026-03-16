@@ -47,6 +47,8 @@ export function RatingForm({ flavor }: Props) {
   const [reviewText, setReviewText] = useState('')
   const [submitting, setSubmitting] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const [photoFile, setPhotoFile] = useState<File | null>(null)
+  const [photoPreview, setPhotoPreview] = useState<string | null>(null)
 
   const overall = calcOverall(scores)
   const scoreColor = getScoreColor(overall)
@@ -86,6 +88,17 @@ export function RatingForm({ flavor }: Props) {
       return
     }
 
+    let photoUrl: string | null = null
+    if (photoFile && user) {
+      const ext = photoFile.name.split('.').pop()
+      const path = `${user.id}/${Date.now()}.${ext}`
+      const { data: uploadData } = await supabase.storage.from('review-photos').upload(path, photoFile)
+      if (uploadData) {
+        const { data: urlData } = supabase.storage.from('review-photos').getPublicUrl(path)
+        photoUrl = urlData.publicUrl
+      }
+    }
+
     const { error: insertError } = await db.from('ratings').insert({
       user_id: user.id,
       flavor_id: flavor.id,
@@ -94,6 +107,7 @@ export function RatingForm({ flavor }: Props) {
       would_buy_again: wouldBuyAgain,
       context_tags: contextTags,
       review_text: reviewText.trim() || null,
+      photo_url: photoUrl,
     })
 
     if (insertError) {
@@ -446,6 +460,60 @@ export function RatingForm({ flavor }: Props) {
               minHeight: '100px',
             }}
           />
+        </div>
+
+        {/* Photo upload */}
+        <div style={{ marginBottom: '28px' }}>
+          <div style={{
+            fontSize: '14px', fontWeight: 700, color: 'var(--text)',
+            marginBottom: '10px', display: 'flex', alignItems: 'baseline', gap: '6px',
+          }}>
+            Photo
+            <span style={{ color: 'var(--text-faint)', fontWeight: 400, fontSize: '12px' }}>optional</span>
+          </div>
+
+          {photoPreview ? (
+            <div style={{ position: 'relative' }}>
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img src={photoPreview} alt="Preview" style={{ width: '100%', borderRadius: '10px', maxHeight: '200px', objectFit: 'cover' }} />
+              <button
+                type="button"
+                onClick={() => { setPhotoFile(null); setPhotoPreview(null) }}
+                style={{
+                  position: 'absolute', top: '8px', right: '8px',
+                  width: '28px', height: '28px', borderRadius: '50%',
+                  backgroundColor: 'rgba(0,0,0,0.6)', border: 'none',
+                  color: '#fff', fontSize: '16px', cursor: 'pointer',
+                  display: 'flex', alignItems: 'center', justifyContent: 'center',
+                }}
+              >×</button>
+            </div>
+          ) : (
+            <label style={{
+              display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
+              gap: '8px', padding: '24px', borderRadius: 'var(--radius-md)',
+              border: '2px dashed var(--border)', cursor: 'pointer',
+              backgroundColor: 'var(--bg-card)', transition: 'border-color 0.15s',
+            }}>
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="var(--text-faint)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <rect x="3" y="3" width="18" height="18" rx="2" /><circle cx="8.5" cy="8.5" r="1.5" />
+                <polyline points="21 15 16 10 5 21" />
+              </svg>
+              <span style={{ fontSize: '13px', color: 'var(--text-dim)' }}>Tap to add a photo</span>
+              <input
+                type="file"
+                accept="image/*"
+                style={{ display: 'none' }}
+                onChange={(e) => {
+                  const file = e.target.files?.[0]
+                  if (file) {
+                    setPhotoFile(file)
+                    setPhotoPreview(URL.createObjectURL(file))
+                  }
+                }}
+              />
+            </label>
+          )}
         </div>
 
         {/* Error state */}

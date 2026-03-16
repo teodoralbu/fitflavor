@@ -267,18 +267,20 @@ export async function getRecentRatings(limit = 20) {
 
   const { data: ratings } = await db
     .from('ratings')
-    .select('id, overall_score, would_buy_again, review_text, created_at, flavor_id, user_id')
+    .select('id, overall_score, would_buy_again, review_text, created_at, flavor_id, user_id, photo_url')
     .order('created_at', { ascending: false })
     .limit(limit)
 
   if (!ratings || ratings.length === 0) return []
 
-  const flavorIds = ratings.map((r: any) => r.flavor_id)
-  const userIds = ratings.map((r: any) => r.user_id)
+  const flavorIds = (ratings as any[]).map((r) => r.flavor_id)
+  const userIds = (ratings as any[]).map((r) => r.user_id)
+  const ratingIds = (ratings as any[]).map((r) => r.id)
 
-  const [{ data: flavors }, { data: users }] = await Promise.all([
-    db.from('flavors').select('id, name, slug, product_id, products(name, slug, brands(name))').in('id', flavorIds),
+  const [{ data: flavors }, { data: users }, { data: commentCounts }] = await Promise.all([
+    db.from('flavors').select('id, name, slug, product_id, products(id, name, slug, image_url, brands(name))').in('id', flavorIds),
     db.from('users').select('id, username, avatar_url, badge_tier').in('id', userIds),
+    db.from('comments').select('rating_id').in('rating_id', ratingIds),
   ])
 
   const flavorMap: Record<string, any> = {}
@@ -287,12 +289,75 @@ export async function getRecentRatings(limit = 20) {
   const userMap: Record<string, any> = {}
   for (const u of (users ?? []) as any[]) userMap[u.id] = u
 
-  return ratings.map((r: any) => ({
+  const commentCountMap: Record<string, number> = {}
+  for (const c of (commentCounts ?? []) as any[]) {
+    commentCountMap[c.rating_id] = (commentCountMap[c.rating_id] ?? 0) + 1
+  }
+
+  return (ratings as any[]).map((r) => ({
     id: r.id as string,
     overall_score: r.overall_score as number,
     would_buy_again: r.would_buy_again as boolean,
     review_text: r.review_text as string | null,
+    photo_url: r.photo_url as string | null,
     created_at: r.created_at as string,
+    comment_count: commentCountMap[r.id] ?? 0,
+    flavor: flavorMap[r.flavor_id] ?? null,
+    user: userMap[r.user_id] ?? null,
+  }))
+}
+
+export async function getFollowingFeed(userId: string, limit = 20) {
+  const supabase = await createServerSupabaseClient()
+  const db = supabase as any
+
+  const { data: follows } = await db
+    .from('follows')
+    .select('following_id')
+    .eq('follower_id', userId)
+
+  if (!follows || follows.length === 0) return []
+
+  const followingIds = (follows as any[]).map((f) => f.following_id)
+
+  const { data: ratings } = await db
+    .from('ratings')
+    .select('id, overall_score, would_buy_again, review_text, created_at, flavor_id, user_id, photo_url')
+    .in('user_id', followingIds)
+    .order('created_at', { ascending: false })
+    .limit(limit)
+
+  if (!ratings || ratings.length === 0) return []
+
+  const flavorIds = (ratings as any[]).map((r) => r.flavor_id)
+  const userIds = (ratings as any[]).map((r) => r.user_id)
+  const ratingIds = (ratings as any[]).map((r) => r.id)
+
+  const [{ data: flavors }, { data: users }, { data: commentCounts }] = await Promise.all([
+    db.from('flavors').select('id, name, slug, product_id, products(id, name, slug, image_url, brands(name))').in('id', flavorIds),
+    db.from('users').select('id, username, avatar_url, badge_tier').in('id', userIds),
+    db.from('comments').select('rating_id').in('rating_id', ratingIds),
+  ])
+
+  const flavorMap: Record<string, any> = {}
+  for (const f of (flavors ?? []) as any[]) flavorMap[f.id] = f
+
+  const userMap: Record<string, any> = {}
+  for (const u of (users ?? []) as any[]) userMap[u.id] = u
+
+  const commentCountMap: Record<string, number> = {}
+  for (const c of (commentCounts ?? []) as any[]) {
+    commentCountMap[c.rating_id] = (commentCountMap[c.rating_id] ?? 0) + 1
+  }
+
+  return (ratings as any[]).map((r) => ({
+    id: r.id as string,
+    overall_score: r.overall_score as number,
+    would_buy_again: r.would_buy_again as boolean,
+    review_text: r.review_text as string | null,
+    photo_url: r.photo_url as string | null,
+    created_at: r.created_at as string,
+    comment_count: commentCountMap[r.id] ?? 0,
     flavor: flavorMap[r.flavor_id] ?? null,
     user: userMap[r.user_id] ?? null,
   }))
