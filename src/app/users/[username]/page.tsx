@@ -57,7 +57,7 @@ export default async function UserProfilePage({ params }: Props) {
     ? (ratings.filter((r: any) => r.would_buy_again).length / totalRatings) * 100
     : null
 
-  const tierData = BADGE_TIERS[profile.badge_tier as keyof typeof BADGE_TIERS]
+  const tierData = BADGE_TIERS[(profile.badge_tier as keyof typeof BADGE_TIERS)] ?? BADGE_TIERS.fresh_meat
   const joinYear = new Date(profile.created_at).getFullYear()
 
   const progressPct = tierData.max !== Infinity
@@ -106,7 +106,7 @@ export default async function UserProfilePage({ params }: Props) {
                 // eslint-disable-next-line @next/next/no-img-element
                 <img src={profile.avatar_url} alt={profile.username} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
               ) : (
-                profile.username[0].toUpperCase()
+                profile.username?.[0]?.toUpperCase() ?? '?'
               )}
             </div>
           )}

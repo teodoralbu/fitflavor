@@ -6,6 +6,7 @@ import type { Metadata } from 'next'
 import { getFlavorBySlug } from '@/lib/queries'
 import { getScoreColor } from '@/lib/constants'
 import { ReviewCard } from '@/components/rating/ReviewCard'
+import { StickyRateCTA } from './StickyRateCTA'
 
 interface Props {
   params: Promise<{ slug: string }>
@@ -36,7 +37,7 @@ export default async function FlavorPage({ params }: Props) {
   const brand = (product as any).brands
 
   return (
-    <div style={{ maxWidth: '800px', margin: '0 auto', padding: 'clamp(16px, 4vw, 40px) 16px 80px' }}>
+    <div style={{ maxWidth: '800px', margin: '0 auto', padding: 'clamp(16px, 4vw, 40px) 16px 80px', paddingBottom: 'max(80px, calc(80px + env(safe-area-inset-bottom)))' }}>
 
       {/* Sibling flavor picker */}
       {siblingFlavors.length > 0 && (
@@ -157,6 +158,8 @@ export default async function FlavorPage({ params }: Props) {
           </div>
         )}
       </div>
+
+      <StickyRateCTA slug={flavor.slug} />
     </div>
   )
 }

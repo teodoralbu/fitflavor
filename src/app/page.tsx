@@ -89,47 +89,75 @@ export default async function Home({ searchParams }: { searchParams: Promise<{ f
         {/* Mobile hero — only for logged-out users */}
         {!user && (
           <div style={{
-            margin: '8px 16px 12px',
-            padding: '16px',
+            margin: '8px 16px 16px',
+            padding: '40px 24px',
             borderRadius: 'var(--radius-lg)',
             backgroundColor: 'var(--bg-card)',
             border: '1px solid var(--border)',
+            textAlign: 'center',
+            maxWidth: '600px',
+            boxSizing: 'border-box',
           }}>
-            <div style={{ fontSize: '11px', fontWeight: 700, color: 'var(--accent)', letterSpacing: '0.1em', textTransform: 'uppercase', marginBottom: '6px' }}>
-              Rated by real lifters
-            </div>
-            <p style={{ fontSize: '14px', fontWeight: 700, color: 'var(--text)', margin: '0 0 4px', lineHeight: 1.3 }}>
-              Find pre-workouts that actually taste good.
+            <h1 style={{
+              fontSize: 'clamp(26px, 8vw, 36px)',
+              fontWeight: 900,
+              lineHeight: 1.05,
+              letterSpacing: '-0.03em',
+              margin: '0 0 12px',
+              color: 'var(--text)',
+            }}>
+              Rate it before you{' '}
+              <span style={{ color: 'var(--accent)' }}>waste it.</span>
+            </h1>
+            <p style={{
+              fontSize: '14px',
+              color: 'var(--text-dim)',
+              margin: '0 0 24px',
+              lineHeight: 1.6,
+            }}>
+              Real lifters rate supplement flavors. No BS.
             </p>
-            <p style={{ fontSize: '12px', color: 'var(--text-dim)', margin: '0 0 12px', lineHeight: 1.5 }}>
-              Community flavor ratings — before you waste $60 on something that tastes like chalk.
-            </p>
-            <div style={{ display: 'flex', gap: '8px' }}>
-              <Link
-                href="/browse"
-                style={{
-                  flex: 1, textAlign: 'center', padding: '9px 12px',
-                  backgroundColor: 'var(--accent)', color: '#000',
-                  borderRadius: 'var(--radius-md)', fontSize: '13px', fontWeight: 700,
-                  textDecoration: 'none',
-                }}
-              >
-                Browse Products
-              </Link>
-              <Link
-                href="/leaderboard"
-                style={{
-                  flex: 1, textAlign: 'center', padding: '9px 12px',
-                  backgroundColor: 'var(--bg-elevated)', color: 'var(--text)',
-                  border: '1px solid var(--border)',
-                  borderRadius: 'var(--radius-md)', fontSize: '13px', fontWeight: 600,
-                  textDecoration: 'none',
-                }}
-              >
-                Top Rated
-              </Link>
-            </div>
+            <Link
+              href="/browse"
+              style={{
+                display: 'block', width: '100%', textAlign: 'center',
+                padding: '13px 20px', boxSizing: 'border-box',
+                backgroundColor: 'var(--accent)', color: '#000',
+                borderRadius: 'var(--radius-md)', fontSize: '15px', fontWeight: 700,
+                textDecoration: 'none', marginBottom: '12px',
+              }}
+            >
+              Browse Products
+            </Link>
+            <Link
+              href="/leaderboard"
+              style={{
+                display: 'block', textAlign: 'center',
+                padding: '8px 0', fontSize: '13px', fontWeight: 600,
+                color: 'var(--text-dim)', textDecoration: 'none',
+              }}
+            >
+              See Top Rated →
+            </Link>
           </div>
+        )}
+
+        {/* Welcome back strip — only for logged-in users */}
+        {user && (
+          <Link href="/rate" style={{ textDecoration: 'none', display: 'block', margin: '8px 16px 12px' }}>
+            <div style={{
+              padding: '12px 20px',
+              borderRadius: '12px',
+              backgroundColor: 'color-mix(in srgb, var(--accent) 10%, transparent)',
+              color: 'var(--accent)',
+              fontSize: '14px',
+              fontWeight: 700,
+              textAlign: 'center',
+              border: '1px solid color-mix(in srgb, var(--accent) 20%, transparent)',
+            }}>
+              Rate something today →
+            </div>
+          </Link>
         )}
 
         {/* Feed tabs */}

@@ -116,7 +116,12 @@ export function RatingForm({ flavor }: Props) {
     if (photoFile && user) {
       const ext = photoFile.name.split('.').pop()
       const path = `${user.id}/${Date.now()}.${ext}`
-      const { data: uploadData } = await supabase.storage.from('review-photos').upload(path, photoFile)
+      const { data: uploadData, error: uploadError } = await supabase.storage.from('review-photos').upload(path, photoFile)
+      if (uploadError) {
+        setError('Photo upload failed. Try a smaller image or continue without one.')
+        setSubmitting(false)
+        return
+      }
       if (uploadData) {
         const { data: urlData } = supabase.storage.from('review-photos').getPublicUrl(path)
         photoUrl = urlData.publicUrl
@@ -136,12 +141,12 @@ export function RatingForm({ flavor }: Props) {
 
     if (insertError) {
       console.error('Rating insert error:', insertError)
-      setError(`${insertError.message} (code: ${insertError.code})`)
+      setError('Could not submit rating. Please try again.')
       setSubmitting(false)
       return
     }
 
-    router.push(`/flavors/${flavor.slug}`)
+    router.push(`/rate/${flavor.slug}/success`)
     setSubmitting(false)
   }
 
@@ -452,7 +457,10 @@ export function RatingForm({ flavor }: Props) {
                   const file = e.target.files?.[0]
                   if (file) {
                     setPhotoFile(file)
-                    setPhotoPreview(URL.createObjectURL(file))
+                    setPhotoPreview((prev) => {
+                      if (prev) URL.revokeObjectURL(prev)
+                      return URL.createObjectURL(file)
+                    })
                   }
                 }}
               />

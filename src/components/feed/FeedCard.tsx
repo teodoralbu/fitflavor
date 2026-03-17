@@ -216,7 +216,7 @@ export function FeedCard({ rating, item, initialLiked = false, initialLikeCount 
     }}>
       {/* Header: avatar + username + time */}
       <div style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '9px 12px 7px' }}>
-        <Link href={`/users/${ratingData.user?.username}`} style={{ textDecoration: 'none', flexShrink: 0 }}>
+        <Link href={ratingData.user?.username ? `/users/${ratingData.user.username}` : '#'} style={{ textDecoration: 'none', flexShrink: 0 }}>
           <div style={{
             width: '30px', height: '30px', borderRadius: '50%',
             backgroundColor: 'var(--bg-elevated)', border: '1px solid var(--border)',
@@ -232,7 +232,7 @@ export function FeedCard({ rating, item, initialLiked = false, initialLikeCount 
           </div>
         </Link>
         <div style={{ flex: 1, minWidth: 0 }}>
-          <Link href={`/users/${ratingData.user?.username}`} style={{ textDecoration: 'none' }}>
+          <Link href={ratingData.user?.username ? `/users/${ratingData.user.username}` : '#'} style={{ textDecoration: 'none' }}>
             <span style={{ fontSize: '12px', fontWeight: 700, color: 'var(--text)' }}>
               {ratingData.user?.username ?? 'Anonymous'}
             </span>

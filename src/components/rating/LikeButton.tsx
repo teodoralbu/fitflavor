@@ -31,26 +31,44 @@ export function LikeButton({ targetId, targetTable, targetColumn, initialCount, 
       router.push('/login')
       return
     }
+    if (loading) return
 
     navigator.vibrate?.(30)
     setLoading(true)
 
-    if (liked) {
+    // Optimistic update
+    const wasLiked = liked
+    const prevCount = count
+    if (wasLiked) {
+      setLiked(false)
+      setCount((c: number) => c - 1)
+    } else {
+      setLiked(true)
+      setCount((c: number) => c + 1)
+      setAnimating(true)
+      setTimeout(() => setAnimating(false), 300)
+    }
+
+    if (wasLiked) {
       const { error } = await db.from(targetTable).delete()
         .eq('user_id', user.id)
         .eq(targetColumn, targetId)
-      if (!error) {
-        setLiked(false)
-        setCount((c: number) => c - 1)
+      if (error) {
+        // Revert on failure
+        setLiked(wasLiked)
+        setCount(prevCount)
+        showToast('Failed to unlike')
+      } else {
         showToast('Unliked')
       }
     } else {
       const { error } = await db.from(targetTable).insert({ user_id: user.id, [targetColumn]: targetId })
-      if (!error) {
-        setLiked(true)
-        setCount((c: number) => c + 1)
-        setAnimating(true)
-        setTimeout(() => setAnimating(false), 300)
+      if (error) {
+        // Revert on failure
+        setLiked(wasLiked)
+        setCount(prevCount)
+        showToast('Failed to like')
+      } else {
         showToast('❤️ Liked')
       }
     }
