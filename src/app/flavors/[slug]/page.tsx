@@ -37,7 +37,7 @@ export default async function FlavorPage({ params }: Props) {
   const brand = (product as any).brands
 
   return (
-    <div style={{ maxWidth: '800px', margin: '0 auto', padding: 'clamp(16px, 4vw, 40px) 16px 80px', paddingBottom: 'max(80px, calc(80px + env(safe-area-inset-bottom)))' }}>
+    <div style={{ maxWidth: '800px', margin: '0 auto', padding: 'clamp(16px, 4vw, 40px) 16px', paddingBottom: 'max(96px, calc(96px + env(safe-area-inset-bottom)))' }}>
 
       {/* Sibling flavor picker */}
       {siblingFlavors.length > 0 && (
@@ -151,7 +151,7 @@ export default async function FlavorPage({ params }: Props) {
         {ratings.length === 0 ? (
           <p style={{ color: 'var(--text-dim)' }}>No reviews yet.</p>
         ) : (
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
             {ratings.map((rating) => (
               <ReviewCard key={rating.id} rating={rating as any} />
             ))}

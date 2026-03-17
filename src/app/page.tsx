@@ -66,164 +66,266 @@ export default async function Home({ searchParams }: { searchParams: Promise<{ f
     <div>
 
       {/* ── Mobile feed (hidden on desktop) ── */}
-      <div className="sm:hidden" style={{ padding: '0 0 16px' }}>
+      <div className="sm:hidden" style={{ paddingBottom: '96px' }}>
 
-        {/* Compact header */}
-        <div style={{ padding: '12px 16px 4px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-          <div style={{ fontSize: '20px', fontWeight: 900, color: 'var(--text)', letterSpacing: '-0.02em' }}>GymTaste</div>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '14px' }}>
-            <Link
-              href="/notifications"
-              style={{ color: 'var(--text-dim)', display: 'flex', alignItems: 'center', WebkitTapHighlightColor: 'transparent' }}
-              aria-label="Notifications"
-            >
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9" />
-                <path d="M13.73 21a2 2 0 0 1-3.46 0" />
-              </svg>
-            </Link>
-            <Link href="/browse" style={{ fontSize: '12px', color: 'var(--accent)', fontWeight: 600 }}>Browse →</Link>
-          </div>
-        </div>
+        {/* ── Section 1: Hero strip ── */}
+        <div style={{ padding: '20px 16px 0' }}>
 
-        {/* Mobile hero — only for logged-out users */}
-        {!user && (
-          <div style={{
-            margin: '8px 16px 16px',
-            padding: '40px 24px',
-            borderRadius: 'var(--radius-lg)',
-            backgroundColor: 'var(--bg-card)',
-            border: '1px solid var(--border)',
-            textAlign: 'center',
-            maxWidth: '600px',
-            boxSizing: 'border-box',
-          }}>
-            <h1 style={{
-              fontSize: 'clamp(26px, 8vw, 36px)',
-              fontWeight: 900,
-              lineHeight: 1.05,
-              letterSpacing: '-0.03em',
-              margin: '0 0 12px',
-              color: 'var(--text)',
-            }}>
-              Rate it before you{' '}
-              <span style={{ color: 'var(--accent)' }}>waste it.</span>
-            </h1>
-            <p style={{
-              fontSize: '14px',
-              color: 'var(--text-dim)',
-              margin: '0 0 24px',
-              lineHeight: 1.6,
-            }}>
-              Real lifters rate supplement flavors. No BS.
-            </p>
-            <Link
-              href="/browse"
-              style={{
-                display: 'block', width: '100%', textAlign: 'center',
-                padding: '13px 20px', boxSizing: 'border-box',
-                backgroundColor: 'var(--accent)', color: '#000',
-                borderRadius: 'var(--radius-md)', fontSize: '15px', fontWeight: 700,
-                textDecoration: 'none', marginBottom: '12px',
-              }}
-            >
-              Browse Products
-            </Link>
-            <Link
-              href="/leaderboard"
-              style={{
-                display: 'block', textAlign: 'center',
-                padding: '8px 0', fontSize: '13px', fontWeight: 600,
-                color: 'var(--text-dim)', textDecoration: 'none',
-              }}
-            >
-              See Top Rated →
-            </Link>
-          </div>
-        )}
-
-        {/* Welcome back strip — only for logged-in users */}
-        {user && (
-          <Link href="/rate" style={{ textDecoration: 'none', display: 'block', margin: '8px 16px 12px' }}>
-            <div style={{
-              padding: '12px 20px',
-              borderRadius: '12px',
-              backgroundColor: 'color-mix(in srgb, var(--accent) 10%, transparent)',
-              color: 'var(--accent)',
-              fontSize: '14px',
-              fontWeight: 700,
-              textAlign: 'center',
-              border: '1px solid color-mix(in srgb, var(--accent) 20%, transparent)',
-            }}>
-              Rate something today →
+          {/* Compact header */}
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
+            <div style={{ fontSize: '20px', fontWeight: 900, color: 'var(--text)', letterSpacing: '-0.02em' }}>GymTaste</div>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '14px' }}>
+              <Link
+                href="/notifications"
+                style={{ color: 'var(--text-dim)', display: 'flex', alignItems: 'center', WebkitTapHighlightColor: 'transparent' }}
+                aria-label="Notifications"
+              >
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9" />
+                  <path d="M13.73 21a2 2 0 0 1-3.46 0" />
+                </svg>
+              </Link>
+              <Link href="/browse" style={{ fontSize: '12px', color: 'var(--accent)', fontWeight: 600 }}>Browse →</Link>
             </div>
-          </Link>
-        )}
+          </div>
 
-        {/* Feed tabs */}
-        <div style={{ display: 'flex', borderBottom: '1px solid var(--border)', marginBottom: '0' }}>
-          <Link
-            href="/?feed=global"
-            style={{
-              flex: 1, textAlign: 'center', padding: '12px 0',
-              fontSize: '13px', fontWeight: 700, textDecoration: 'none',
-              color: !isFollowingTab ? 'var(--accent)' : 'var(--text-faint)',
-              borderBottom: !isFollowingTab ? '2px solid var(--accent)' : '2px solid transparent',
-              transition: 'color 0.15s',
-            }}
-          >
-            For You
-          </Link>
-          <Link
-            href={user ? '/?feed=following' : '/login'}
-            style={{
-              flex: 1, textAlign: 'center', padding: '12px 0',
-              fontSize: '13px', fontWeight: 700, textDecoration: 'none',
-              color: isFollowingTab ? 'var(--accent)' : 'var(--text-faint)',
-              borderBottom: isFollowingTab ? '2px solid var(--accent)' : '2px solid transparent',
-              transition: 'color 0.15s',
-            }}
-          >
-            Following
-          </Link>
+          {/* Hero card — logged-out */}
+          {!user && (
+            <div style={{
+              padding: '28px 20px',
+              borderRadius: 'var(--radius-lg)',
+              backgroundColor: 'var(--bg-card)',
+              border: '1px solid var(--border)',
+              textAlign: 'center',
+              boxSizing: 'border-box',
+              marginBottom: '24px',
+            }}>
+              <h1 style={{
+                fontSize: 'clamp(26px, 8vw, 36px)',
+                fontWeight: 900,
+                lineHeight: 1.05,
+                letterSpacing: '-0.03em',
+                margin: '0 0 10px',
+                color: 'var(--text)',
+              }}>
+                Rate it before you{' '}
+                <span style={{ color: 'var(--accent)' }}>waste it.</span>
+              </h1>
+              <p style={{
+                fontSize: '14px',
+                color: 'var(--text-dim)',
+                margin: '0 0 20px',
+                lineHeight: 1.6,
+              }}>
+                Real lifters rate supplement flavors. No BS.
+              </p>
+              <Link
+                href="/browse"
+                style={{
+                  display: 'block', width: '100%', textAlign: 'center',
+                  padding: '13px 20px', boxSizing: 'border-box',
+                  backgroundColor: 'var(--accent)', color: '#000',
+                  borderRadius: 'var(--radius-md)', fontSize: '15px', fontWeight: 700,
+                  textDecoration: 'none', marginBottom: '10px',
+                }}
+              >
+                Browse Products
+              </Link>
+              <Link
+                href="/leaderboard"
+                style={{
+                  display: 'block', textAlign: 'center',
+                  padding: '6px 0', fontSize: '13px', fontWeight: 600,
+                  color: 'var(--text-dim)', textDecoration: 'none',
+                }}
+              >
+                See Top Rated →
+              </Link>
+            </div>
+          )}
+
+          {/* Rate strip — logged-in */}
+          {user && (
+            <Link href="/rate" style={{ textDecoration: 'none', display: 'block', marginBottom: '24px' }}>
+              <div style={{
+                padding: '13px 20px',
+                borderRadius: 'var(--radius-lg)',
+                backgroundColor: 'color-mix(in srgb, var(--accent) 10%, transparent)',
+                color: 'var(--accent)',
+                fontSize: '14px',
+                fontWeight: 700,
+                textAlign: 'center',
+                border: '1px solid color-mix(in srgb, var(--accent) 20%, transparent)',
+              }}>
+                Rate something today →
+              </div>
+            </Link>
+          )}
         </div>
 
-        {/* Feed items */}
-        {feedItems.length === 0 && isFollowingTab ? (
-          <div style={{ padding: '48px 16px', textAlign: 'center' }}>
-            <div style={{ fontSize: '32px', marginBottom: '12px', opacity: 0.4 }}>👥</div>
-            <p style={{ color: 'var(--text-dim)', fontSize: '14px', margin: '0 0 16px' }}>
-              Follow people to see their reviews here.
-            </p>
-            <Link href="/leaderboard" style={{ color: 'var(--accent)', fontSize: '13px', fontWeight: 600 }}>
-              Discover reviewers →
-            </Link>
-          </div>
-        ) : !user && feed === 'following' ? (
-          <div style={{ padding: '48px 16px', textAlign: 'center' }}>
-            <p style={{ color: 'var(--text-dim)', fontSize: '14px', margin: '0 0 16px' }}>
-              Log in to see reviews from people you follow.
-            </p>
-            <Link href="/login" style={{
-              display: 'inline-block', backgroundColor: 'var(--accent)', color: '#000',
-              fontWeight: 700, fontSize: '13px', padding: '10px 20px',
-              borderRadius: 'var(--radius-md)', textDecoration: 'none',
+        {/* ── Section 2: Trending This Week ── */}
+        {leaderboard.length > 0 && (
+          <div style={{ marginBottom: '24px' }}>
+            <div style={{ padding: '0 16px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px' }}>
+              <span style={{ fontSize: '17px', fontWeight: 800, color: 'var(--text)' }}>Trending</span>
+              <Link href="/leaderboard" style={{ fontSize: '13px', color: 'var(--text-dim)', fontWeight: 600, textDecoration: 'none' }}>
+                See all →
+              </Link>
+            </div>
+            <div style={{
+              display: 'flex',
+              gap: '10px',
+              overflowX: 'auto',
+              paddingLeft: '16px',
+              paddingRight: '16px',
+              paddingBottom: '4px',
+              scrollbarWidth: 'none',
+              // eslint-disable-next-line @typescript-eslint/no-explicit-any
+              WebkitOverflowScrolling: 'touch' as any,
             }}>
-              Log in
-            </Link>
-          </div>
-        ) : feedItems.length === 0 ? (
-          <div style={{ padding: '40px 16px', textAlign: 'center' }}>
-            <p style={{ color: 'var(--text-dim)', fontSize: '14px', margin: '0 0 16px' }}>No reviews yet.</p>
-            <Link href="/browse" className="btn btn-primary" style={{ padding: '10px 20px', fontSize: '13px' }}>Browse products</Link>
-          </div>
-        ) : (
-          <div style={{ display: 'flex', flexDirection: 'column' }}>
-            {feedItems.map((feedItem: any, idx: number) => (
-              <FeedCard key={feedItem.id} item={feedItem} initialLikeCount={0} initialLiked={false} index={idx} />
-            ))}
+              {leaderboard.slice(0, 3).map((item) => (
+                <Link
+                  key={item.flavor_id}
+                  href={`/flavors/${item.slug}`}
+                  style={{ textDecoration: 'none', color: 'inherit', flexShrink: 0 }}
+                >
+                  <div style={{
+                    width: '140px',
+                    minHeight: '110px',
+                    borderRadius: 'var(--radius-lg)',
+                    backgroundColor: 'var(--bg-elevated)',
+                    border: '1px solid var(--border)',
+                    padding: '14px 12px',
+                    display: 'flex',
+                    flexDirection: 'column',
+                    justifyContent: 'space-between',
+                    boxSizing: 'border-box',
+                  }}>
+                    <div>
+                      <div style={{
+                        fontSize: '22px',
+                        fontWeight: 900,
+                        color: getScoreColor(item.avg_overall_score),
+                        lineHeight: 1,
+                        marginBottom: '6px',
+                        letterSpacing: '-0.02em',
+                      }}>
+                        {item.avg_overall_score.toFixed(1)}
+                      </div>
+                      <div style={{
+                        fontSize: '13px',
+                        fontWeight: 700,
+                        color: 'var(--text)',
+                        lineHeight: 1.3,
+                        overflow: 'hidden',
+                        display: '-webkit-box',
+                        WebkitLineClamp: 2,
+                        WebkitBoxOrient: 'vertical',
+                      }}>
+                        {item.name}
+                      </div>
+                    </div>
+                    <div style={{
+                      fontSize: '11px',
+                      color: 'var(--text-dim)',
+                      marginTop: '6px',
+                      overflow: 'hidden',
+                      textOverflow: 'ellipsis',
+                      whiteSpace: 'nowrap',
+                    }}>
+                      {(item.product as any).brands?.name}
+                    </div>
+                  </div>
+                </Link>
+              ))}
+            </div>
           </div>
         )}
+
+        {/* ── Section 3: Community Feed ── */}
+        <div>
+          {/* Section title */}
+          <div style={{ padding: '0 16px', marginBottom: '12px' }}>
+            <span style={{ fontSize: '17px', fontWeight: 800, color: 'var(--text)' }}>Latest Reviews</span>
+          </div>
+
+          {/* Segmented pill tabs */}
+          <div style={{ padding: '0 16px', marginBottom: '16px' }}>
+            <div style={{
+              display: 'flex',
+              backgroundColor: 'var(--bg-elevated)',
+              borderRadius: '999px',
+              padding: '4px',
+            }}>
+              <Link
+                href="/?feed=global"
+                style={{
+                  flex: 1, textAlign: 'center', padding: '8px 0',
+                  fontSize: '13px', fontWeight: 700, textDecoration: 'none',
+                  borderRadius: '999px',
+                  color: !isFollowingTab ? 'var(--text)' : 'var(--text-dim)',
+                  backgroundColor: !isFollowingTab ? 'var(--bg-card)' : 'transparent',
+                  boxShadow: !isFollowingTab ? 'var(--shadow-sm)' : 'none',
+                  transition: 'background-color 0.15s, color 0.15s',
+                }}
+              >
+                For You
+              </Link>
+              <Link
+                href={user ? '/?feed=following' : '/login'}
+                style={{
+                  flex: 1, textAlign: 'center', padding: '8px 0',
+                  fontSize: '13px', fontWeight: 700, textDecoration: 'none',
+                  borderRadius: '999px',
+                  color: isFollowingTab ? 'var(--text)' : 'var(--text-dim)',
+                  backgroundColor: isFollowingTab ? 'var(--bg-card)' : 'transparent',
+                  boxShadow: isFollowingTab ? 'var(--shadow-sm)' : 'none',
+                  transition: 'background-color 0.15s, color 0.15s',
+                }}
+              >
+                Following
+              </Link>
+            </div>
+          </div>
+
+          {/* Feed items */}
+          {feedItems.length === 0 && isFollowingTab ? (
+            <div style={{ padding: '48px 16px', textAlign: 'center' }}>
+              <div style={{ fontSize: '32px', marginBottom: '12px', opacity: 0.4 }}>👥</div>
+              <p style={{ color: 'var(--text-dim)', fontSize: '14px', margin: '0 0 16px' }}>
+                Follow people to see their reviews here.
+              </p>
+              <Link href="/leaderboard" style={{ color: 'var(--accent)', fontSize: '13px', fontWeight: 600 }}>
+                Discover reviewers →
+              </Link>
+            </div>
+          ) : !user && feed === 'following' ? (
+            <div style={{ padding: '48px 16px', textAlign: 'center' }}>
+              <p style={{ color: 'var(--text-dim)', fontSize: '14px', margin: '0 0 16px' }}>
+                Log in to see reviews from people you follow.
+              </p>
+              <Link href="/login" style={{
+                display: 'inline-block', backgroundColor: 'var(--accent)', color: '#000',
+                fontWeight: 700, fontSize: '13px', padding: '10px 20px',
+                borderRadius: 'var(--radius-md)', textDecoration: 'none',
+              }}>
+                Log in
+              </Link>
+            </div>
+          ) : feedItems.length === 0 ? (
+            <div style={{ padding: '40px 16px', textAlign: 'center' }}>
+              <p style={{ color: 'var(--text-dim)', fontSize: '14px', margin: '0 0 16px' }}>No reviews yet.</p>
+              <Link href="/browse" className="btn btn-primary" style={{ padding: '10px 20px', fontSize: '13px' }}>Browse products</Link>
+            </div>
+          ) : (
+            <div style={{ display: 'flex', flexDirection: 'column' }}>
+              {feedItems.map((feedItem: any, idx: number) => (
+                <FeedCard key={feedItem.id} item={feedItem} initialLikeCount={0} initialLiked={false} index={idx} />
+              ))}
+            </div>
+          )}
+        </div>
+
       </div>
 
       {/* ── Desktop layout (hidden on mobile) ── */}

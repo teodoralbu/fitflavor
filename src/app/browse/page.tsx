@@ -96,121 +96,180 @@ export default async function BrowsePage({ searchParams }: BrowseProps) {
   }
   const brands = Object.keys(byBrand).sort()
 
+  // Build a flat sorted list for mobile row view
+  const allBrandsSorted = [...brands]
+  const flatProducts: Array<{ product: typeof products[0]; isFirstInBrand: boolean; brandName: string }> = []
+  for (const brandName of allBrandsSorted) {
+    byBrand[brandName].forEach((product, i) => {
+      flatProducts.push({ product, isFirstInBrand: i === 0, brandName })
+    })
+  }
+
   return (
-    <div style={{ maxWidth: '960px', margin: '0 auto', padding: 'clamp(16px, 5vw, 48px) clamp(16px, 3vw, 24px) 80px' }}>
+    <div>
 
-      {/* Header */}
-      <div style={{ marginBottom: '28px' }}>
-        <div style={{ fontSize: '12px', fontWeight: 700, color: 'var(--accent)', letterSpacing: '0.12em', textTransform: 'uppercase', marginBottom: '12px' }}>
-          ⚡ Pre-Workout
-        </div>
-        <h1 style={{ fontSize: 'clamp(28px, 5vw, 44px)', fontWeight: 900, margin: '0 0 10px', color: 'var(--text)' }}>
-          {activeBrandName ? activeBrandName : 'Browse Products'}
+      {/* ── Mobile layout ── */}
+      <div className="sm:hidden" style={{ padding: '20px 16px 96px', boxSizing: 'border-box' }}>
+
+        {/* Page title */}
+        <h1 style={{ fontSize: '28px', fontWeight: 900, color: 'var(--text)', margin: '0 0 20px', letterSpacing: '-0.02em' }}>
+          {activeBrandName ? activeBrandName : 'Browse'}
         </h1>
-        <p style={{ color: 'var(--text-dim)', fontSize: '15px', margin: 0 }}>
-          {allProducts.length} products · {allProducts.reduce((s, p) => s + p.flavor_count, 0)} flavors
-        </p>
-      </div>
 
-      {/* Search */}
-      <form action="/browse" method="GET" style={{ marginBottom: '20px' }}>
-        {brand && <input type="hidden" name="brand" value={brand} />}
-        <div style={{ position: 'relative' }}>
-          <svg
-            width="16" height="16" viewBox="0 0 24 24" fill="none"
-            stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"
-            style={{ position: 'absolute', left: '14px', top: '50%', transform: 'translateY(-50%)', color: 'var(--text-faint)', pointerEvents: 'none' }}
-          >
-            <circle cx="11" cy="11" r="8" /><line x1="21" y1="21" x2="16.65" y2="16.65" />
-          </svg>
-          <input
-            name="q"
-            defaultValue={q ?? ''}
-            placeholder="Search products..."
-            autoComplete="off"
-            className="input"
-            style={{ paddingLeft: '40px', paddingRight: query ? '40px' : '14px' }}
-          />
-          {query && (
-            <a
-              href={brand ? `/browse?brand=${brand}` : '/browse'}
+        {/* Search bar */}
+        <form action="/browse" method="GET" style={{ marginBottom: '16px' }}>
+          {brand && <input type="hidden" name="brand" value={brand} />}
+          <div style={{ position: 'relative' }}>
+            <svg
+              width="18" height="18" viewBox="0 0 24 24" fill="none"
+              stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"
+              style={{ position: 'absolute', left: '14px', top: '50%', transform: 'translateY(-50%)', color: 'var(--text-faint)', pointerEvents: 'none' }}
+            >
+              <circle cx="11" cy="11" r="8" /><line x1="21" y1="21" x2="16.65" y2="16.65" />
+            </svg>
+            <input
+              name="q"
+              defaultValue={q ?? ''}
+              placeholder="Search products or brands..."
+              autoComplete="off"
+              className="input"
               style={{
-                position: 'absolute', right: '14px', top: '50%', transform: 'translateY(-50%)',
-                color: 'var(--text-faint)', fontSize: '18px', lineHeight: 1, textDecoration: 'none',
+                paddingLeft: '44px',
+                paddingRight: query ? '40px' : '14px',
+                height: '48px',
+                borderRadius: 'var(--radius-lg)',
+                backgroundColor: 'var(--bg-elevated)',
+                fontSize: '15px',
               }}
-            >×</a>
-          )}
-        </div>
-      </form>
-
-      {/* Active brand filter pill */}
-      {activeBrandName && (
-        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '20px' }}>
-          <span style={{ fontSize: '12px', color: 'var(--text-dim)' }}>Filtered by:</span>
-          <a
-            href={q ? `/browse?q=${q}` : '/browse'}
-            style={{
-              display: 'inline-flex', alignItems: 'center', gap: '5px',
-              padding: '4px 12px', borderRadius: '999px', fontSize: '12px', fontWeight: 600,
-              backgroundColor: 'var(--accent-dim)', color: 'var(--accent)',
-              border: '1px solid color-mix(in srgb, var(--accent) 25%, transparent)',
-              textDecoration: 'none',
-            }}
-          >
-            {activeBrandName} ×
-          </a>
-        </div>
-      )}
-
-      {/* No results */}
-      {products.length === 0 && (
-        <div style={{ textAlign: 'center', padding: '48px 16px' }}>
-          <p style={{ color: 'var(--text-dim)', fontSize: '15px', margin: '0 0 12px' }}>
-            No products found.
-          </p>
-          <a href="/browse" style={{ fontSize: '13px', color: 'var(--accent)' }}>Clear filters</a>
-        </div>
-      )}
-
-      {brands.map((brandName, bi) => (
-        <div key={brandName} style={{ marginBottom: '56px' }}>
-          <div style={{
-            display: 'flex', alignItems: 'center', gap: '12px',
-            marginBottom: '16px', paddingBottom: '12px',
-            borderBottom: '1px solid var(--border-soft)',
-          }}>
-            <h2 style={{ fontSize: '14px', fontWeight: 700, color: 'var(--text-muted)', margin: 0, letterSpacing: '0.05em' }}>
-              {brandName}
-            </h2>
-            <span style={{ fontSize: '12px', color: 'var(--text-faint)', fontWeight: 600 }}>
-              {byBrand[brandName].length} products
-            </span>
+            />
+            {query && (
+              <a
+                href={brand ? `/browse?brand=${brand}` : '/browse'}
+                style={{
+                  position: 'absolute', right: '14px', top: '50%', transform: 'translateY(-50%)',
+                  color: 'var(--text-faint)', fontSize: '20px', lineHeight: 1, textDecoration: 'none',
+                }}
+              >×</a>
+            )}
           </div>
+        </form>
 
+        {/* Filter chips — brand filter row */}
+        {allBrandsSorted.length > 1 && (
           <div style={{
-            display: 'grid',
-            gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))',
-            gap: '12px',
+            display: 'flex',
+            gap: '8px',
+            overflowX: 'auto',
+            paddingBottom: '4px',
+            marginBottom: '20px',
+            scrollbarWidth: 'none',
           }}>
-            {byBrand[brandName].map((product, pi) => (
-              <Link key={product.id} href={`/products/${product.slug}`} style={{ textDecoration: 'none', color: 'inherit' }}>
-                <div
-                  className="card card-hover card-press"
+            <a
+              href={q ? `/browse?q=${q}` : '/browse'}
+              style={{
+                flexShrink: 0,
+                padding: '8px 16px',
+                borderRadius: '999px',
+                fontSize: '13px',
+                fontWeight: 600,
+                textDecoration: 'none',
+                whiteSpace: 'nowrap',
+                backgroundColor: !brand ? 'var(--accent)' : 'var(--bg-elevated)',
+                color: !brand ? '#000' : 'var(--text-dim)',
+                border: !brand ? 'none' : '1px solid var(--border)',
+              }}
+            >
+              All
+            </a>
+            {allBrandsSorted.map((brandName) => {
+              const brandSlug = (byBrand[brandName][0]?.brand as any)?.slug ?? ''
+              const isActive = brand === brandSlug
+              return (
+                <a
+                  key={brandName}
+                  href={isActive ? (q ? `/browse?q=${q}` : '/browse') : (q ? `/browse?brand=${brandSlug}&q=${q}` : `/browse?brand=${brandSlug}`)}
                   style={{
-                    padding: '20px',
-                    display: 'flex',
-                    flexDirection: 'column',
-                    gap: '16px',
-                    animationDelay: `${(bi * 5 + pi) * 40}ms`,
+                    flexShrink: 0,
+                    padding: '8px 16px',
+                    borderRadius: '999px',
+                    fontSize: '13px',
+                    fontWeight: 600,
+                    textDecoration: 'none',
+                    whiteSpace: 'nowrap',
+                    backgroundColor: isActive ? 'var(--accent)' : 'var(--bg-elevated)',
+                    color: isActive ? '#000' : 'var(--text-dim)',
+                    border: isActive ? 'none' : '1px solid var(--border)',
                   }}
                 >
-                  {/* Image + Score row */}
-                  <div style={{ display: 'flex', alignItems: 'flex-start', gap: '14px' }}>
-                    {/* Image */}
+                  {brandName}
+                </a>
+              )
+            })}
+          </div>
+        )}
+
+        {/* No results */}
+        {products.length === 0 && (
+          <div style={{ textAlign: 'center', padding: '48px 0' }}>
+            <p style={{ color: 'var(--text-dim)', fontSize: '15px', margin: '0 0 12px' }}>
+              No products found.
+            </p>
+            <a href="/browse" style={{ fontSize: '13px', color: 'var(--accent)' }}>Clear filters</a>
+          </div>
+        )}
+
+        {/* Product list — unified rows */}
+        {flatProducts.length > 0 && (
+          <div style={{
+            backgroundColor: 'var(--bg-card)',
+            border: '1px solid var(--border)',
+            borderRadius: 'var(--radius-lg)',
+            overflow: 'hidden',
+          }}>
+            {flatProducts.map(({ product, isFirstInBrand, brandName }, idx) => (
+              <div key={product.id}>
+                {/* Brand section header */}
+                {isFirstInBrand && allBrandsSorted.length > 1 && (
+                  <div style={{
+                    padding: '10px 16px 6px',
+                    fontSize: '11px',
+                    fontWeight: 700,
+                    color: 'var(--text-faint)',
+                    textTransform: 'uppercase',
+                    letterSpacing: '0.08em',
+                    borderTop: idx > 0 ? '1px solid var(--border-soft)' : 'none',
+                    marginTop: idx > 0 ? '4px' : 0,
+                  }}>
+                    {brandName}
+                  </div>
+                )}
+                <Link
+                  href={`/products/${product.slug}`}
+                  style={{ textDecoration: 'none', color: 'inherit', display: 'block' }}
+                >
+                  <div style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '12px',
+                    padding: '12px 16px',
+                    minHeight: '72px',
+                    boxSizing: 'border-box',
+                    borderTop: !isFirstInBrand || allBrandsSorted.length === 1
+                      ? (idx === 0 ? 'none' : '1px solid var(--border-soft)')
+                      : 'none',
+                    WebkitTapHighlightColor: 'transparent',
+                  }}>
+                    {/* Image block */}
                     <div style={{
-                      width: '64px', height: '64px', borderRadius: '10px', flexShrink: 0,
-                      backgroundColor: 'var(--bg-elevated)', border: '1px solid var(--border-soft)',
-                      display: 'flex', alignItems: 'center', justifyContent: 'center',
+                      width: '48px',
+                      height: '48px',
+                      borderRadius: '12px',
+                      flexShrink: 0,
+                      backgroundColor: 'var(--bg-elevated)',
+                      border: '1px solid var(--border-soft)',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
                       overflow: 'hidden',
                     }}>
                       {product.image_url ? (
@@ -218,68 +277,265 @@ export default async function BrowsePage({ searchParams }: BrowseProps) {
                         <img
                           src={product.image_url} alt={product.name}
                           loading="lazy" decoding="async"
-                          style={{ width: '100%', height: '100%', objectFit: 'contain', padding: '6px' }}
+                          style={{ width: '100%', height: '100%', objectFit: 'contain', padding: '4px' }}
                         />
                       ) : (
-                        <span style={{ fontSize: '26px' }}>⚡</span>
+                        <span style={{ fontSize: '20px' }}>⚡</span>
                       )}
                     </div>
 
-                    {/* Name + meta */}
+                    {/* Text block */}
                     <div style={{ flex: 1, minWidth: 0 }}>
-                      <div style={{ fontSize: '15px', fontWeight: 800, color: 'var(--text)', marginBottom: '5px', lineHeight: 1.3 }}>
+                      <div style={{
+                        fontSize: '15px',
+                        fontWeight: 700,
+                        color: 'var(--text)',
+                        lineHeight: 1.3,
+                        marginBottom: '2px',
+                        overflow: 'hidden',
+                        textOverflow: 'ellipsis',
+                        whiteSpace: 'nowrap',
+                      }}>
                         {product.name}
                       </div>
-                      <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap' }}>
-                        <span style={{ fontSize: '12px', color: 'var(--text-dim)' }}>
-                          {product.flavor_count} flavor{product.flavor_count !== 1 ? 's' : ''}
-                        </span>
-                        {product.caffeine_mg != null && product.caffeine_mg > 0 && (
-                          <span style={{ fontSize: '12px', color: 'var(--text-dim)' }}>{product.caffeine_mg}mg</span>
-                        )}
-                        {product.caffeine_mg === 0 && (
-                          <span style={{ fontSize: '12px', color: 'var(--green)', fontWeight: 600 }}>Stim-free</span>
+                      <div style={{
+                        fontSize: '12px',
+                        color: 'var(--text-dim)',
+                        overflow: 'hidden',
+                        textOverflow: 'ellipsis',
+                        whiteSpace: 'nowrap',
+                      }}>
+                        {product.brand?.name}
+                        {product.flavor_count > 0 && (
+                          <span style={{ color: 'var(--text-faint)' }}>
+                            {' · '}{product.flavor_count} flavor{product.flavor_count !== 1 ? 's' : ''}
+                          </span>
                         )}
                       </div>
                     </div>
 
-                    {/* Score */}
+                    {/* Score / right block */}
                     <div style={{ textAlign: 'right', flexShrink: 0 }}>
                       {product.avg_score !== null ? (
                         <>
-                          <div style={{ fontSize: '26px', fontWeight: 900, lineHeight: 1, color: getScoreColor(product.avg_score) }}>
+                          <div style={{
+                            fontSize: '20px',
+                            fontWeight: 900,
+                            lineHeight: 1,
+                            color: getScoreColor(product.avg_score),
+                            letterSpacing: '-0.02em',
+                          }}>
                             {product.avg_score.toFixed(1)}
                           </div>
-                          <div style={{ fontSize: '11px', color: 'var(--text-dim)', marginTop: '3px' }}>
+                          <div style={{ fontSize: '11px', color: 'var(--text-faint)', marginTop: '2px' }}>
                             {product.rating_count}
                           </div>
                         </>
                       ) : (
-                        <div style={{ fontSize: '11px', color: 'var(--text-faint)', fontWeight: 600, paddingTop: '6px' }}>
+                        <div style={{ fontSize: '11px', color: 'var(--text-faint)', fontWeight: 600 }}>
                           Unrated
                         </div>
                       )}
                     </div>
-                  </div>
 
-                  {/* Footer */}
-                  <div style={{
-                    display: 'flex', justifyContent: 'space-between', alignItems: 'center',
-                    paddingTop: '12px', borderTop: '1px solid var(--border-soft)',
-                  }}>
-                    <span style={{ fontSize: '12px', color: 'var(--text-dim)' }}>
-                      {product.rating_count > 0 ? `${product.rating_count} rating${product.rating_count !== 1 ? 's' : ''}` : 'No ratings yet'}
-                    </span>
-                    <span style={{ fontSize: '12px', color: 'var(--accent)', fontWeight: 600 }}>
-                      View flavors →
-                    </span>
+                    {/* Chevron */}
+                    <div style={{ color: 'var(--text-faint)', fontSize: '16px', lineHeight: 1, flexShrink: 0, marginLeft: '2px' }}>
+                      ›
+                    </div>
                   </div>
-                </div>
-              </Link>
+                </Link>
+              </div>
             ))}
           </div>
+        )}
+      </div>
+
+      {/* ── Desktop layout ── */}
+      <div className="hidden sm:block" style={{ maxWidth: '960px', margin: '0 auto', padding: 'clamp(16px, 5vw, 48px) clamp(16px, 3vw, 24px) 80px' }}>
+
+        {/* Header */}
+        <div style={{ marginBottom: '28px' }}>
+          <div style={{ fontSize: '12px', fontWeight: 700, color: 'var(--accent)', letterSpacing: '0.12em', textTransform: 'uppercase', marginBottom: '12px' }}>
+            ⚡ Pre-Workout
+          </div>
+          <h1 style={{ fontSize: 'clamp(28px, 5vw, 44px)', fontWeight: 900, margin: '0 0 10px', color: 'var(--text)' }}>
+            {activeBrandName ? activeBrandName : 'Browse Products'}
+          </h1>
+          <p style={{ color: 'var(--text-dim)', fontSize: '15px', margin: 0 }}>
+            {allProducts.length} products · {allProducts.reduce((s, p) => s + p.flavor_count, 0)} flavors
+          </p>
         </div>
-      ))}
+
+        {/* Search */}
+        <form action="/browse" method="GET" style={{ marginBottom: '20px' }}>
+          {brand && <input type="hidden" name="brand" value={brand} />}
+          <div style={{ position: 'relative' }}>
+            <svg
+              width="16" height="16" viewBox="0 0 24 24" fill="none"
+              stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"
+              style={{ position: 'absolute', left: '14px', top: '50%', transform: 'translateY(-50%)', color: 'var(--text-faint)', pointerEvents: 'none' }}
+            >
+              <circle cx="11" cy="11" r="8" /><line x1="21" y1="21" x2="16.65" y2="16.65" />
+            </svg>
+            <input
+              name="q"
+              defaultValue={q ?? ''}
+              placeholder="Search products..."
+              autoComplete="off"
+              className="input"
+              style={{ paddingLeft: '40px', paddingRight: query ? '40px' : '14px' }}
+            />
+            {query && (
+              <a
+                href={brand ? `/browse?brand=${brand}` : '/browse'}
+                style={{
+                  position: 'absolute', right: '14px', top: '50%', transform: 'translateY(-50%)',
+                  color: 'var(--text-faint)', fontSize: '18px', lineHeight: 1, textDecoration: 'none',
+                }}
+              >×</a>
+            )}
+          </div>
+        </form>
+
+        {/* Active brand filter pill */}
+        {activeBrandName && (
+          <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '20px' }}>
+            <span style={{ fontSize: '12px', color: 'var(--text-dim)' }}>Filtered by:</span>
+            <a
+              href={q ? `/browse?q=${q}` : '/browse'}
+              style={{
+                display: 'inline-flex', alignItems: 'center', gap: '5px',
+                padding: '4px 12px', borderRadius: '999px', fontSize: '12px', fontWeight: 600,
+                backgroundColor: 'var(--accent-dim)', color: 'var(--accent)',
+                border: '1px solid color-mix(in srgb, var(--accent) 25%, transparent)',
+                textDecoration: 'none',
+              }}
+            >
+              {activeBrandName} ×
+            </a>
+          </div>
+        )}
+
+        {/* No results */}
+        {products.length === 0 && (
+          <div style={{ textAlign: 'center', padding: '48px 16px' }}>
+            <p style={{ color: 'var(--text-dim)', fontSize: '15px', margin: '0 0 12px' }}>
+              No products found.
+            </p>
+            <a href="/browse" style={{ fontSize: '13px', color: 'var(--accent)' }}>Clear filters</a>
+          </div>
+        )}
+
+        {brands.map((brandName, bi) => (
+          <div key={brandName} style={{ marginBottom: '56px' }}>
+            <div style={{
+              display: 'flex', alignItems: 'center', gap: '12px',
+              marginBottom: '16px', paddingBottom: '12px',
+              borderBottom: '1px solid var(--border-soft)',
+            }}>
+              <h2 style={{ fontSize: '14px', fontWeight: 700, color: 'var(--text-muted)', margin: 0, letterSpacing: '0.05em' }}>
+                {brandName}
+              </h2>
+              <span style={{ fontSize: '12px', color: 'var(--text-faint)', fontWeight: 600 }}>
+                {byBrand[brandName].length} products
+              </span>
+            </div>
+
+            <div style={{
+              display: 'grid',
+              gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))',
+              gap: '12px',
+            }}>
+              {byBrand[brandName].map((product, pi) => (
+                <Link key={product.id} href={`/products/${product.slug}`} style={{ textDecoration: 'none', color: 'inherit' }}>
+                  <div
+                    className="card card-hover card-press"
+                    style={{
+                      padding: '20px',
+                      display: 'flex',
+                      flexDirection: 'column',
+                      gap: '16px',
+                      animationDelay: `${(bi * 5 + pi) * 40}ms`,
+                    }}
+                  >
+                    {/* Image + Score row */}
+                    <div style={{ display: 'flex', alignItems: 'flex-start', gap: '14px' }}>
+                      {/* Image */}
+                      <div style={{
+                        width: '64px', height: '64px', borderRadius: '10px', flexShrink: 0,
+                        backgroundColor: 'var(--bg-elevated)', border: '1px solid var(--border-soft)',
+                        display: 'flex', alignItems: 'center', justifyContent: 'center',
+                        overflow: 'hidden',
+                      }}>
+                        {product.image_url ? (
+                          // eslint-disable-next-line @next/next/no-img-element
+                          <img
+                            src={product.image_url} alt={product.name}
+                            loading="lazy" decoding="async"
+                            style={{ width: '100%', height: '100%', objectFit: 'contain', padding: '6px' }}
+                          />
+                        ) : (
+                          <span style={{ fontSize: '26px' }}>⚡</span>
+                        )}
+                      </div>
+
+                      {/* Name + meta */}
+                      <div style={{ flex: 1, minWidth: 0 }}>
+                        <div style={{ fontSize: '15px', fontWeight: 800, color: 'var(--text)', marginBottom: '5px', lineHeight: 1.3 }}>
+                          {product.name}
+                        </div>
+                        <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap' }}>
+                          <span style={{ fontSize: '12px', color: 'var(--text-dim)' }}>
+                            {product.flavor_count} flavor{product.flavor_count !== 1 ? 's' : ''}
+                          </span>
+                          {product.caffeine_mg != null && product.caffeine_mg > 0 && (
+                            <span style={{ fontSize: '12px', color: 'var(--text-dim)' }}>{product.caffeine_mg}mg</span>
+                          )}
+                          {product.caffeine_mg === 0 && (
+                            <span style={{ fontSize: '12px', color: 'var(--green)', fontWeight: 600 }}>Stim-free</span>
+                          )}
+                        </div>
+                      </div>
+
+                      {/* Score */}
+                      <div style={{ textAlign: 'right', flexShrink: 0 }}>
+                        {product.avg_score !== null ? (
+                          <>
+                            <div style={{ fontSize: '26px', fontWeight: 900, lineHeight: 1, color: getScoreColor(product.avg_score) }}>
+                              {product.avg_score.toFixed(1)}
+                            </div>
+                            <div style={{ fontSize: '11px', color: 'var(--text-dim)', marginTop: '3px' }}>
+                              {product.rating_count}
+                            </div>
+                          </>
+                        ) : (
+                          <div style={{ fontSize: '11px', color: 'var(--text-faint)', fontWeight: 600, paddingTop: '6px' }}>
+                            Unrated
+                          </div>
+                        )}
+                      </div>
+                    </div>
+
+                    {/* Footer */}
+                    <div style={{
+                      display: 'flex', justifyContent: 'space-between', alignItems: 'center',
+                      paddingTop: '12px', borderTop: '1px solid var(--border-soft)',
+                    }}>
+                      <span style={{ fontSize: '12px', color: 'var(--text-dim)' }}>
+                        {product.rating_count > 0 ? `${product.rating_count} rating${product.rating_count !== 1 ? 's' : ''}` : 'No ratings yet'}
+                      </span>
+                      <span style={{ fontSize: '12px', color: 'var(--accent)', fontWeight: 600 }}>
+                        View flavors →
+                      </span>
+                    </div>
+                  </div>
+                </Link>
+              ))}
+            </div>
+          </div>
+        ))}
+      </div>
+
     </div>
   )
 }

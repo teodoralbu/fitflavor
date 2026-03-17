@@ -25,21 +25,35 @@ interface ReviewCardProps {
 
 export function ReviewCard({ rating }: ReviewCardProps) {
   const [expanded, setExpanded] = useState(false)
+  const scoreColor = getScoreColor(rating.overall_score)
 
   return (
-    <div className="card" style={{ padding: '14px 16px', overflow: 'hidden' }}>
+    <div style={{
+      backgroundColor: 'var(--bg-card)',
+      border: '1px solid var(--border)',
+      borderRadius: 'var(--radius-lg)',
+      overflow: 'hidden',
+    }}>
       {/* Header row — always visible, tap to expand */}
       <div
         onClick={() => setExpanded(!expanded)}
-        style={{ display: 'flex', alignItems: 'center', gap: '10px', cursor: 'pointer', WebkitTapHighlightColor: 'transparent' }}
+        style={{
+          display: 'flex',
+          alignItems: 'center',
+          gap: '12px',
+          padding: '14px 16px',
+          cursor: 'pointer',
+          WebkitTapHighlightColor: 'transparent',
+          minHeight: '72px',
+        }}
       >
-        {/* Avatar */}
+        {/* Avatar — 32px */}
         <div style={{
-          width: '34px', height: '34px', borderRadius: '50%', flexShrink: 0,
+          width: '32px', height: '32px', borderRadius: '50%', flexShrink: 0,
           background: 'linear-gradient(135deg, var(--accent-glow), var(--bg-elevated))',
           border: '1px solid var(--border)',
           display: 'flex', alignItems: 'center', justifyContent: 'center',
-          fontSize: '13px', fontWeight: 800, color: 'var(--accent)', overflow: 'hidden',
+          fontSize: '12px', fontWeight: 800, color: 'var(--accent)', overflow: 'hidden',
         }}>
           {rating.user?.avatar_url ? (
             // eslint-disable-next-line @next/next/no-img-element
@@ -49,65 +63,97 @@ export function ReviewCard({ rating }: ReviewCardProps) {
           )}
         </div>
 
-        {/* User + preview */}
+        {/* Username + preview text */}
         <div style={{ flex: 1, minWidth: 0 }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '2px' }}>
             <span style={{ fontSize: '13px', fontWeight: 700, color: 'var(--text)' }}>
               {rating.user?.username ?? 'Anonymous'}
             </span>
             {rating.user?.badge_tier && <Badge tier={rating.user.badge_tier as any} size="sm" />}
+            {rating.would_buy_again && (
+              <span style={{
+                fontSize: '10px',
+                color: 'var(--green)',
+                fontWeight: 700,
+                backgroundColor: 'color-mix(in srgb, var(--green) 10%, transparent)',
+                padding: '2px 7px',
+                borderRadius: '999px',
+                border: '1px solid color-mix(in srgb, var(--green) 25%, transparent)',
+                letterSpacing: '0.04em',
+              }}>
+                WBA
+              </span>
+            )}
           </div>
           {!expanded && rating.review_text && (
-            <div style={{ fontSize: '12px', color: 'var(--text-dim)', marginTop: '2px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+            <div style={{ fontSize: '12px', color: 'var(--text-dim)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
               {rating.review_text}
             </div>
           )}
         </div>
 
-        {/* Score + expand indicator */}
-        <div style={{ textAlign: 'right', flexShrink: 0, display: 'flex', alignItems: 'center', gap: '8px' }}>
-          {rating.would_buy_again && (
-            <span style={{ fontSize: '10px', color: 'var(--green)', fontWeight: 700 }}>✓</span>
-          )}
-          <div style={{ fontSize: '22px', fontWeight: 900, lineHeight: 1, color: getScoreColor(rating.overall_score), letterSpacing: '-0.02em' }}>
+        {/* Score + chevron */}
+        <div style={{ textAlign: 'right', flexShrink: 0, display: 'flex', alignItems: 'center', gap: '10px' }}>
+          <div style={{ fontSize: '26px', fontWeight: 900, lineHeight: 1, color: scoreColor, letterSpacing: '-0.03em' }}>
             {rating.overall_score.toFixed(1)}
           </div>
-          <div style={{ fontSize: '14px', color: 'var(--text-faint)', transition: 'transform 0.2s', transform: expanded ? 'rotate(180deg)' : 'rotate(0deg)' }}>
+          <div style={{
+            fontSize: '16px',
+            color: 'var(--text-faint)',
+            transition: 'transform 0.2s',
+            transform: expanded ? 'rotate(90deg)' : 'rotate(0deg)',
+            lineHeight: 1,
+          }}>
             ›
           </div>
         </div>
       </div>
 
-      {/* Expanded content */}
+      {/* Expanded detail panel */}
       {expanded && (
-        <div style={{ marginTop: '12px', paddingTop: '12px', borderTop: '1px solid var(--border-soft)' }}>
-          {/* Dimension scores */}
-          <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap', marginBottom: rating.review_text || rating.context_tags?.length > 0 ? '10px' : 0 }}>
-            {RATING_DIMENSIONS.map((dim) => {
-              const score = (rating.scores as Record<string, number>)?.[dim.key]
-              if (score === undefined) return null
-              return (
-                <div key={dim.key} style={{
-                  display: 'flex', alignItems: 'center', gap: '4px',
-                  backgroundColor: 'var(--bg-elevated)', borderRadius: '6px', padding: '4px 8px',
-                }}>
-                  <span style={{ fontSize: '12px', fontWeight: 800, color: getScoreColor(score) }}>{score}</span>
-                  <span style={{ fontSize: '10px', color: 'var(--text-dim)', textTransform: 'uppercase', letterSpacing: '0.04em' }}>{dim.label}</span>
-                </div>
-              )
-            })}
-          </div>
+        <div style={{ borderTop: '1px solid var(--border-soft)', padding: '14px 16px 16px' }}>
+          {/* Dimension score pills */}
+          {Object.keys(rating.scores ?? {}).length > 0 && (
+            <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap', marginBottom: '14px' }}>
+              {RATING_DIMENSIONS.map((dim) => {
+                const score = (rating.scores as Record<string, number>)?.[dim.key]
+                if (score === undefined) return null
+                return (
+                  <div key={dim.key} style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '4px',
+                    backgroundColor: 'var(--bg-elevated)',
+                    border: '1px solid var(--border-soft)',
+                    borderRadius: '8px',
+                    padding: '5px 10px',
+                  }}>
+                    <span style={{ fontSize: '13px', fontWeight: 800, color: getScoreColor(score) }}>{score}</span>
+                    <span style={{ fontSize: '10px', color: 'var(--text-dim)', textTransform: 'uppercase', letterSpacing: '0.05em', fontWeight: 600 }}>{dim.label}</span>
+                  </div>
+                )
+              })}
+            </div>
+          )}
 
+          {/* Review text */}
           {rating.review_text && (
-            <p style={{ color: 'var(--text-muted)', fontSize: '13px', lineHeight: 1.6, margin: '0 0 10px' }}>
+            <p style={{
+              color: 'var(--text-muted)',
+              fontSize: '14px',
+              lineHeight: 1.6,
+              margin: '0 0 12px',
+              fontStyle: 'italic',
+            }}>
               &ldquo;{rating.review_text}&rdquo;
             </p>
           )}
 
+          {/* Context tags */}
           {rating.context_tags && rating.context_tags.length > 0 && (
-            <div style={{ display: 'flex', gap: '5px', flexWrap: 'wrap', marginBottom: '10px' }}>
+            <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap', marginBottom: '14px' }}>
               {rating.context_tags.map((tag) => (
-                <span key={tag} className="tag" style={{ fontSize: '10px' }}>{tag.replace(/_/g, ' ')}</span>
+                <span key={tag} className="tag" style={{ fontSize: '11px' }}>{tag.replace(/_/g, ' ')}</span>
               ))}
             </div>
           )}

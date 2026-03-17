@@ -36,24 +36,33 @@ function calcOverall(scores: Record<string, number>): number {
   return RATING_DIMENSIONS.reduce((sum, dim) => sum + (scores[dim.key] ?? 5) * dim.weight, 0)
 }
 
-interface SliderCardProps {
+interface SliderRowProps {
   dim: typeof RATING_DIMENSIONS[number]
   value: number
   onChange: (key: string, value: number) => void
 }
 
-const SliderCard = memo(function SliderCard({ dim, value, onChange }: SliderCardProps) {
+const SliderRow = memo(function SliderRow({ dim, value, onChange }: SliderRowProps) {
   const color = getScoreColor(value)
   return (
-    <div className="card" style={{ padding: '16px 18px' }}>
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px' }}>
-        <div>
-          <span style={{ fontWeight: 700, fontSize: '14px', color: 'var(--text)' }}>{dim.label}</span>
-          <span style={{ fontSize: '11px', color: 'var(--text-faint)', marginLeft: '7px', fontWeight: 500, textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+    <div>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '10px' }}>
+        <div style={{ display: 'flex', alignItems: 'baseline', gap: '6px' }}>
+          <span style={{ fontWeight: 700, fontSize: '15px', color: 'var(--text)' }}>{dim.label}</span>
+          <span style={{ fontSize: '10px', color: 'var(--text-faint)', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.05em' }}>
             ×{dim.weight}
           </span>
         </div>
-        <span style={{ fontSize: '22px', fontWeight: 900, color, minWidth: '44px', textAlign: 'right', transition: 'color 0.2s', letterSpacing: '-0.02em', lineHeight: 1 }}>
+        <span style={{
+          fontSize: '20px',
+          fontWeight: 900,
+          color,
+          minWidth: '48px',
+          textAlign: 'right',
+          transition: 'color 0.2s',
+          letterSpacing: '-0.02em',
+          lineHeight: 1,
+        }}>
           {value.toFixed(1)}
         </span>
       </div>
@@ -69,6 +78,42 @@ const SliderCard = memo(function SliderCard({ dim, value, onChange }: SliderCard
     </div>
   )
 })
+
+// Section wrapper — card surface with border
+function Section({ title, subtitle, children }: { title?: string; subtitle?: string; children: React.ReactNode }) {
+  return (
+    <div style={{ marginBottom: '24px' }}>
+      {title && (
+        <div style={{
+          fontSize: '13px',
+          fontWeight: 700,
+          color: 'var(--text)',
+          textTransform: 'uppercase',
+          letterSpacing: '0.06em',
+          marginBottom: '10px',
+          display: 'flex',
+          alignItems: 'baseline',
+          gap: '6px',
+        }}>
+          {title}
+          {subtitle && (
+            <span style={{ color: 'var(--text-faint)', fontWeight: 400, fontSize: '12px', textTransform: 'none', letterSpacing: 0 }}>
+              {subtitle}
+            </span>
+          )}
+        </div>
+      )}
+      <div style={{
+        backgroundColor: 'var(--bg-card)',
+        border: '1px solid var(--border)',
+        borderRadius: 'var(--radius-lg)',
+        padding: '20px',
+      }}>
+        {children}
+      </div>
+    </div>
+  )
+}
 
 export function RatingForm({ flavor }: Props) {
   const { user } = useAuth()
@@ -151,130 +196,108 @@ export function RatingForm({ flavor }: Props) {
   }
 
   return (
-    <div style={{ maxWidth: '600px', margin: '0 auto', padding: 'clamp(16px, 4vw, 40px) 16px 80px' }}>
+    <div style={{ maxWidth: '600px', margin: '0 auto', padding: '0 16px', paddingBottom: '96px' }}>
 
       {/* Flavor header */}
-      <div style={{ marginBottom: '36px' }}>
-        <div
-          style={{
-            fontSize: '11px',
-            fontWeight: 700,
-            color: 'var(--accent)',
-            textTransform: 'uppercase',
-            letterSpacing: '0.08em',
-            marginBottom: '7px',
-          }}
-        >
+      <div style={{ marginBottom: '32px', paddingTop: 'clamp(20px, 4vw, 40px)' }}>
+        <div style={{
+          fontSize: '12px',
+          fontWeight: 700,
+          color: 'var(--accent)',
+          textTransform: 'uppercase',
+          letterSpacing: '0.08em',
+          marginBottom: '8px',
+        }}>
           {flavor.product.brand.name} · {flavor.product.name}
         </div>
-        <h1
-          style={{
-            fontSize: 'clamp(22px, 4vw, 38px)',
-            fontWeight: 900,
-            margin: 0,
-            color: 'var(--text)',
-            letterSpacing: '-0.02em',
-            lineHeight: 1.1,
-          }}
-        >
+        <h1 style={{
+          fontSize: 'clamp(26px, 6vw, 40px)',
+          fontWeight: 900,
+          margin: 0,
+          color: 'var(--text)',
+          letterSpacing: '-0.02em',
+          lineHeight: 1.1,
+        }}>
           {flavor.name}
         </h1>
       </div>
 
-      {/* Live score card */}
-      <div
-        style={{
-          backgroundColor: 'var(--bg-card)',
-          border: `1.5px solid ${scoreColor}33`,
-          borderRadius: 'var(--radius-lg)',
-          padding: '28px 24px',
-          marginBottom: '36px',
-          textAlign: 'center',
-          transition: 'border-color 0.3s',
+      {/* Overall score live preview */}
+      <div style={{
+        backgroundColor: 'var(--bg-card)',
+        border: `1.5px solid ${scoreColor}33`,
+        borderRadius: 'var(--radius-lg)',
+        padding: '28px 24px',
+        marginBottom: '24px',
+        textAlign: 'center',
+        transition: 'border-color 0.3s',
+        position: 'relative',
+        overflow: 'hidden',
+      }}>
+        {/* Radial glow */}
+        <div style={{
+          position: 'absolute',
+          top: '50%',
+          left: '50%',
+          transform: 'translate(-50%, -50%)',
+          width: '180px',
+          height: '180px',
+          borderRadius: '50%',
+          background: `radial-gradient(circle, ${scoreColor}10 0%, transparent 70%)`,
+          pointerEvents: 'none',
+          transition: 'background 0.3s',
+        }} />
+        <div style={{
+          fontSize: '11px',
+          fontWeight: 700,
+          color: 'var(--text-faint)',
+          textTransform: 'uppercase',
+          letterSpacing: '0.1em',
+          marginBottom: '8px',
           position: 'relative',
-          overflow: 'hidden',
-        }}
-      >
-        {/* Subtle glow behind score */}
-        <div
-          style={{
-            position: 'absolute',
-            top: '50%',
-            left: '50%',
-            transform: 'translate(-50%, -50%)',
-            width: '160px',
-            height: '160px',
-            borderRadius: '50%',
-            background: `radial-gradient(circle, ${scoreColor}0D 0%, transparent 70%)`,
-            pointerEvents: 'none',
-            transition: 'background 0.3s',
-          }}
-        />
-        <div
-          style={{
-            fontSize: '11px',
-            fontWeight: 700,
-            color: 'var(--text-faint)',
-            textTransform: 'uppercase',
-            letterSpacing: '0.1em',
-            marginBottom: '10px',
-            position: 'relative',
-          }}
-        >
+        }}>
           Overall Score
         </div>
-        <div
-          style={{
-            fontSize: '80px',
-            fontWeight: 900,
-            lineHeight: 1,
-            color: scoreColor,
-            transition: 'color 0.3s',
-            letterSpacing: '-0.04em',
-            position: 'relative',
-          }}
-        >
+        <div style={{
+          fontSize: '80px',
+          fontWeight: 900,
+          lineHeight: 1,
+          color: scoreColor,
+          transition: 'color 0.3s',
+          letterSpacing: '-0.04em',
+          position: 'relative',
+        }}>
           {overall.toFixed(1)}
         </div>
-        <div
-          style={{
-            fontSize: '11px',
-            color: 'var(--text-faint)',
-            marginTop: '10px',
-            letterSpacing: '0.02em',
-            position: 'relative',
-          }}
-        >
+        <div style={{
+          fontSize: '11px',
+          color: 'var(--text-faint)',
+          marginTop: '10px',
+          letterSpacing: '0.02em',
+          position: 'relative',
+        }}>
           Taste ×0.25 · Sweetness ×0.10 · Pump ×0.25 · Energy ×0.25 · Intensity ×0.15
         </div>
       </div>
 
       <form onSubmit={handleSubmit}>
 
-        {/* Sliders */}
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '24px', marginBottom: '36px' }}>
-          {RATING_DIMENSIONS.map((dim) => (
-            <SliderCard
-              key={dim.key}
-              dim={dim}
-              value={scores[dim.key] ?? 7}
-              onChange={handleScoreChange}
-            />
-          ))}
-        </div>
+        {/* Sliders section */}
+        <Section title="Rate each dimension">
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
+            {RATING_DIMENSIONS.map((dim) => (
+              <SliderRow
+                key={dim.key}
+                dim={dim}
+                value={scores[dim.key] ?? 7}
+                onChange={handleScoreChange}
+              />
+            ))}
+          </div>
+        </Section>
 
         {/* Would buy again */}
-        <div style={{ marginBottom: '28px' }}>
-          <div
-            style={{
-              fontSize: '14px',
-              fontWeight: 700,
-              color: 'var(--text)',
-              marginBottom: '12px',
-            }}
-          >
-            Would you buy this flavor again?
-          </div>
+        <Section title="Buy it again?">
           <div style={{ display: 'flex', gap: '10px' }}>
             {([true, false] as const).map((val) => {
               const isActive = wouldBuyAgain === val
@@ -286,7 +309,7 @@ export function RatingForm({ flavor }: Props) {
                   onClick={() => setWouldBuyAgain(val)}
                   style={{
                     flex: 1,
-                    padding: '13px 16px',
+                    padding: '14px 16px',
                     borderRadius: 'var(--radius-sm)',
                     fontSize: '14px',
                     fontWeight: 700,
@@ -299,7 +322,7 @@ export function RatingForm({ flavor }: Props) {
                       ? val
                         ? 'color-mix(in srgb, var(--green) 10%, transparent)'
                         : 'color-mix(in srgb, var(--red) 10%, transparent)'
-                      : 'var(--bg-card)',
+                      : 'var(--bg-elevated)',
                     color: isActive ? activeColor : 'var(--text-dim)',
                   }}
                 >
@@ -308,27 +331,11 @@ export function RatingForm({ flavor }: Props) {
               )
             })}
           </div>
-        </div>
+        </Section>
 
         {/* Context tags */}
-        <div style={{ marginBottom: '28px' }}>
-          <div
-            style={{
-              fontSize: '14px',
-              fontWeight: 700,
-              color: 'var(--text)',
-              marginBottom: '12px',
-              display: 'flex',
-              alignItems: 'baseline',
-              gap: '6px',
-            }}
-          >
-            How did you take it?
-            <span style={{ color: 'var(--text-faint)', fontWeight: 400, fontSize: '12px' }}>
-              optional
-            </span>
-          </div>
-          <div style={{ display: 'flex', gap: '7px', flexWrap: 'wrap' }}>
+        <Section title="When did you drink it?" subtitle="optional">
+          <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
             {CONTEXT_TAGS.map((tag) => {
               const active = contextTags.includes(tag.value)
               return (
@@ -339,7 +346,7 @@ export function RatingForm({ flavor }: Props) {
                   style={{
                     padding: '10px 16px',
                     borderRadius: '999px',
-                    fontSize: '12px',
+                    fontSize: '13px',
                     fontWeight: 600,
                     cursor: 'pointer',
                     touchAction: 'manipulation',
@@ -347,7 +354,7 @@ export function RatingForm({ flavor }: Props) {
                     border: active ? '1px solid var(--accent)' : '1px solid var(--border)',
                     backgroundColor: active
                       ? 'color-mix(in srgb, var(--accent) 12%, transparent)'
-                      : 'var(--bg-card)',
+                      : 'var(--bg-elevated)',
                     color: active ? 'var(--accent)' : 'var(--text-dim)',
                   }}
                 >
@@ -356,41 +363,17 @@ export function RatingForm({ flavor }: Props) {
               )
             })}
           </div>
-        </div>
+        </Section>
 
-        {/* Review textarea */}
-        <div style={{ marginBottom: '32px' }}>
-          <div
-            style={{
-              display: 'flex',
-              justifyContent: 'space-between',
-              alignItems: 'center',
-              marginBottom: '10px',
-            }}
-          >
-            <div
-              style={{
-                fontSize: '14px',
-                fontWeight: 700,
-                color: 'var(--text)',
-                display: 'flex',
-                alignItems: 'baseline',
-                gap: '6px',
-              }}
-            >
-              Review
-              <span style={{ color: 'var(--text-faint)', fontWeight: 400, fontSize: '12px' }}>
-                optional
-              </span>
-            </div>
-            <span
-              style={{
-                fontSize: '11px',
-                fontWeight: 600,
-                color: charsNearLimit ? 'var(--red)' : 'var(--text-faint)',
-                transition: 'color 0.2s',
-              }}
-            >
+        {/* Review text */}
+        <Section title="Your take" subtitle="optional">
+          <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: '10px' }}>
+            <span style={{
+              fontSize: '11px',
+              fontWeight: 600,
+              color: charsNearLimit ? 'var(--red)' : 'var(--text-faint)',
+              transition: 'color 0.2s',
+            }}>
               {charsLeft} left
             </span>
           </div>
@@ -409,18 +392,10 @@ export function RatingForm({ flavor }: Props) {
               minHeight: '100px',
             }}
           />
-        </div>
+        </Section>
 
         {/* Photo upload */}
-        <div style={{ marginBottom: '28px' }}>
-          <div style={{
-            fontSize: '14px', fontWeight: 700, color: 'var(--text)',
-            marginBottom: '10px', display: 'flex', alignItems: 'baseline', gap: '6px',
-          }}>
-            Photo
-            <span style={{ color: 'var(--text-faint)', fontWeight: 400, fontSize: '12px' }}>optional</span>
-          </div>
-
+        <Section title="Add a photo" subtitle="optional">
           {photoPreview ? (
             <div style={{ position: 'relative' }}>
               {/* eslint-disable-next-line @next/next/no-img-element */}
@@ -440,9 +415,9 @@ export function RatingForm({ flavor }: Props) {
           ) : (
             <label style={{
               display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
-              gap: '8px', padding: '24px', borderRadius: 'var(--radius-md)',
+              gap: '8px', padding: '24px', borderRadius: '10px',
               border: '2px dashed var(--border)', cursor: 'pointer',
-              backgroundColor: 'var(--bg-card)', transition: 'border-color 0.15s',
+              backgroundColor: 'var(--bg-elevated)', transition: 'border-color 0.15s',
             }}>
               <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="var(--text-faint)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                 <rect x="3" y="3" width="18" height="18" rx="2" /><circle cx="8.5" cy="8.5" r="1.5" />
@@ -466,64 +441,76 @@ export function RatingForm({ flavor }: Props) {
               />
             </label>
           )}
-        </div>
+        </Section>
 
         {/* Error state */}
         {error && (
-          <div
-            style={{
-              color: 'var(--red)',
-              fontSize: '13px',
-              marginBottom: '16px',
-              padding: '12px 16px',
-              backgroundColor: 'color-mix(in srgb, var(--red) 8%, transparent)',
-              borderRadius: 'var(--radius-sm)',
-              border: '1px solid color-mix(in srgb, var(--red) 25%, transparent)',
-              lineHeight: 1.5,
-              fontWeight: 500,
-            }}
-          >
+          <div style={{
+            color: 'var(--red)',
+            fontSize: '13px',
+            marginBottom: '16px',
+            padding: '12px 16px',
+            backgroundColor: 'color-mix(in srgb, var(--red) 8%, transparent)',
+            borderRadius: 'var(--radius-sm)',
+            border: '1px solid color-mix(in srgb, var(--red) 25%, transparent)',
+            lineHeight: 1.5,
+            fontWeight: 500,
+          }}>
             {error}
           </div>
         )}
 
         {/* Not logged in warning */}
         {!user && (
-          <div
-            style={{
-              color: 'var(--yellow)',
-              fontSize: '13px',
-              marginBottom: '16px',
-              padding: '12px 16px',
-              backgroundColor: 'color-mix(in srgb, var(--yellow) 8%, transparent)',
-              borderRadius: 'var(--radius-sm)',
-              border: '1px solid color-mix(in srgb, var(--yellow) 25%, transparent)',
-              lineHeight: 1.5,
-              fontWeight: 500,
-            }}
-          >
+          <div style={{
+            color: 'var(--yellow)',
+            fontSize: '13px',
+            marginBottom: '16px',
+            padding: '12px 16px',
+            backgroundColor: 'color-mix(in srgb, var(--yellow) 8%, transparent)',
+            borderRadius: 'var(--radius-sm)',
+            border: '1px solid color-mix(in srgb, var(--yellow) 25%, transparent)',
+            lineHeight: 1.5,
+            fontWeight: 500,
+          }}>
             You need to be logged in to submit a rating.
           </div>
         )}
 
-        {/* Submit */}
-        <button
-          type="submit"
-          disabled={submitting}
-          className="btn btn-primary"
-          style={{
-            width: '100%',
-            padding: '15px',
-            fontSize: '15px',
-            fontWeight: 800,
-            borderRadius: 'var(--radius-md)',
-            opacity: submitting ? 0.5 : 1,
-            cursor: submitting ? 'not-allowed' : 'pointer',
-            letterSpacing: '0.01em',
-          }}
-        >
-          {submitting ? 'Submitting…' : user ? 'Submit Rating' : 'Log in to rate'}
-        </button>
+        {/* Sticky submit button */}
+        <div style={{
+          position: 'sticky',
+          bottom: 0,
+          left: 0,
+          right: 0,
+          backgroundColor: 'var(--bg)',
+          paddingTop: '12px',
+          paddingBottom: 'max(16px, calc(env(safe-area-inset-bottom) + 12px))',
+          borderTop: '1px solid var(--border-soft)',
+          marginLeft: '-16px',
+          marginRight: '-16px',
+          paddingLeft: '16px',
+          paddingRight: '16px',
+          zIndex: 10,
+        }}>
+          <button
+            type="submit"
+            disabled={submitting}
+            className="btn btn-primary"
+            style={{
+              width: '100%',
+              height: '52px',
+              fontSize: '15px',
+              fontWeight: 800,
+              borderRadius: 'var(--radius-md)',
+              opacity: submitting ? 0.5 : 1,
+              cursor: submitting ? 'not-allowed' : 'pointer',
+              letterSpacing: '0.01em',
+            }}
+          >
+            {submitting ? 'Submitting…' : user ? 'Submit Rating' : 'Log in to rate'}
+          </button>
+        </div>
       </form>
     </div>
   )

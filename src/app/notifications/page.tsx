@@ -133,6 +133,14 @@ async function getNotifications(userId: string): Promise<NotificationItem[]> {
   return items.slice(0, 50)
 }
 
+function isToday(dateStr: string): boolean {
+  const d = new Date(dateStr)
+  const now = new Date()
+  return d.getFullYear() === now.getFullYear() &&
+    d.getMonth() === now.getMonth() &&
+    d.getDate() === now.getDate()
+}
+
 export default async function NotificationsPage() {
   const supabase = await createServerSupabaseClient()
   const { data: { user } } = await supabase.auth.getUser()
@@ -160,9 +168,19 @@ export default async function NotificationsPage() {
 
   const notifications = await getNotifications(user.id)
 
+  // Split into Today / Earlier
+  const todayItems = notifications.filter((n) => isToday(n.created_at))
+  const earlierItems = notifications.filter((n) => !isToday(n.created_at))
+
+  const groups: Array<{ label: string; items: NotificationItem[] }> = []
+  if (todayItems.length > 0) groups.push({ label: 'Today', items: todayItems })
+  if (earlierItems.length > 0) groups.push({ label: 'Earlier', items: earlierItems })
+
   return (
     <div style={{ maxWidth: '480px', margin: '0 auto', padding: '16px 0 96px' }}>
-      <div style={{ padding: '8px 16px 16px' }}>
+
+      {/* Header */}
+      <div style={{ padding: '8px 16px 20px' }}>
         <h1 style={{ fontSize: '20px', fontWeight: 900, color: 'var(--text)', margin: 0, letterSpacing: '-0.02em' }}>
           Notifications
         </h1>
@@ -174,60 +192,112 @@ export default async function NotificationsPage() {
           <p style={{ color: 'var(--text-dim)', fontSize: '14px', margin: 0 }}>No notifications yet.</p>
         </div>
       ) : (
-        <div style={{ backgroundColor: 'var(--bg-card)' }}>
-          {notifications.map((notif, idx) => {
-            const href = notif.type === 'follow'
-              ? `/users/${notif.actor_username}`
-              : `/flavors/${notif.flavor_slug}`
+        <div>
+          {groups.map((group) => (
+            <div key={group.label} style={{ marginBottom: '8px' }}>
 
-            return (
-              <Link
-                key={notif.id}
-                href={href}
-                style={{
-                  display: 'flex', alignItems: 'center', gap: '12px',
-                  padding: '13px 16px', textDecoration: 'none', color: 'inherit',
-                  borderBottom: idx < notifications.length - 1 ? '1px solid var(--border-soft)' : 'none',
-                  WebkitTapHighlightColor: 'transparent',
-                }}
-              >
-                <div style={{
-                  width: '36px', height: '36px', borderRadius: '50%', flexShrink: 0,
-                  backgroundColor: 'var(--bg-elevated)', border: '1px solid var(--border)',
-                  display: 'flex', alignItems: 'center', justifyContent: 'center',
-                  fontSize: '13px', fontWeight: 800, color: 'var(--accent)', overflow: 'hidden',
-                }}>
-                  {notif.actor_avatar ? (
-                    // eslint-disable-next-line @next/next/no-img-element
-                    <img src={notif.actor_avatar} alt="" loading="lazy" decoding="async" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-                  ) : (
-                    notif.actor_username[0]?.toUpperCase() ?? '?'
-                  )}
-                </div>
+              {/* Group header */}
+              <div style={{
+                padding: '4px 16px 8px',
+                fontSize: '12px',
+                fontWeight: 700,
+                color: 'var(--text-faint)',
+                textTransform: 'uppercase',
+                letterSpacing: '0.08em',
+              }}>
+                {group.label}
+              </div>
 
-                <div style={{ flex: 1, minWidth: 0 }}>
-                  <p style={{ margin: 0, fontSize: '13px', color: 'var(--text)', lineHeight: 1.5 }}>
-                    <span style={{ fontWeight: 700 }}>{notif.actor_username}</span>
-                    {notif.type === 'like' && (
-                      <> liked your review of <span style={{ fontWeight: 600 }}>{notif.flavor_name}</span></>
-                    )}
-                    {notif.type === 'comment' && (
-                      <> commented on <span style={{ fontWeight: 600 }}>{notif.flavor_name}</span>
-                        {notif.comment_preview && (
-                          <span style={{ color: 'var(--text-muted)' }}> — &ldquo;{notif.comment_preview}&rdquo;</span>
+              {/* Group items */}
+              <div style={{
+                backgroundColor: 'var(--bg-card)',
+                marginLeft: '16px',
+                marginRight: '16px',
+                borderRadius: 'var(--radius-lg)',
+                border: '1px solid var(--border)',
+                overflow: 'hidden',
+              }}>
+                {group.items.map((notif, idx) => {
+                  const href = notif.type === 'follow'
+                    ? `/users/${notif.actor_username}`
+                    : `/flavors/${notif.flavor_slug}`
+
+                  return (
+                    <Link
+                      key={notif.id}
+                      href={href}
+                      style={{
+                        display: 'flex',
+                        alignItems: 'flex-start',
+                        gap: '12px',
+                        padding: '14px 16px',
+                        minHeight: '60px',
+                        textDecoration: 'none',
+                        color: 'inherit',
+                        borderTop: idx > 0 ? '1px solid var(--border-soft)' : 'none',
+                        boxSizing: 'border-box',
+                        WebkitTapHighlightColor: 'transparent',
+                      }}
+                    >
+                      {/* Avatar */}
+                      <div style={{
+                        width: '36px', height: '36px', borderRadius: '50%', flexShrink: 0,
+                        backgroundColor: 'var(--bg-elevated)', border: '1px solid var(--border)',
+                        display: 'flex', alignItems: 'center', justifyContent: 'center',
+                        fontSize: '13px', fontWeight: 800, color: 'var(--accent)', overflow: 'hidden',
+                        marginTop: '1px',
+                      }}>
+                        {notif.actor_avatar ? (
+                          // eslint-disable-next-line @next/next/no-img-element
+                          <img src={notif.actor_avatar} alt="" loading="lazy" decoding="async" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                        ) : (
+                          notif.actor_username[0]?.toUpperCase() ?? '?'
                         )}
-                      </>
-                    )}
-                    {notif.type === 'follow' && <> started following you</>}
-                  </p>
-                </div>
+                      </div>
 
-                <span style={{ fontSize: '11px', color: 'var(--text-faint)', flexShrink: 0 }}>
-                  {timeAgo(notif.created_at)}
-                </span>
-              </Link>
-            )
-          })}
+                      {/* Text */}
+                      <div style={{ flex: 1, minWidth: 0 }}>
+                        <p style={{
+                          margin: 0,
+                          fontSize: '13px',
+                          color: 'var(--text)',
+                          lineHeight: 1.5,
+                          display: '-webkit-box',
+                          WebkitLineClamp: 2,
+                          WebkitBoxOrient: 'vertical',
+                          overflow: 'hidden',
+                        }}>
+                          <span style={{ fontWeight: 700 }}>{notif.actor_username}</span>
+                          {notif.type === 'like' && (
+                            <> liked your review of <span style={{ fontWeight: 600 }}>{notif.flavor_name}</span></>
+                          )}
+                          {notif.type === 'comment' && (
+                            <> commented on <span style={{ fontWeight: 600 }}>{notif.flavor_name}</span>
+                              {notif.comment_preview && (
+                                <span style={{ color: 'var(--text-muted)' }}> — &ldquo;{notif.comment_preview}&rdquo;</span>
+                              )}
+                            </>
+                          )}
+                          {notif.type === 'follow' && <> started following you</>}
+                        </p>
+                      </div>
+
+                      {/* Time */}
+                      <span style={{
+                        fontSize: '11px',
+                        color: 'var(--text-faint)',
+                        flexShrink: 0,
+                        marginTop: '2px',
+                        whiteSpace: 'nowrap',
+                      }}>
+                        {timeAgo(notif.created_at)}
+                      </span>
+                    </Link>
+                  )
+                })}
+              </div>
+            </div>
+          ))}
         </div>
       )}
     </div>

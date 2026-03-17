@@ -64,43 +64,43 @@ export default async function UserProfilePage({ params }: Props) {
     ? Math.min(100, ((totalRatings - tierData.min) / (tierData.max - tierData.min + 1)) * 100)
     : 100
 
-  return (
-    <div style={{ maxWidth: '800px', margin: '0 auto', padding: 'clamp(16px, 5vw, 48px) 16px 96px' }}>
+  const statCards = [
+    { value: totalRatings, label: 'Ratings', color: 'var(--text)' },
+    ...(avgScore !== null
+      ? [{ value: avgScore.toFixed(1), label: 'Avg Score', color: getScoreColor(avgScore) }]
+      : []),
+    { value: followerCount ?? 0, label: 'Followers', color: 'var(--text)' },
+    { value: followingCount ?? 0, label: 'Following', color: 'var(--text)' },
+  ]
 
-      {/* Profile header card */}
-      <div
-        className="card"
-        style={{
-          backgroundColor: 'var(--bg-card)',
-          border: '1px solid var(--border)',
-          borderRadius: 'var(--radius-xl)',
-          padding: '32px',
-          marginBottom: '16px',
-        }}
-      >
-        <div style={{
-          display: 'flex',
-          gap: '24px',
-          alignItems: 'flex-start',
-          flexWrap: 'wrap',
-        }}>
+  return (
+    <div style={{ maxWidth: '800px', margin: '0 auto', padding: '0 0 96px' }}>
+
+      {/* ── Mobile layout ── */}
+      <div className="sm:hidden" style={{ padding: '24px 16px 0' }}>
+
+        {/* Avatar + name block — centered */}
+        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', marginBottom: '20px' }}>
 
           {/* Avatar */}
           {currentUser?.id === profile.id ? (
-            <AvatarUpload
-              currentAvatarUrl={profile.avatar_url}
-              username={profile.username}
-              tierColor={tierData.color}
-            />
+            <div style={{ marginBottom: '14px' }}>
+              <AvatarUpload
+                currentAvatarUrl={profile.avatar_url}
+                username={profile.username}
+                tierColor={tierData.color}
+              />
+            </div>
           ) : (
             <div style={{
-              width: '76px', height: '76px', borderRadius: '50%',
+              width: '72px', height: '72px', borderRadius: '50%',
               backgroundColor: 'var(--bg-elevated)',
-              border: `2px solid ${tierData.color}`,
+              border: `3px solid ${tierData.color}`,
               boxShadow: `0 0 16px ${tierData.color}44`,
               display: 'flex', alignItems: 'center', justifyContent: 'center',
-              fontSize: '28px', fontWeight: 900, color: tierData.color,
+              fontSize: '26px', fontWeight: 900, color: tierData.color,
               flexShrink: 0, overflow: 'hidden',
+              marginBottom: '14px',
             }}>
               {profile.avatar_url ? (
                 // eslint-disable-next-line @next/next/no-img-element
@@ -111,84 +111,68 @@ export default async function UserProfilePage({ params }: Props) {
             </div>
           )}
 
-          {/* Name + badge + follow */}
-          <div style={{ flex: 1, minWidth: 0 }}>
-            <h1 style={{
-              fontSize: '24px',
-              fontWeight: 900,
-              margin: '0 0 8px',
-              color: 'var(--text)',
-              lineHeight: 1.2,
+          {/* Name */}
+          <h1 style={{
+            fontSize: '22px',
+            fontWeight: 900,
+            margin: '0 0 8px',
+            color: 'var(--text)',
+            letterSpacing: '-0.02em',
+            textAlign: 'center',
+          }}>
+            {profile.username}
+          </h1>
+
+          {/* Badge + follow */}
+          <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '8px', flexWrap: 'wrap', justifyContent: 'center' }}>
+            <Badge tier={profile.badge_tier} size="md" />
+            <FollowButton targetUserId={profile.id} initialFollowing={isFollowing} />
+          </div>
+
+          {/* Bio */}
+          {profile.bio && (
+            <p style={{
+              color: 'var(--text-muted)',
+              fontSize: '13px',
+              lineHeight: 1.6,
+              margin: '4px 0 0',
+              textAlign: 'center',
             }}>
-              {profile.username}
-            </h1>
-            <div style={{
-              display: 'flex',
-              alignItems: 'center',
-              gap: '10px',
-              marginBottom: '10px',
-              flexWrap: 'wrap',
-            }}>
-              <Badge tier={profile.badge_tier} size="md" />
-              <FollowButton targetUserId={profile.id} initialFollowing={isFollowing} />
-            </div>
-            {profile.bio && (
-              <p style={{
-                color: 'var(--text-muted)',
-                fontSize: '14px',
-                lineHeight: 1.6,
-                margin: '0 0 10px',
-              }}>
-                {profile.bio}
-              </p>
-            )}
-            <div style={{
-              fontSize: '12px',
-              color: 'var(--text-faint)',
-              fontWeight: 500,
-            }}>
-              Member since {joinYear}
-            </div>
+              {profile.bio}
+            </p>
+          )}
+
+          {/* Member since */}
+          <div style={{ fontSize: '12px', color: 'var(--text-faint)', fontWeight: 500, marginTop: '6px' }}>
+            Member since {joinYear}
           </div>
         </div>
 
-        {/* Divider */}
-        <div style={{
-          height: '1px',
-          backgroundColor: 'var(--border-soft)',
-          margin: '24px 0',
-        }} />
-
-        {/* Stats row */}
+        {/* Stats grid */}
         <div style={{
           display: 'grid',
-          gridTemplateColumns: `repeat(${avgScore !== null ? 4 : 3}, 1fr)`,
+          gridTemplateColumns: `repeat(${statCards.length === 4 ? 4 : statCards.length}, 1fr)`,
           gap: '8px',
+          marginBottom: '16px',
         }}>
-          {[
-            { value: totalRatings, label: 'Ratings', color: 'var(--text)' },
-            ...(avgScore !== null
-              ? [{ value: avgScore.toFixed(1), label: 'Avg Score', color: getScoreColor(avgScore) }]
-              : []),
-            { value: followerCount ?? 0, label: 'Followers', color: 'var(--text)' },
-            { value: followingCount ?? 0, label: 'Following', color: 'var(--text)' },
-          ].map((stat) => (
+          {statCards.map((stat) => (
             <div
               key={stat.label}
               style={{
                 backgroundColor: 'var(--bg-elevated)',
                 border: '1px solid var(--border-soft)',
-                borderRadius: 'var(--radius-md)',
+                borderRadius: 'var(--radius-lg)',
                 padding: '14px 8px',
                 textAlign: 'center',
               }}
             >
               <div style={{
-                fontSize: '26px',
+                fontSize: '24px',
                 fontWeight: 900,
                 color: stat.color,
                 lineHeight: 1,
-                marginBottom: '5px',
+                marginBottom: '4px',
+                letterSpacing: '-0.02em',
               }}>
                 {stat.value}
               </div>
@@ -204,175 +188,147 @@ export default async function UserProfilePage({ params }: Props) {
             </div>
           ))}
         </div>
-      </div>
 
-      {/* Badge progress card */}
-      <div
-        className="card"
-        style={{
+        {/* Badge progress */}
+        <div style={{
           backgroundColor: 'var(--bg-card)',
           border: '1px solid var(--border)',
-          borderRadius: 'var(--radius-md)',
-          padding: '18px 24px',
-          marginBottom: '32px',
-        }}
-      >
-        <div style={{
-          display: 'flex',
-          justifyContent: 'space-between',
-          alignItems: 'center',
-          marginBottom: '12px',
+          borderRadius: 'var(--radius-lg)',
+          padding: '16px',
+          marginBottom: '24px',
         }}>
           <div style={{
-            fontSize: '13px',
-            fontWeight: 700,
-            color: tierData.color,
-            letterSpacing: '0.02em',
+            display: 'flex',
+            justifyContent: 'space-between',
+            alignItems: 'center',
+            marginBottom: '10px',
           }}>
-            {tierData.name}
+            <div style={{
+              fontSize: '13px',
+              fontWeight: 700,
+              color: tierData.color,
+            }}>
+              {tierData.name}
+            </div>
+            {tierData.max !== Infinity && (
+              <div style={{ fontSize: '11px', color: 'var(--text-faint)', fontWeight: 500 }}>
+                {totalRatings} / {tierData.max + 1}
+              </div>
+            )}
           </div>
-          {tierData.max !== Infinity && (
-            <div style={{ fontSize: '11px', color: 'var(--text-faint)', fontWeight: 500 }}>
-              {totalRatings} / {tierData.max + 1} ratings to next tier
+          {tierData.max !== Infinity ? (
+            <div style={{
+              height: '5px',
+              backgroundColor: 'var(--bg-elevated)',
+              borderRadius: '999px',
+              overflow: 'hidden',
+            }}>
+              <div style={{
+                height: '100%',
+                width: `${progressPct}%`,
+                backgroundColor: tierData.color,
+                borderRadius: '999px',
+                boxShadow: `0 0 8px ${tierData.color}88`,
+                transition: 'width 0.4s ease',
+              }} />
+            </div>
+          ) : (
+            <div style={{ fontSize: '12px', color: 'var(--text-faint)', fontStyle: 'italic' }}>
+              Maximum tier reached.
             </div>
           )}
         </div>
 
-        {tierData.max !== Infinity ? (
-          <div style={{
-            height: '5px',
-            backgroundColor: 'var(--bg-elevated)',
-            borderRadius: '999px',
-            overflow: 'hidden',
-          }}>
-            <div style={{
-              height: '100%',
-              width: `${progressPct}%`,
-              backgroundColor: tierData.color,
-              borderRadius: '999px',
-              boxShadow: `0 0 8px ${tierData.color}88`,
-              transition: 'width 0.4s ease',
-            }} />
-          </div>
-        ) : (
-          <div style={{
-            fontSize: '12px',
-            color: 'var(--text-faint)',
-            fontStyle: 'italic',
-          }}>
-            Maximum tier reached.
-          </div>
-        )}
-      </div>
-
-      {/* Ratings list */}
-      <div>
-        <h2 style={{
-          fontSize: '17px',
-          fontWeight: 800,
-          marginBottom: '16px',
-          color: 'var(--text)',
-          display: 'flex',
-          alignItems: 'baseline',
-          gap: '8px',
-        }}>
-          Ratings
-          <span style={{
-            color: 'var(--text-faint)',
-            fontWeight: 400,
-            fontSize: '13px',
-          }}>
-            ({totalRatings})
-          </span>
-        </h2>
+        {/* Ratings section */}
+        <div style={{ marginBottom: '8px', display: 'flex', alignItems: 'baseline', gap: '8px' }}>
+          <span style={{ fontSize: '17px', fontWeight: 800, color: 'var(--text)' }}>Ratings</span>
+          <span style={{ fontSize: '13px', color: 'var(--text-faint)', fontWeight: 400 }}>({totalRatings})</span>
+        </div>
 
         {ratings.length === 0 ? (
-          <div
-            className="card"
-            style={{
-              backgroundColor: 'var(--bg-card)',
-              border: '1px solid var(--border)',
-              borderRadius: 'var(--radius-md)',
-              padding: '40px 24px',
-              textAlign: 'center',
-            }}
-          >
-            <div style={{ fontSize: '13px', color: 'var(--text-muted)' }}>
-              No ratings yet.
-            </div>
+          <div style={{
+            backgroundColor: 'var(--bg-card)',
+            border: '1px solid var(--border)',
+            borderRadius: 'var(--radius-lg)',
+            padding: '40px 16px',
+            textAlign: 'center',
+          }}>
+            <div style={{ fontSize: '13px', color: 'var(--text-muted)' }}>No ratings yet.</div>
           </div>
         ) : (
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-            {ratings.map((rating: any) => {
+          <div style={{
+            backgroundColor: 'var(--bg-card)',
+            border: '1px solid var(--border)',
+            borderRadius: 'var(--radius-lg)',
+            overflow: 'hidden',
+          }}>
+            {ratings.map((rating: any, idx: number) => {
               const flavor = rating.flavors
               const product = flavor?.products
               const brand = product?.brands
+              const dateStr = rating.created_at
+                ? new Date(rating.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })
+                : null
 
               return (
                 <Link
                   key={rating.id}
                   href={`/flavors/${flavor?.slug}`}
-                  style={{ textDecoration: 'none', color: 'inherit' }}
+                  style={{ textDecoration: 'none', color: 'inherit', display: 'block' }}
                 >
                   <div
                     className="card-hover"
                     style={{
-                      backgroundColor: 'var(--bg-card)',
-                      border: '1px solid var(--border)',
-                      borderRadius: 'var(--radius-md)',
-                      padding: '14px 18px',
                       display: 'flex',
                       alignItems: 'center',
-                      gap: '14px',
-                      transition: 'background-color 150ms ease, border-color 150ms ease',
+                      gap: '12px',
+                      padding: '14px 16px',
+                      minHeight: '72px',
+                      boxSizing: 'border-box',
+                      borderTop: idx > 0 ? '1px solid var(--border-soft)' : 'none',
+                      WebkitTapHighlightColor: 'transparent',
                     }}
                   >
-                    {/* Flavor info */}
+                    {/* Text block */}
                     <div style={{ flex: 1, minWidth: 0 }}>
                       <div style={{
                         fontSize: '15px',
                         fontWeight: 700,
                         color: 'var(--text)',
                         marginBottom: '3px',
-                        whiteSpace: 'nowrap',
                         overflow: 'hidden',
                         textOverflow: 'ellipsis',
+                        whiteSpace: 'nowrap',
                       }}>
                         {flavor?.name ?? 'Unknown flavor'}
                       </div>
                       <div style={{
-                        fontSize: '11px',
-                        color: 'var(--text-faint)',
-                        textTransform: 'uppercase',
-                        letterSpacing: '0.05em',
-                        fontWeight: 600,
-                        marginBottom: rating.review_text ? '6px' : 0,
+                        fontSize: '12px',
+                        color: 'var(--text-dim)',
+                        overflow: 'hidden',
+                        textOverflow: 'ellipsis',
+                        whiteSpace: 'nowrap',
                       }}>
-                        {brand?.name} · {product?.name}
+                        {brand?.name}
+                        {product?.name && (
+                          <span style={{ color: 'var(--text-faint)' }}> · {product.name}</span>
+                        )}
                       </div>
-                      {rating.review_text && (
-                        <div style={{
-                          fontSize: '13px',
-                          color: 'var(--text-dim)',
-                          lineHeight: 1.5,
-                          overflow: 'hidden',
-                          textOverflow: 'ellipsis',
-                          whiteSpace: 'nowrap',
-                          maxWidth: '100%',
-                        }}>
-                          {rating.review_text}
+                      {dateStr && (
+                        <div style={{ fontSize: '11px', color: 'var(--text-faint)', marginTop: '2px' }}>
+                          {dateStr}
                         </div>
                       )}
                     </div>
 
-                    {/* Score block */}
+                    {/* Score + WBA */}
                     <div style={{ textAlign: 'right', flexShrink: 0 }}>
                       <div style={{
-                        fontSize: '22px',
+                        fontSize: '24px',
                         fontWeight: 900,
                         color: getScoreColor(rating.overall_score),
                         lineHeight: 1,
-                        marginBottom: '3px',
+                        letterSpacing: '-0.02em',
                       }}>
                         {rating.overall_score.toFixed(1)}
                       </div>
@@ -382,6 +338,7 @@ export default async function UserProfilePage({ params }: Props) {
                           color: 'var(--green)',
                           fontWeight: 700,
                           letterSpacing: '0.03em',
+                          marginTop: '2px',
                         }}>
                           WBA
                         </div>
@@ -389,14 +346,7 @@ export default async function UserProfilePage({ params }: Props) {
                     </div>
 
                     {/* Chevron */}
-                    <div style={{
-                      color: 'var(--text-faint)',
-                      flexShrink: 0,
-                      fontSize: '16px',
-                      lineHeight: 1,
-                    }}>
-                      ›
-                    </div>
+                    <div style={{ color: 'var(--text-faint)', fontSize: '16px', lineHeight: 1, flexShrink: 0 }}>›</div>
                   </div>
                 </Link>
               )
@@ -404,6 +354,349 @@ export default async function UserProfilePage({ params }: Props) {
           </div>
         )}
       </div>
+
+      {/* ── Desktop layout ── */}
+      <div className="hidden sm:block" style={{ padding: 'clamp(16px, 5vw, 48px) 16px 0' }}>
+
+        {/* Profile header card */}
+        <div
+          className="card"
+          style={{
+            backgroundColor: 'var(--bg-card)',
+            border: '1px solid var(--border)',
+            borderRadius: 'var(--radius-xl)',
+            padding: '32px',
+            marginBottom: '16px',
+          }}
+        >
+          <div style={{
+            display: 'flex',
+            gap: '24px',
+            alignItems: 'flex-start',
+            flexWrap: 'wrap',
+          }}>
+
+            {/* Avatar */}
+            {currentUser?.id === profile.id ? (
+              <AvatarUpload
+                currentAvatarUrl={profile.avatar_url}
+                username={profile.username}
+                tierColor={tierData.color}
+              />
+            ) : (
+              <div style={{
+                width: '76px', height: '76px', borderRadius: '50%',
+                backgroundColor: 'var(--bg-elevated)',
+                border: `2px solid ${tierData.color}`,
+                boxShadow: `0 0 16px ${tierData.color}44`,
+                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                fontSize: '28px', fontWeight: 900, color: tierData.color,
+                flexShrink: 0, overflow: 'hidden',
+              }}>
+                {profile.avatar_url ? (
+                  // eslint-disable-next-line @next/next/no-img-element
+                  <img src={profile.avatar_url} alt={profile.username} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                ) : (
+                  profile.username?.[0]?.toUpperCase() ?? '?'
+                )}
+              </div>
+            )}
+
+            {/* Name + badge + follow */}
+            <div style={{ flex: 1, minWidth: 0 }}>
+              <h1 style={{
+                fontSize: '24px',
+                fontWeight: 900,
+                margin: '0 0 8px',
+                color: 'var(--text)',
+                lineHeight: 1.2,
+              }}>
+                {profile.username}
+              </h1>
+              <div style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: '10px',
+                marginBottom: '10px',
+                flexWrap: 'wrap',
+              }}>
+                <Badge tier={profile.badge_tier} size="md" />
+                <FollowButton targetUserId={profile.id} initialFollowing={isFollowing} />
+              </div>
+              {profile.bio && (
+                <p style={{
+                  color: 'var(--text-muted)',
+                  fontSize: '14px',
+                  lineHeight: 1.6,
+                  margin: '0 0 10px',
+                }}>
+                  {profile.bio}
+                </p>
+              )}
+              <div style={{
+                fontSize: '12px',
+                color: 'var(--text-faint)',
+                fontWeight: 500,
+              }}>
+                Member since {joinYear}
+              </div>
+            </div>
+          </div>
+
+          {/* Divider */}
+          <div style={{
+            height: '1px',
+            backgroundColor: 'var(--border-soft)',
+            margin: '24px 0',
+          }} />
+
+          {/* Stats row */}
+          <div style={{
+            display: 'grid',
+            gridTemplateColumns: `repeat(${avgScore !== null ? 4 : 3}, 1fr)`,
+            gap: '8px',
+          }}>
+            {[
+              { value: totalRatings, label: 'Ratings', color: 'var(--text)' },
+              ...(avgScore !== null
+                ? [{ value: avgScore.toFixed(1), label: 'Avg Score', color: getScoreColor(avgScore) }]
+                : []),
+              { value: followerCount ?? 0, label: 'Followers', color: 'var(--text)' },
+              { value: followingCount ?? 0, label: 'Following', color: 'var(--text)' },
+            ].map((stat) => (
+              <div
+                key={stat.label}
+                style={{
+                  backgroundColor: 'var(--bg-elevated)',
+                  border: '1px solid var(--border-soft)',
+                  borderRadius: 'var(--radius-md)',
+                  padding: '14px 8px',
+                  textAlign: 'center',
+                }}
+              >
+                <div style={{
+                  fontSize: '26px',
+                  fontWeight: 900,
+                  color: stat.color,
+                  lineHeight: 1,
+                  marginBottom: '5px',
+                }}>
+                  {stat.value}
+                </div>
+                <div style={{
+                  fontSize: '10px',
+                  color: 'var(--text-faint)',
+                  textTransform: 'uppercase',
+                  letterSpacing: '0.07em',
+                  fontWeight: 600,
+                }}>
+                  {stat.label}
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* Badge progress card */}
+        <div
+          className="card"
+          style={{
+            backgroundColor: 'var(--bg-card)',
+            border: '1px solid var(--border)',
+            borderRadius: 'var(--radius-md)',
+            padding: '18px 24px',
+            marginBottom: '32px',
+          }}
+        >
+          <div style={{
+            display: 'flex',
+            justifyContent: 'space-between',
+            alignItems: 'center',
+            marginBottom: '12px',
+          }}>
+            <div style={{
+              fontSize: '13px',
+              fontWeight: 700,
+              color: tierData.color,
+              letterSpacing: '0.02em',
+            }}>
+              {tierData.name}
+            </div>
+            {tierData.max !== Infinity && (
+              <div style={{ fontSize: '11px', color: 'var(--text-faint)', fontWeight: 500 }}>
+                {totalRatings} / {tierData.max + 1} ratings to next tier
+              </div>
+            )}
+          </div>
+
+          {tierData.max !== Infinity ? (
+            <div style={{
+              height: '5px',
+              backgroundColor: 'var(--bg-elevated)',
+              borderRadius: '999px',
+              overflow: 'hidden',
+            }}>
+              <div style={{
+                height: '100%',
+                width: `${progressPct}%`,
+                backgroundColor: tierData.color,
+                borderRadius: '999px',
+                boxShadow: `0 0 8px ${tierData.color}88`,
+                transition: 'width 0.4s ease',
+              }} />
+            </div>
+          ) : (
+            <div style={{
+              fontSize: '12px',
+              color: 'var(--text-faint)',
+              fontStyle: 'italic',
+            }}>
+              Maximum tier reached.
+            </div>
+          )}
+        </div>
+
+        {/* Ratings list */}
+        <div>
+          <h2 style={{
+            fontSize: '17px',
+            fontWeight: 800,
+            marginBottom: '16px',
+            color: 'var(--text)',
+            display: 'flex',
+            alignItems: 'baseline',
+            gap: '8px',
+          }}>
+            Ratings
+            <span style={{
+              color: 'var(--text-faint)',
+              fontWeight: 400,
+              fontSize: '13px',
+            }}>
+              ({totalRatings})
+            </span>
+          </h2>
+
+          {ratings.length === 0 ? (
+            <div
+              className="card"
+              style={{
+                backgroundColor: 'var(--bg-card)',
+                border: '1px solid var(--border)',
+                borderRadius: 'var(--radius-md)',
+                padding: '40px 24px',
+                textAlign: 'center',
+              }}
+            >
+              <div style={{ fontSize: '13px', color: 'var(--text-muted)' }}>
+                No ratings yet.
+              </div>
+            </div>
+          ) : (
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+              {ratings.map((rating: any) => {
+                const flavor = rating.flavors
+                const product = flavor?.products
+                const brand = product?.brands
+
+                return (
+                  <Link
+                    key={rating.id}
+                    href={`/flavors/${flavor?.slug}`}
+                    style={{ textDecoration: 'none', color: 'inherit' }}
+                  >
+                    <div
+                      className="card-hover"
+                      style={{
+                        backgroundColor: 'var(--bg-card)',
+                        border: '1px solid var(--border)',
+                        borderRadius: 'var(--radius-md)',
+                        padding: '14px 18px',
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '14px',
+                        transition: 'background-color 150ms ease, border-color 150ms ease',
+                      }}
+                    >
+                      {/* Flavor info */}
+                      <div style={{ flex: 1, minWidth: 0 }}>
+                        <div style={{
+                          fontSize: '15px',
+                          fontWeight: 700,
+                          color: 'var(--text)',
+                          marginBottom: '3px',
+                          whiteSpace: 'nowrap',
+                          overflow: 'hidden',
+                          textOverflow: 'ellipsis',
+                        }}>
+                          {flavor?.name ?? 'Unknown flavor'}
+                        </div>
+                        <div style={{
+                          fontSize: '11px',
+                          color: 'var(--text-faint)',
+                          textTransform: 'uppercase',
+                          letterSpacing: '0.05em',
+                          fontWeight: 600,
+                          marginBottom: rating.review_text ? '6px' : 0,
+                        }}>
+                          {brand?.name} · {product?.name}
+                        </div>
+                        {rating.review_text && (
+                          <div style={{
+                            fontSize: '13px',
+                            color: 'var(--text-dim)',
+                            lineHeight: 1.5,
+                            overflow: 'hidden',
+                            textOverflow: 'ellipsis',
+                            whiteSpace: 'nowrap',
+                            maxWidth: '100%',
+                          }}>
+                            {rating.review_text}
+                          </div>
+                        )}
+                      </div>
+
+                      {/* Score block */}
+                      <div style={{ textAlign: 'right', flexShrink: 0 }}>
+                        <div style={{
+                          fontSize: '22px',
+                          fontWeight: 900,
+                          color: getScoreColor(rating.overall_score),
+                          lineHeight: 1,
+                          marginBottom: '3px',
+                        }}>
+                          {rating.overall_score.toFixed(1)}
+                        </div>
+                        {rating.would_buy_again && (
+                          <div style={{
+                            fontSize: '10px',
+                            color: 'var(--green)',
+                            fontWeight: 700,
+                            letterSpacing: '0.03em',
+                          }}>
+                            WBA
+                          </div>
+                        )}
+                      </div>
+
+                      {/* Chevron */}
+                      <div style={{
+                        color: 'var(--text-faint)',
+                        flexShrink: 0,
+                        fontSize: '16px',
+                        lineHeight: 1,
+                      }}>
+                        ›
+                      </div>
+                    </div>
+                  </Link>
+                )
+              })}
+            </div>
+          )}
+        </div>
+      </div>
+
     </div>
   )
 }
