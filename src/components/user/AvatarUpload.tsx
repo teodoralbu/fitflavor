@@ -53,9 +53,11 @@ export function AvatarUpload({ currentAvatarUrl, username, tierColor }: Props) {
       const { data: { publicUrl } } = supabase.storage.from('avatars').getPublicUrl(path)
       const urlWithBust = publicUrl + '?t=' + Date.now()
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      await (supabase as any).from('users').update({ avatar_url: publicUrl }).eq('id', user.id)
-      setAvatarUrl(urlWithBust)
-      await refreshProfile()
+      const { error: updateError } = await (supabase as any).from('users').update({ avatar_url: urlWithBust }).eq('id', user.id)
+      if (!updateError) {
+        setAvatarUrl(urlWithBust)
+        await refreshProfile()
+      }
     }
 
     setUploading(false)
