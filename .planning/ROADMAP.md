@@ -46,11 +46,13 @@ Plans:
   3. User can comment on and like reviews without stale state, missing updates, or UI glitches
   4. User can upload an avatar and see it reflected immediately in the UI without refresh
   5. All user flows (auth, rating, feed, profile, comments, likes, follow) have been audited and broken behaviors fixed
-**Plans**: TBD
+**Plans**: 4 plans
 
 Plans:
-- [ ] 02-01: TBD
-- [ ] 02-02: TBD
+- [ ] 02-01-PLAN.md — Add Supabase session-refresh middleware + fix logout router.refresh (BUG-03)
+- [ ] 02-02-PLAN.md — Fix isFirst rating detection (pre-insert count) + duplicate submit guard (BUG-04)
+- [ ] 02-03-PLAN.md — Fix comment count stale bug + FollowButton optimistic update (BUG-05)
+- [ ] 02-04-PLAN.md — Add AvatarUpload file validation + end-to-end audit checkpoint (BUG-01, BUG-02, BUG-06)
 
 ### Phase 3: Performance
 **Goal**: Pages load quickly and the app handles growing data without degradation
@@ -91,6 +93,6 @@ Phases execute in numeric order: 1 → 2 → 3 → 4
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
 | 1. Mobile UX | 2/3 | In Progress|  |
-| 2. Bug Hunt & Fixes | 0/0 | Not started | - |
+| 2. Bug Hunt & Fixes | 0/4 | Not started | - |
 | 3. Performance | 0/0 | Not started | - |
 | 4. Quality & Accessibility | 0/0 | Not started | - |
