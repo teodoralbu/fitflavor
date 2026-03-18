@@ -29,11 +29,12 @@ Decimal phases appear between their surrounding integers in numeric order.
   3. User can complete the full rating flow on mobile — sliders, inputs, and submit button are usable without zooming or awkward layouts
   4. User can view and edit their profile/settings on mobile — avatar upload works, nothing overflows
   5. Page transitions feel smooth on mobile — no layout jumps when navigating between pages
-**Plans**: TBD
+**Plans**: 3 plans
 
 Plans:
-- [ ] 01-01: TBD
-- [ ] 01-02: TBD
+- [ ] 01-01-PLAN.md — Fix touch targets and input font-sizes across all components
+- [ ] 01-02-PLAN.md — Fix feed card overflow and rating form mobile layout
+- [ ] 01-03-PLAN.md — Fix settings page layout and verify complete mobile experience
 
 ### Phase 2: Bug Hunt & Fixes
 **Goal**: Every user-facing flow works correctly and completely from start to finish
@@ -89,7 +90,7 @@ Phases execute in numeric order: 1 → 2 → 3 → 4
 
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
-| 1. Mobile UX | 0/0 | Not started | - |
+| 1. Mobile UX | 0/3 | Planning complete | - |
 | 2. Bug Hunt & Fixes | 0/0 | Not started | - |
 | 3. Performance | 0/0 | Not started | - |
 | 4. Quality & Accessibility | 0/0 | Not started | - |
