@@ -202,7 +202,7 @@ export function RatingForm({ flavor }: Props) {
   }
 
   return (
-    <div style={{ maxWidth: '600px', margin: '0 auto', padding: '0 16px', paddingBottom: '96px' }}>
+    <div style={{ maxWidth: '600px', margin: '0 auto', padding: '0 16px', paddingBottom: 'calc(160px + env(safe-area-inset-bottom))' }}>
 
       {/* Flavor header */}
       <div style={{ marginBottom: '32px', paddingTop: 'clamp(20px, 4vw, 40px)' }}>
@@ -411,7 +411,7 @@ export function RatingForm({ flavor }: Props) {
                 onClick={() => { setPhotoFile(null); setPhotoPreview(null) }}
                 style={{
                   position: 'absolute', top: '8px', right: '8px',
-                  width: '28px', height: '28px', borderRadius: '50%',
+                  width: '44px', height: '44px', borderRadius: '50%',
                   backgroundColor: 'rgba(0,0,0,0.6)', border: 'none',
                   color: '#fff', fontSize: '16px', cursor: 'pointer',
                   display: 'flex', alignItems: 'center', justifyContent: 'center',
@@ -497,7 +497,7 @@ export function RatingForm({ flavor }: Props) {
           marginRight: '-16px',
           paddingLeft: '16px',
           paddingRight: '16px',
-          zIndex: 10,
+          zIndex: 45,
         }}>
           <button
             type="submit"
