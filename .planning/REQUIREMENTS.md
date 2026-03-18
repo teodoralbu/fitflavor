@@ -8,8 +8,8 @@
 ### Mobile UX
 
 - [ ] **MOB-01**: Bottom navigation is accessible, correctly sized (touch targets ≥44px), and highlights the active route
-- [ ] **MOB-02**: Feed cards are readable and tappable on small screens without horizontal overflow or clipping
-- [ ] **MOB-03**: Rating form (rate/[slug]) is fully usable on mobile — sliders, inputs, and submit button work without awkward layouts
+- [x] **MOB-02**: Feed cards are readable and tappable on small screens without horizontal overflow or clipping
+- [x] **MOB-03**: Rating form (rate/[slug]) is fully usable on mobile — sliders, inputs, and submit button work without awkward layouts
 - [ ] **MOB-04**: User profile and settings pages are correctly laid out on mobile — no overflow, avatar upload works on mobile
 - [ ] **MOB-05**: Page transitions and navigation feel smooth on mobile (no layout jumps, consistent back behavior)
 - [ ] **MOB-06**: All tap targets across the app meet minimum size requirements — no tiny buttons or links
@@ -81,8 +81,8 @@
 | Requirement | Phase | Status |
 |-------------|-------|--------|
 | MOB-01 | Phase 1 | Pending |
-| MOB-02 | Phase 1 | Pending |
-| MOB-03 | Phase 1 | Pending |
+| MOB-02 | Phase 1 | Complete |
+| MOB-03 | Phase 1 | Complete |
 | MOB-04 | Phase 1 | Pending |
 | MOB-05 | Phase 1 | Pending |
 | MOB-06 | Phase 1 | Pending |
