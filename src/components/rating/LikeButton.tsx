@@ -82,7 +82,7 @@ export function LikeButton({ targetId, targetTable, targetColumn, initialCount, 
       disabled={loading}
       style={{
         display: 'inline-flex', alignItems: 'center', gap: '5px',
-        padding: '5px 12px', borderRadius: '999px', fontSize: '12px', fontWeight: 600,
+        padding: '10px 12px', minHeight: '44px', borderRadius: '999px', fontSize: '12px', fontWeight: 600,
         cursor: loading ? 'not-allowed' : 'pointer',
         border: liked ? '1px solid #00B4FF44' : '1px solid var(--border)',
         backgroundColor: liked ? '#00B4FF14' : 'transparent',

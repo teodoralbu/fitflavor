@@ -51,7 +51,7 @@ export function FollowButton({ targetUserId, initialFollowing }: Props) {
       onClick={toggle}
       disabled={loading}
       style={{
-        padding: '9px 24px', borderRadius: '10px', fontSize: '14px', fontWeight: 700,
+        padding: '9px 24px', minHeight: '44px', borderRadius: '10px', fontSize: '14px', fontWeight: 700,
         cursor: loading ? 'not-allowed' : 'pointer',
         border: following ? '1px solid #2A2A2A' : '1px solid #00B4FF',
         backgroundColor: following ? '#1E1E1E' : '#00B4FF',

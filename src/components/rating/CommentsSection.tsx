@@ -171,7 +171,9 @@ function CommentBottomSheet({
               border: 'none',
               cursor: 'pointer',
               color: 'var(--text-dim)',
-              padding: '4px',
+              padding: '10px',
+              minWidth: '44px',
+              minHeight: '44px',
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
@@ -269,7 +271,7 @@ function CommentBottomSheet({
                   maxLength={280}
                   style={{
                     flex: 1, background: 'var(--bg-elevated)', border: '1px solid var(--border)',
-                    borderRadius: '20px', padding: '8px 14px', fontSize: '13px',
+                    borderRadius: '20px', padding: '8px 14px', fontSize: '16px',
                     color: 'var(--text)', outline: 'none', fontFamily: 'inherit',
                   }}
                 />
@@ -320,7 +322,7 @@ export function CommentsSection({ ratingId, initialCount }: Props) {
           onClick={handleOpen}
           style={{
             display: 'flex', alignItems: 'center', gap: '6px',
-            padding: '10px 16px', background: 'none', border: 'none',
+            padding: '10px 16px', minHeight: '44px', background: 'none', border: 'none',
             cursor: 'pointer', color: 'var(--text-dim)', fontSize: '13px',
             fontWeight: 600, fontFamily: 'inherit',
             WebkitTapHighlightColor: 'transparent',
