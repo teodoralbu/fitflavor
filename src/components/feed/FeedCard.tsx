@@ -90,7 +90,7 @@ function ExperienceLine({ scores, wba }: { scores: Record<string, number>; wba: 
   if (scores.energy != null) parts.push(`Energy: ${scoreWord(scores.energy)}`)
   if (parts.length === 0) return null
   return (
-    <div style={{ fontSize: '13px', color: 'var(--text-muted)', marginBottom: wba ? '6px' : 0, lineHeight: 1.5 }}>
+    <div style={{ fontSize: '13px', color: 'var(--text-muted)', marginBottom: wba ? '6px' : 0, lineHeight: 1.5, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
       {parts.join(' · ')}
       {wba && <span style={{ color: 'var(--green)', fontWeight: 700, marginLeft: '8px' }}>✓ Would buy again</span>}
     </div>
@@ -175,7 +175,7 @@ function RepCard({ item, index = 0 }: { item: FeedItem; index?: number }) {
         {/* PR display */}
         {repType === 'pr' && (
           <div style={{ marginBottom: '6px' }}>
-            <div style={{ fontSize: '20px', fontWeight: 900, color: 'var(--text)', letterSpacing: '-0.02em' }}>
+            <div style={{ fontSize: '20px', fontWeight: 900, color: 'var(--text)', letterSpacing: '-0.02em', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
               🏋️ {item.pr_exercise}: {item.pr_value}{item.pr_unit}
             </div>
           </div>
@@ -184,7 +184,7 @@ function RepCard({ item, index = 0 }: { item: FeedItem; index?: number }) {
         {/* Check-in display */}
         {repType === 'checkin' && (
           <div style={{ marginBottom: '6px' }}>
-            <div style={{ fontSize: '16px', fontWeight: 800, color: 'var(--text)' }}>
+            <div style={{ fontSize: '16px', fontWeight: 800, color: 'var(--text)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
               📍 {item.gym_name}
             </div>
           </div>
@@ -192,7 +192,7 @@ function RepCard({ item, index = 0 }: { item: FeedItem; index?: number }) {
 
         {/* Caption / note */}
         {item.content && (
-          <p style={{ margin: '4px 0 0', fontSize: '14px', color: 'var(--text-muted)', lineHeight: 1.6 }}>
+          <p style={{ margin: '4px 0 0', fontSize: '14px', color: 'var(--text-muted)', lineHeight: 1.6, wordBreak: 'break-word' }}>
             {item.content}
           </p>
         )}
@@ -316,7 +316,7 @@ export function FeedCard({ rating, item, initialLiked = false, initialLikeCount 
             <div style={{ fontSize: '14px', fontWeight: 800, color: 'var(--text)', marginBottom: '3px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
               {ratingData.flavor?.name ?? 'Unknown flavor'}
             </div>
-            <div style={{ fontSize: '11px', color: 'var(--text-faint)', textTransform: 'uppercase', letterSpacing: '0.06em', fontWeight: 600 }}>
+            <div style={{ fontSize: '11px', color: 'var(--text-faint)', textTransform: 'uppercase', letterSpacing: '0.06em', fontWeight: 600, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
               {brand?.name} · {product?.name}
             </div>
           </div>
@@ -358,7 +358,7 @@ export function FeedCard({ rating, item, initialLiked = false, initialLikeCount 
       {/* Review note — secondary caption */}
       {ratingData.review_text && (
         <div style={{ padding: '0 16px 12px' }}>
-          <p style={{ margin: 0, fontSize: '13px', color: 'var(--text-dim)', lineHeight: 1.6 }}>
+          <p style={{ margin: 0, fontSize: '13px', color: 'var(--text-dim)', lineHeight: 1.6, wordBreak: 'break-word' }}>
             &ldquo;{ratingData.review_text}&rdquo;
           </p>
         </div>
