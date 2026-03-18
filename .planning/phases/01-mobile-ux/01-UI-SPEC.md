@@ -7,7 +7,7 @@ preset: none
 created: 2026-03-18
 ---
 
-# Phase 1 — UI Design Contract
+# Phase 1 -- UI Design Contract
 
 > Visual and interaction contract for the Mobile UX polish phase. This phase preserves the existing design system -- it fixes layouts, touch targets, overflow, and navigation on mobile. No visual redesign.
 
@@ -29,29 +29,67 @@ created: 2026-03-18
 
 ## Spacing Scale
 
-Declared values from `globals.css` (preserved as-is):
+### Normative Rules
+
+The executor MUST use values from the standard 8-point scale when writing new or modified spacing:
+
+| Token | Value |
+|-------|-------|
+| 4px | Micro gaps (e.g. icon-to-label) |
+| 8px | Compact element spacing, icon gaps |
+| 16px | Screen side padding, default element spacing |
+| 24px | Section gaps |
+| 32px | Major section breaks |
+| 48px | Large vertical separation |
+| 64px | Nav height, major layout anchors |
+
+Documented exceptions (acceptable values outside the scale):
+- Touch targets: minimum 44x44px hit area on all interactive elements (per MOB-01, MOB-06)
+- Bottom nav height: 64px (`--nav-height`)
+- Bottom safe area: `env(safe-area-inset-bottom)`
+- Page bottom padding: `calc(64px + 24px + env(safe-area-inset-bottom))` for content above bottom nav
+
+The executor MUST NOT introduce new spacing values outside {4, 8, 16, 24, 32, 48, 64} except for the documented exceptions above.
+
+### Existing CSS Variables Reference
+
+> Preserved from existing codebase -- not to be changed in Phase 1, not subject to normalization.
 
 | Token | Value | Usage |
 |-------|-------|-------|
-| xs | 8px (`--space-xs`) | Compact element spacing, icon gaps |
-| sm | 12px (`--space-sm`) | Tight padding between related elements |
-| md | 16px (`--space-md`) | Screen side padding, default element spacing |
-| lg | 20px (`--space-lg`) | Comfortable padding |
-| xl | 24px (`--space-xl`) | Section gaps |
-| 2xl | 32px (`--space-2xl`) | Major section breaks |
+| `--space-xs` | 8px | Compact element spacing, icon gaps |
+| `--space-sm` | 12px | Tight padding between related elements |
+| `--space-md` | 16px | Screen side padding, default element spacing |
+| `--space-lg` | 20px | Comfortable padding |
+| `--space-xl` | 24px | Section gaps |
+| `--space-2xl` | 32px | Major section breaks |
+| `--nav-height` | 64px | Bottom navigation bar height |
+| `--nav-float-size` | 54px | Floating rate button diameter |
 
-Exceptions:
-- Touch targets: minimum 44x44px hit area on all interactive elements (per MOB-01, MOB-06)
-- Bottom nav height: 64px (`--nav-height`) -- preserved
-- Floating rate button: 54px (`--nav-float-size`) -- preserved
-- Bottom safe area: `env(safe-area-inset-bottom)` -- preserved
-- Page bottom padding: `calc(64px + 24px + env(safe-area-inset-bottom))` for content above bottom nav
+These legacy values (notably `--space-sm: 12px`, `--space-lg: 20px`, `--nav-float-size: 54px`) exist in the codebase and are referenced by existing components. They are preserved as-is in Phase 1 and are NOT subject to the normative spacing rules above. Do not modify or remove them.
 
 ---
 
 ## Typography
 
-Existing type scale (preserved as-is):
+### Normative Rules
+
+The executor MUST enforce these 4 type sizes and 2 weights for any new or modified text styling:
+
+| Role | Size | Weight | Line Height |
+|------|------|--------|-------------|
+| Body | 14px | 400 (regular) | 1.5 |
+| Input | 16px | 400 (regular) | normal |
+| Display | 20px | 600 (semibold) | 1.2 |
+| Score | 32px | 600 (semibold) | 1.0 |
+
+**Normative weights:** 400 (regular) and 600 (semibold). The executor MUST NOT introduce weights outside these two.
+
+**Mobile-critical rule:** All text inputs MUST use 16px minimum font-size to prevent iOS Safari auto-zoom on focus. This applies to every `<input>`, `<textarea>`, and `<select>` element. Already applied to `.input-search`; must be verified on all form inputs in the rating flow.
+
+### Existing System Reference
+
+> Read-only audit context -- documents what exists in the codebase. These are NOT part of the normative spec contract. The executor should preserve these existing styles where they appear but must not propagate non-normative sizes or weights to new code.
 
 | Role | Size | Weight | Line Height | Source |
 |------|------|--------|-------------|--------|
@@ -63,7 +101,7 @@ Existing type scale (preserved as-is):
 | Score display | 32px | 900 | 1.0 | Rating score in feed cards |
 | PR display | 20px | 900 | normal | Rep card PR values |
 
-**Mobile-critical rule:** All text inputs must use 16px minimum font-size to prevent iOS Safari auto-zoom on focus. This is already applied to `.input-search` and must be verified on all form inputs in the rating flow.
+These existing values are preserved in Phase 1. The executor should not change them but should not replicate non-normative sizes (11px, 13px, 15px, 17px) or weights (700, 800, 900) in any new or refactored code.
 
 ---
 
