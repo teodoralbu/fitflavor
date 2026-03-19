@@ -3,6 +3,7 @@
 import { useState, useMemo, useCallback, useEffect } from 'react'
 import { createPortal } from 'react-dom'
 import Link from 'next/link'
+import Image from 'next/image'
 import { createClient } from '@/lib/supabase'
 import { useAuth } from '@/context/auth-context'
 import { timeAgo } from '@/lib/timeAgo'
@@ -219,8 +220,7 @@ function CommentBottomSheet({
                   fontSize: '10px', fontWeight: 800, color: 'var(--accent)', overflow: 'hidden',
                 }}>
                   {comment.user?.avatar_url ? (
-                    // eslint-disable-next-line @next/next/no-img-element
-                    <img src={comment.user.avatar_url} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                    <Image src={comment.user.avatar_url} alt="" width={28} height={28} style={{ objectFit: 'cover' }} />
                   ) : (
                     comment.user?.username?.[0]?.toUpperCase() ?? '?'
                   )}

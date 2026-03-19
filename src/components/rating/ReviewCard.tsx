@@ -1,6 +1,7 @@
 'use client'
 
 import { useState } from 'react'
+import Image from 'next/image'
 import { Badge } from '@/components/ui/Badge'
 import { LikeButton } from '@/components/rating/LikeButton'
 import { RATING_DIMENSIONS, getScoreColor } from '@/lib/constants'
@@ -56,8 +57,7 @@ export function ReviewCard({ rating }: ReviewCardProps) {
           fontSize: '12px', fontWeight: 800, color: 'var(--accent)', overflow: 'hidden',
         }}>
           {rating.user?.avatar_url ? (
-            // eslint-disable-next-line @next/next/no-img-element
-            <img src={rating.user.avatar_url} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+            <Image src={rating.user.avatar_url} alt="" width={32} height={32} style={{ objectFit: 'cover' }} />
           ) : (
             rating.user?.username?.[0]?.toUpperCase() ?? '?'
           )}

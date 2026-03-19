@@ -1,6 +1,7 @@
 'use client'
 
 import Link from 'next/link'
+import Image from 'next/image'
 import { timeAgo } from '@/lib/timeAgo'
 import { getScoreColor } from '@/lib/constants'
 import { LikeButton } from '@/components/rating/LikeButton'
@@ -139,8 +140,7 @@ function RepCard({ item, index = 0 }: { item: FeedItem; index?: number }) {
             fontSize: '11px', fontWeight: 800, color: 'var(--accent)', overflow: 'hidden',
           }}>
             {item.user?.avatar_url ? (
-              // eslint-disable-next-line @next/next/no-img-element
-              <img src={item.user.avatar_url} alt="" loading="lazy" decoding="async" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+              <Image src={item.user.avatar_url} alt="" width={32} height={32} className="rounded-full" style={{ objectFit: 'cover' }} />
             ) : (
               item.user?.username?.[0]?.toUpperCase() ?? '?'
             )}
@@ -163,11 +163,12 @@ function RepCard({ item, index = 0 }: { item: FeedItem; index?: number }) {
         {/* Progress Photo */}
         {repType === 'progress' && item.photo_url && (
           <div style={{ marginBottom: '8px' }}>
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img
+            <Image
               src={item.photo_url}
               alt="Progress photo"
-              style={{ width: '100%', borderRadius: '10px', maxHeight: '340px', objectFit: 'cover', display: 'block' }}
+              width={400}
+              height={340}
+              style={{ width: '100%', height: 'auto', maxHeight: '340px', borderRadius: '10px', objectFit: 'cover', display: 'block' }}
             />
           </div>
         )}
@@ -260,8 +261,7 @@ export function FeedCard({ rating, item, initialLiked = false, initialLikeCount 
             fontSize: '11px', fontWeight: 800, color: 'var(--accent)', overflow: 'hidden',
           }}>
             {ratingData.user?.avatar_url ? (
-              // eslint-disable-next-line @next/next/no-img-element
-              <img src={ratingData.user.avatar_url} alt="" loading="lazy" decoding="async" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+              <Image src={ratingData.user.avatar_url} alt="" width={32} height={32} className="rounded-full" style={{ objectFit: 'cover' }} />
             ) : (
               ratingData.user?.username?.[0]?.toUpperCase() ?? '?'
             )}
@@ -304,8 +304,7 @@ export function FeedCard({ rating, item, initialLiked = false, initialLikeCount 
             display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden',
           }}>
             {product?.image_url ? (
-              // eslint-disable-next-line @next/next/no-img-element
-              <img src={product.image_url} alt="" loading="lazy" decoding="async" style={{ width: '100%', height: '100%', objectFit: 'contain', padding: '4px' }} />
+              <Image src={product.image_url} alt="" width={52} height={52} style={{ objectFit: 'contain', padding: '4px' }} />
             ) : (
               <span style={{ fontSize: '20px' }}>⚡</span>
             )}
@@ -367,13 +366,12 @@ export function FeedCard({ rating, item, initialLiked = false, initialLikeCount 
       {/* Review photo */}
       {ratingData.photo_url && (
         <div style={{ padding: '0 16px 12px' }}>
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img
+          <Image
             src={ratingData.photo_url}
             alt="Review photo"
-            loading="lazy"
-            decoding="async"
-            style={{ width: '100%', borderRadius: '10px', maxHeight: '220px', objectFit: 'cover', display: 'block' }}
+            width={400}
+            height={220}
+            style={{ width: '100%', height: 'auto', maxHeight: '220px', borderRadius: '10px', objectFit: 'cover', display: 'block' }}
           />
         </div>
       )}
