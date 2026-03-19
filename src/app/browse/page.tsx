@@ -1,6 +1,7 @@
 export const revalidate = 120
 
 import Link from 'next/link'
+import Image from 'next/image'
 import type { Metadata } from 'next'
 import { createServerSupabaseClient } from '@/lib/supabase-server'
 import { getScoreColor } from '@/lib/constants'
@@ -267,9 +268,8 @@ export default async function BrowsePage({ searchParams }: BrowseProps) {
                 display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden',
               }}>
                 {darkHorse.image_url ? (
-                  // eslint-disable-next-line @next/next/no-img-element
-                  <img src={darkHorse.image_url} alt={darkHorse.name} loading="lazy" decoding="async"
-                    style={{ width: '100%', height: '100%', objectFit: 'contain', padding: '4px' }} />
+                  <Image src={darkHorse.image_url} alt={darkHorse.name} width={52} height={52}
+                    style={{ objectFit: 'contain', padding: '4px' }} />
                 ) : (
                   <span style={{ fontSize: '22px' }}>🐴</span>
                 )}
@@ -370,11 +370,10 @@ export default async function BrowsePage({ searchParams }: BrowseProps) {
                       overflow: 'hidden',
                     }}>
                       {product.image_url ? (
-                        // eslint-disable-next-line @next/next/no-img-element
-                        <img
+                        <Image
                           src={product.image_url} alt={product.name}
-                          loading="lazy" decoding="async"
-                          style={{ width: '100%', height: '100%', objectFit: 'contain', padding: '4px' }}
+                          width={48} height={48}
+                          style={{ objectFit: 'contain', padding: '4px' }}
                         />
                       ) : (
                         <span style={{ fontSize: '20px' }}>⚡</span>
@@ -565,11 +564,10 @@ export default async function BrowsePage({ searchParams }: BrowseProps) {
                         overflow: 'hidden',
                       }}>
                         {product.image_url ? (
-                          // eslint-disable-next-line @next/next/no-img-element
-                          <img
+                          <Image
                             src={product.image_url} alt={product.name}
-                            loading="lazy" decoding="async"
-                            style={{ width: '100%', height: '100%', objectFit: 'contain', padding: '6px' }}
+                            width={64} height={64}
+                            style={{ objectFit: 'contain', padding: '6px' }}
                           />
                         ) : (
                           <span style={{ fontSize: '26px' }}>⚡</span>

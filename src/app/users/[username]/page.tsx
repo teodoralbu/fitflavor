@@ -2,6 +2,7 @@ export const dynamic = 'force-dynamic'
 
 import { notFound } from 'next/navigation'
 import Link from 'next/link'
+import Image from 'next/image'
 import { createServerSupabaseClient } from '@/lib/supabase-server'
 import { Badge } from '@/components/ui/Badge'
 import { FollowButton } from '@/components/user/FollowButton'
@@ -103,8 +104,7 @@ export default async function UserProfilePage({ params }: Props) {
               marginBottom: '14px',
             }}>
               {profile.avatar_url ? (
-                // eslint-disable-next-line @next/next/no-img-element
-                <img src={profile.avatar_url} alt={profile.username} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                <Image src={profile.avatar_url} alt={profile.username} width={72} height={72} style={{ objectFit: 'cover' }} />
               ) : (
                 profile.username?.[0]?.toUpperCase() ?? '?'
               )}
@@ -394,8 +394,7 @@ export default async function UserProfilePage({ params }: Props) {
                 flexShrink: 0, overflow: 'hidden',
               }}>
                 {profile.avatar_url ? (
-                  // eslint-disable-next-line @next/next/no-img-element
-                  <img src={profile.avatar_url} alt={profile.username} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                  <Image src={profile.avatar_url} alt={profile.username} width={76} height={76} style={{ objectFit: 'cover' }} />
                 ) : (
                   profile.username?.[0]?.toUpperCase() ?? '?'
                 )}

@@ -1,6 +1,7 @@
 export const dynamic = 'force-dynamic'
 
 import Link from 'next/link'
+import Image from 'next/image'
 import { createServerSupabaseClient } from '@/lib/supabase-server'
 import { timeAgo } from '@/lib/timeAgo'
 
@@ -248,8 +249,7 @@ export default async function NotificationsPage() {
                         marginTop: '1px',
                       }}>
                         {notif.actor_avatar ? (
-                          // eslint-disable-next-line @next/next/no-img-element
-                          <img src={notif.actor_avatar} alt="" loading="lazy" decoding="async" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                          <Image src={notif.actor_avatar} alt="" width={36} height={36} style={{ objectFit: 'cover' }} />
                         ) : (
                           notif.actor_username[0]?.toUpperCase() ?? '?'
                         )}

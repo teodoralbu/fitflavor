@@ -1,6 +1,7 @@
 export const revalidate = 300
 
 import Link from 'next/link'
+import Image from 'next/image'
 import { getLeaderboard, getTopReviewers } from '@/lib/queries'
 import { getScoreColor, getBadgeTier, BADGE_TIERS } from '@/lib/constants'
 
@@ -124,8 +125,7 @@ export default async function LeaderboardPage() {
                       fontSize: '13px', fontWeight: 800, color: 'var(--accent)', overflow: 'hidden',
                     }}>
                       {member.avatar_url ? (
-                        // eslint-disable-next-line @next/next/no-img-element
-                        <img src={member.avatar_url} alt="" loading="lazy" decoding="async" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                        <Image src={member.avatar_url} alt="" width={36} height={36} style={{ objectFit: 'cover' }} />
                       ) : (
                         member.username?.[0]?.toUpperCase() ?? '?'
                       )}

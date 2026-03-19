@@ -1,6 +1,7 @@
 'use client'
 
 import { useRef, useState } from 'react'
+import NextImage from 'next/image'
 import { createClient } from '@/lib/supabase'
 import { useAuth } from '@/context/auth-context'
 
@@ -93,8 +94,7 @@ export function AvatarUpload({ currentAvatarUrl, username, tierColor }: Props) {
         overflow: 'hidden',
       }}>
         {avatarUrl ? (
-          // eslint-disable-next-line @next/next/no-img-element
-          <img src={avatarUrl} alt={username} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+          <NextImage src={avatarUrl} alt={username} width={76} height={76} style={{ objectFit: 'cover' }} />
         ) : (
           username[0].toUpperCase()
         )}
