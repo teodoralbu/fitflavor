@@ -174,6 +174,8 @@ export async function getLeaderboard(limit = 20) {
   const { data: ratings } = await db
     .from('ratings')
     .select('flavor_id, overall_score, would_buy_again')
+    .order('created_at', { ascending: false })
+    .limit(2000)
 
   if (!ratings || ratings.length === 0) return []
 
@@ -258,7 +260,11 @@ export async function getTopReviewers(limit = 10) {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const db = supabase as any
 
-  const { data: ratings } = await db.from('ratings').select('user_id')
+  const { data: ratings } = await db
+    .from('ratings')
+    .select('user_id')
+    .order('created_at', { ascending: false })
+    .limit(2000)
 
   if (!ratings || ratings.length === 0) return []
 
