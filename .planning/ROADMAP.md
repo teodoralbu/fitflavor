@@ -63,11 +63,12 @@ Plans:
   2. Images load lazily with correct sizing and no visible layout shift
   3. Feed uses pagination or infinite scroll — not loading all records at once
   4. Critical Supabase queries have been reviewed — N+1 patterns removed, indexes added where needed
-**Plans**: TBD
+**Plans**: 3 plans
 
 Plans:
-- [ ] 03-01: TBD
-- [ ] 03-02: TBD
+- [ ] 03-01-PLAN.md — Optimize Supabase queries: eliminate full table scans and parallelize waterfalls (PERF-04, PERF-01)
+- [ ] 03-02-PLAN.md — Replace all raw img tags with next/image and configure Supabase remote patterns (PERF-02, PERF-03)
+- [ ] 03-03-PLAN.md — Implement cursor-based infinite scroll on the home feed (PERF-05)
 
 ### Phase 4: Quality & Accessibility
 **Goal**: The codebase is type-safe in critical paths, errors are handled consistently, and the app meets basic accessibility standards
@@ -94,5 +95,5 @@ Phases execute in numeric order: 1 → 2 → 3 → 4
 |-------|----------------|--------|-----------|
 | 1. Mobile UX | 2/3 | In Progress |  |
 | 2. Bug Hunt & Fixes | 4/4 | Complete | 2026-03-19 |
-| 3. Performance | 0/0 | Not started | - |
+| 3. Performance | 0/3 | Not started | - |
 | 4. Quality & Accessibility | 0/0 | Not started | - |
