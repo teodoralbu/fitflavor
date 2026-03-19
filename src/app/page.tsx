@@ -4,6 +4,7 @@ import Link from 'next/link'
 import { createServerSupabaseClient } from '@/lib/supabase-server'
 import { getLeaderboard, getUnifiedFeed, getFollowingUnifiedFeed } from '@/lib/queries'
 import { FeedCard } from '@/components/feed/FeedCard'
+import { FeedList } from '@/components/feed/FeedList'
 import { getScoreColor, BADGE_TIERS } from '@/lib/constants'
 
 async function getStats() {
@@ -54,6 +55,7 @@ export default async function Home({ searchParams }: { searchParams: Promise<{ f
   ])
 
   const feedItems = isFollowingTab ? followingFeed : globalFeed
+  const initialCursor = feedItems.length === 20 ? feedItems[feedItems.length - 1].created_at : null
 
   const statItems = [
     { value: `${stats.flavors}+`, label: 'Flavors rated' },
@@ -317,12 +319,14 @@ export default async function Home({ searchParams }: { searchParams: Promise<{ f
               <p style={{ color: 'var(--text-dim)', fontSize: '14px', margin: '0 0 16px' }}>No one&apos;s posted today. Be the first.</p>
               <Link href="/rate" className="btn btn-primary" style={{ padding: '10px 20px', fontSize: '13px' }}>Log your session</Link>
             </div>
-          ) : (
+          ) : isFollowingTab ? (
             <div style={{ display: 'flex', flexDirection: 'column' }}>
               {feedItems.map((feedItem: any, idx: number) => (
                 <FeedCard key={feedItem.id} item={feedItem} initialLikeCount={0} initialLiked={false} index={idx} />
               ))}
             </div>
+          ) : (
+            <FeedList initialItems={feedItems} initialCursor={initialCursor} userId={user?.id} />
           )}
         </div>
 
