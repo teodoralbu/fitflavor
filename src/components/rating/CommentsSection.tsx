@@ -23,10 +23,12 @@ function CommentBottomSheet({
   open,
   onClose,
   ratingId,
+  onCommentPosted,
 }: {
   open: boolean
   onClose: () => void
   ratingId: string
+  onCommentPosted?: () => void
 }) {
   const { user, profile } = useAuth()
   const [comments, setComments] = useState<Comment[]>([])
@@ -101,6 +103,7 @@ function CommentBottomSheet({
     if (!error) {
       setText('')
       await loadComments()
+      onCommentPosted?.()
     } else {
       setSubmitError('Failed to post. Try again.')
     }
@@ -340,6 +343,7 @@ export function CommentsSection({ ratingId, initialCount }: Props) {
         open={open}
         onClose={handleClose}
         ratingId={ratingId}
+        onCommentPosted={() => setCount((c) => c + 1)}
       />
     </>
   )
