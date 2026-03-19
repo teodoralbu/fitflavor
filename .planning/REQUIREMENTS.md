@@ -25,10 +25,10 @@
 
 ### Performance
 
-- [ ] **PERF-01**: Main feed (home page) load time reduced — identify and fix the bottleneck (queries, bundle, rendering)
+- [x] **PERF-01**: Main feed (home page) load time reduced — identify and fix the bottleneck (queries, bundle, rendering)
 - [ ] **PERF-02**: Product/avatar images load efficiently — lazy loading, correct sizing, no layout shift
 - [ ] **PERF-03**: Page structure and layout rendering is clean — no unnecessary re-renders or layout thrash
-- [ ] **PERF-04**: Supabase queries in critical paths reviewed and optimized (remove N+1 patterns, add indexes where needed)
+- [x] **PERF-04**: Supabase queries in critical paths reviewed and optimized (remove N+1 patterns, add indexes where needed)
 - [ ] **PERF-05**: Feed implements basic pagination or infinite scroll — not loading all records at once
 
 ### Code Quality
@@ -92,10 +92,10 @@
 | BUG-04 | Phase 2 | Complete |
 | BUG-05 | Phase 2 | Complete |
 | BUG-06 | Phase 2 | Complete |
-| PERF-01 | Phase 3 | Pending |
+| PERF-01 | Phase 3 | Complete |
 | PERF-02 | Phase 3 | Pending |
 | PERF-03 | Phase 3 | Pending |
-| PERF-04 | Phase 3 | Pending |
+| PERF-04 | Phase 3 | Complete |
 | PERF-05 | Phase 3 | Pending |
 | QUAL-01 | Phase 4 | Pending |
 | QUAL-02 | Phase 4 | Pending |
