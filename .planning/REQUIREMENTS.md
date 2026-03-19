@@ -18,7 +18,7 @@
 
 - [ ] **BUG-01**: Systematically audit all user-facing flows for broken behavior (auth, rating, feed, profile, comments, likes, follow)
 - [ ] **BUG-02**: Fix all broken flows discovered in audit — each bug documented and resolved
-- [ ] **BUG-03**: Auth flow works correctly end-to-end on mobile (login, signup, session persistence, logout)
+- [x] **BUG-03**: Auth flow works correctly end-to-end on mobile (login, signup, session persistence, logout)
 - [ ] **BUG-04**: Rating submission flow completes without errors and shows correct success state
 - [ ] **BUG-05**: Comment and like actions work reliably without stale state or UI glitches
 - [ ] **BUG-06**: Avatar upload completes successfully and reflects immediately in UI
@@ -88,7 +88,7 @@
 | MOB-06 | Phase 1 | Complete |
 | BUG-01 | Phase 2 | Pending |
 | BUG-02 | Phase 2 | Pending |
-| BUG-03 | Phase 2 | Pending |
+| BUG-03 | Phase 2 | Complete |
 | BUG-04 | Phase 2 | Pending |
 | BUG-05 | Phase 2 | Pending |
 | BUG-06 | Phase 2 | Pending |

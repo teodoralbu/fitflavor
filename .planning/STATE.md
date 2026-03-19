@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: executing
-stopped_at: Completed 01-01-PLAN.md
-last_updated: "2026-03-18T12:38:32.056Z"
+stopped_at: Completed 02-01-PLAN.md
+last_updated: "2026-03-19T15:02:35.504Z"
 last_activity: 2026-03-18 — Completed 01-02 (Feed card overflow + rating form mobile fixes)
 progress:
   total_phases: 4
   completed_phases: 1
-  total_plans: 3
-  completed_plans: 3
+  total_plans: 7
+  completed_plans: 4
   percent: 33
 ---
 
@@ -52,6 +52,7 @@ Progress: [███░░░░░░░] 33%
 *Updated after each plan completion*
 | Phase 01 P02 | 1min | 2 tasks | 2 files |
 | Phase 01 P01 | 2min | 3 tasks | 7 files |
+| Phase 02-bug-hunt-fixes P01 | 2min | 2 tasks | 2 files |
 
 ## Accumulated Context
 
@@ -66,6 +67,8 @@ Recent decisions affecting current work:
 - [Phase 01]: Applied text truncation unconditionally on FeedCard (not media-query gated) since cards are always narrow
 - [Phase 01]: Used zIndex 45 for sticky submit (below nav 50) rather than bottom offset repositioning
 - [Phase 01]: Used min-w/min-h instead of w/h for touch targets to set floor without preventing growth
+- [Phase 02-bug-hunt-fixes]: Used direct createServerClient in middleware (not helper) — middleware needs NextRequest cookie access to properly write response cookies
+- [Phase 02-bug-hunt-fixes]: router.refresh() placed after router.push('/') in handleSignOut to invalidate SSR cache on logout
 
 ### Pending Todos
 
@@ -78,6 +81,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-03-18T12:16:12.119Z
-Stopped at: Completed 01-01-PLAN.md
+Last session: 2026-03-19T15:02:35.501Z
+Stopped at: Completed 02-01-PLAN.md
 Resume file: None
