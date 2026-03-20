@@ -130,10 +130,10 @@ export default async function BrandPage({ params }: Props) {
                     <div style={{ fontSize: '26px', fontWeight: 900, color: getScoreColor(product._avg), lineHeight: 1, letterSpacing: '-0.02em' }}>
                       {product._avg.toFixed(1)}
                     </div>
-                    <div style={{ fontSize: '11px', color: 'var(--text-faint)', marginTop: '3px' }}>{product._count} ratings</div>
+                    <div style={{ fontSize: '11px', color: 'var(--text-dim)', marginTop: '3px' }}>{product._count} ratings</div>
                   </>
                 ) : (
-                  <div style={{ fontSize: '12px', color: 'var(--text-faint)', fontWeight: 600 }}>Unrated</div>
+                  <div style={{ fontSize: '12px', color: 'var(--text-dim)', fontWeight: 600 }}>Unrated</div>
                 )}
               </div>
               <div style={{ color: 'var(--border)', flexShrink: 0, fontSize: '18px', lineHeight: 1 }}>›</div>

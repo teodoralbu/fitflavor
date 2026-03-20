@@ -12,7 +12,7 @@
   --border-soft: #1E2435;
   --text:        #F0F4FF;
   --text-muted:  #8B9BB4;
-  --text-dim:    #556070;
+  --text-dim:    #6B7A90;
   --text-faint:  #374050;
   --accent:      #00B4FF;
   --accent-dim:  #00B4FF14;
@@ -63,7 +63,7 @@
   --border-soft: #ECEEF4;
   --text:        #1A1D24;
   --text-muted:  #4A5060;
-  --text-dim:    #7A8090;
+  --text-dim:    #6A7080;
   --text-faint:  #B0B8C8;
   --accent:      #0095D9;
   --accent-dim:  #0095D914;
@@ -148,6 +148,11 @@ input[type='range']::-webkit-slider-thumb:hover {
 
 input[type='range']::-webkit-slider-thumb:active {
   transform: scale(1.05);
+}
+
+input[type='range']:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
 }
 
 /* ─── Focus ──────────────────────────────────────────────────────────────────── */

@@ -44,7 +44,7 @@ export function Footer() {
             </div>
             <p style={{
               fontSize: '13px',
-              color: 'var(--text-faint)',
+              color: 'var(--text-muted)',
               lineHeight: 1.6,
               margin: 0,
               fontStyle: 'italic',
@@ -118,7 +118,7 @@ export function Footer() {
         }}>
           <p style={{
             fontSize: '12px',
-            color: 'var(--text-faint)',
+            color: 'var(--text-muted)',
             margin: 0,
             lineHeight: 1.6,
             maxWidth: '480px',
@@ -127,7 +127,7 @@ export function Footer() {
             or verify user-submitted content. Supplement information is for informational purposes only
             and does not constitute medical advice.
           </p>
-          <p style={{ fontSize: '12px', color: 'var(--text-faint)', margin: 0, whiteSpace: 'nowrap' }}>
+          <p style={{ fontSize: '12px', color: 'var(--text-muted)', margin: 0, whiteSpace: 'nowrap' }}>
             &copy; {new Date().getFullYear()} GymTaste
           </p>
         </div>
