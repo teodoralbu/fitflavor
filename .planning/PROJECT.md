@@ -28,11 +28,12 @@ Users can confidently discover and rate gym supplement flavors through a fast, p
 
 ### Active
 
-- [ ] Mobile UX overhaul — all mobile surfaces feel polished (navigation, layout, onboarding, performance)
-- [ ] Systematic bug hunt — discover and fix all broken flows across the app
-- [ ] Performance improvements — fix slow pages, N+1 queries, missing pagination
-- [ ] Code quality — reduce `as any` type casts, improve TypeScript safety
-- [ ] UX/accessibility audit — identify and fix usability and a11y issues
+- [x] Mobile UX overhaul — all mobile surfaces feel polished (navigation, layout, onboarding, performance) — Validated in Phase 01: mobile-ux
+- [x] Systematic bug hunt — discover and fix all broken flows across the app — Validated in Phase 02: bug-hunt-fixes
+- [x] Performance improvements — fix slow pages, N+1 queries, missing pagination — Validated in Phase 03: performance
+- [x] Code quality — reduce `as any` type casts, improve TypeScript safety — Validated in Phase 04: quality-accessibility
+- [x] UX/accessibility audit — identify and fix usability and a11y issues — Validated in Phase 04: quality-accessibility
+- [x] Upload security, descriptive alt text, skeleton pagination — Validated in Phase 05: security-accessibility-polish
 
 ### Out of Scope
 
@@ -66,4 +67,9 @@ Users can confidently discover and rate gym supplement flavors through a fast, p
 | Quality model profile | Auditing/debugging benefits from deeper analysis | — Pending |
 
 ---
-*Last updated: 2026-03-18 after initialization*
+## Current State
+
+Phase 05 complete — all v1.0 audit gaps closed. Milestone ready for launch sign-off.
+
+---
+*Last updated: 2026-03-21 after Phase 05 completion*
