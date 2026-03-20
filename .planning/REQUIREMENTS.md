@@ -35,12 +35,12 @@
 
 - [ ] **QUAL-01**: `as any` casts in critical paths removed — `src/lib/queries.ts`, auth context, and rating form typed properly
 - [ ] **QUAL-02**: Error handling standardized in data-fetching paths — consistent result pattern, no swallowed errors
-- [ ] **QUAL-03**: File upload validation added to avatar upload — MIME type and size checked before sending to Supabase
+- [x] **QUAL-03**: File upload validation added to avatar upload — MIME type and size checked before sending to Supabase
 
 ### UX & Accessibility
 
 - [x] **UX-01**: All interactive elements have visible focus states (keyboard navigation works)
-- [ ] **UX-02**: Images have alt text; decorative images are marked appropriately
+- [x] **UX-02**: Images have alt text; decorative images are marked appropriately
 - [x] **UX-03**: Color contrast meets WCAG AA in both light and dark themes
 - [x] **UX-04**: Empty states are handled gracefully — no blank pages when feed/results are empty
 - [x] **UX-05**: Loading states are shown while data fetches — no content flash or invisible loading
@@ -99,9 +99,9 @@
 | PERF-05 | Phase 3 | Complete |
 | QUAL-01 | Phase 4 | Pending |
 | QUAL-02 | Phase 4 | Pending |
-| QUAL-03 | Phase 5 | Pending |
+| QUAL-03 | Phase 5 | Complete |
 | UX-01 | Phase 4 | Complete |
-| UX-02 | Phase 5 | Pending |
+| UX-02 | Phase 5 | Complete |
 | UX-03 | Phase 4 | Complete |
 | UX-04 | Phase 4 | Complete |
 | UX-05 | Phase 4 | Complete |
