@@ -103,7 +103,7 @@ export function AvatarUpload({ currentAvatarUrl, username, tierColor }: Props) {
         overflow: 'hidden',
       }}>
         {avatarUrl ? (
-          <NextImage src={avatarUrl} alt={username} width={76} height={76} style={{ objectFit: 'cover' }} />
+          <NextImage src={avatarUrl} alt={`${username}'s avatar`} width={76} height={76} style={{ objectFit: 'cover' }} />
         ) : (
           username[0].toUpperCase()
         )}
@@ -126,7 +126,7 @@ export function AvatarUpload({ currentAvatarUrl, username, tierColor }: Props) {
           }} />
         ) : (
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"
-            style={{ opacity: 0, transition: 'opacity 0.15s' }} className="avatar-edit-icon">
+            aria-hidden="true" style={{ opacity: 0, transition: 'opacity 0.15s' }} className="avatar-edit-icon">
             <path d="M12 20h9" /><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4Z" />
           </svg>
         )}

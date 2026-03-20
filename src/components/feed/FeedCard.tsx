@@ -140,7 +140,7 @@ function RepCard({ item, index = 0 }: { item: FeedItem; index?: number }) {
             fontSize: '11px', fontWeight: 800, color: 'var(--accent)', overflow: 'hidden',
           }}>
             {item.user?.avatar_url ? (
-              <Image src={item.user.avatar_url} alt="" width={32} height={32} className="rounded-full" style={{ objectFit: 'cover' }} />
+              <Image src={item.user.avatar_url} alt={`${item.user?.username ?? 'User'}'s avatar`} width={32} height={32} className="rounded-full" style={{ objectFit: 'cover' }} />
             ) : (
               item.user?.username?.[0]?.toUpperCase() ?? '?'
             )}
@@ -261,7 +261,7 @@ export function FeedCard({ rating, item, initialLiked = false, initialLikeCount 
             fontSize: '11px', fontWeight: 800, color: 'var(--accent)', overflow: 'hidden',
           }}>
             {ratingData.user?.avatar_url ? (
-              <Image src={ratingData.user.avatar_url} alt="" width={32} height={32} className="rounded-full" style={{ objectFit: 'cover' }} />
+              <Image src={ratingData.user.avatar_url} alt={`${ratingData.user?.username ?? 'User'}'s avatar`} width={32} height={32} className="rounded-full" style={{ objectFit: 'cover' }} />
             ) : (
               ratingData.user?.username?.[0]?.toUpperCase() ?? '?'
             )}
@@ -304,7 +304,7 @@ export function FeedCard({ rating, item, initialLiked = false, initialLikeCount 
             display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden',
           }}>
             {product?.image_url ? (
-              <Image src={product.image_url} alt="" width={52} height={52} style={{ objectFit: 'contain', padding: '4px' }} />
+              <Image src={product.image_url} alt={`${product?.name ?? 'Product'} by ${brand?.name ?? 'Unknown'}`} width={52} height={52} style={{ objectFit: 'contain', padding: '4px' }} />
             ) : (
               <span style={{ fontSize: '20px' }}>⚡</span>
             )}

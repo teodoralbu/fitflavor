@@ -67,7 +67,7 @@ export function ReviewCard({ rating }: ReviewCardProps) {
           fontSize: '12px', fontWeight: 800, color: 'var(--accent)', overflow: 'hidden',
         }}>
           {rating.user?.avatar_url ? (
-            <Image src={rating.user.avatar_url} alt="" width={32} height={32} style={{ objectFit: 'cover' }} />
+            <Image src={rating.user.avatar_url} alt={`${rating.user?.username ?? 'User'}'s avatar`} width={32} height={32} style={{ objectFit: 'cover' }} />
           ) : (
             rating.user?.username?.[0]?.toUpperCase() ?? '?'
           )}

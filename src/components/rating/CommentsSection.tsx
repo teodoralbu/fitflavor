@@ -186,7 +186,7 @@ function CommentBottomSheet({
               WebkitTapHighlightColor: 'transparent',
             }}
           >
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
               <line x1="18" y1="6" x2="6" y2="18" />
               <line x1="6" y1="6" x2="18" y2="18" />
             </svg>
@@ -221,7 +221,7 @@ function CommentBottomSheet({
                   fontSize: '10px', fontWeight: 800, color: 'var(--accent)', overflow: 'hidden',
                 }}>
                   {comment.user?.avatar_url ? (
-                    <Image src={comment.user.avatar_url} alt="" width={28} height={28} style={{ objectFit: 'cover' }} />
+                    <Image src={comment.user.avatar_url} alt={`${comment.user?.username ?? 'User'}'s avatar`} width={28} height={28} style={{ objectFit: 'cover' }} />
                   ) : (
                     comment.user?.username?.[0]?.toUpperCase() ?? '?'
                   )}
@@ -332,7 +332,7 @@ export function CommentsSection({ ratingId, initialCount }: Props) {
             WebkitTapHighlightColor: 'transparent',
           }}
         >
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
             <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
           </svg>
           {count > 0 ? `${count} comment${count !== 1 ? 's' : ''}` : 'Comment'}
