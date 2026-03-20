@@ -1,41 +1,154 @@
 import { createServerSupabaseClient } from './supabase-server'
 import { MIN_RATINGS_FOR_LEADERBOARD } from './constants'
-import type { Brand, Product, Flavor, FlavorTag, Rating, User } from './types'
+import type { Brand, Product, Flavor, FlavorTag, Rating, User, Category } from './types'
+
+// ─── Join result interfaces (Supabase can't infer without Relationships metadata) ──
+
+interface FlavorWithTagAssignments {
+  id: string
+  product_id: string
+  name: string
+  slug: string
+  created_at: string
+  image_url: string | null
+  flavor_tag_assignments: { flavor_tags: { id: string; name: string; slug: string } }[]
+}
+
+interface ProductWithBrandRow {
+  id: string
+  brand_id: string
+  category_id: string
+  name: string
+  slug: string
+  description: string | null
+  image_url: string | null
+  caffeine_mg: number | null
+  citrulline_g: number | null
+  beta_alanine_g: number | null
+  price_per_serving: number | null
+  servings_per_container: number | null
+  barcode: string | null
+  is_approved: boolean
+  submitted_by: string | null
+  created_at: string
+  brands: Brand
+}
+
+interface FlavorWithProductAndTags extends FlavorWithTagAssignments {
+  products: Product & { brands: Brand }
+}
+
+interface RatingRow {
+  flavor_id: string
+  overall_score: number
+  would_buy_again: boolean
+}
+
+interface UserBasic {
+  id: string
+  username: string
+  avatar_url: string | null
+  badge_tier: string
+}
+
+interface ReviewLikeRow {
+  rating_id: string
+  user_id?: string
+}
+
+interface CommentCountRow {
+  rating_id: string
+}
+
+interface FlavorWithProductForFeed {
+  id: string
+  name: string
+  slug: string
+  product_id: string
+  products: {
+    id: string
+    name: string
+    slug: string
+    image_url: string | null
+    brands: { name: string }
+  }
+}
+
+interface FollowRow {
+  following_id: string
+}
+
+interface FeedRatingRow {
+  id: string
+  overall_score: number
+  would_buy_again: boolean
+  review_text: string | null
+  photo_url: string | null
+  created_at: string
+  flavor_id: string
+  user_id: string
+  scores: Record<string, number> | null
+  context_tags: string[] | null
+}
+
+interface ProductWithBrandAndCategory extends ProductWithBrandRow {
+  categories: { name: string; slug: string; icon: string }
+}
+
+interface UserIdRow {
+  user_id: string
+}
 
 // ─── Product ────────────────────────────────────────────────────────────────
 
 export async function getProductBySlug(slug: string) {
   const supabase = await createServerSupabaseClient()
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const db = supabase as any
 
-  const { data: product } = await db
+  const { data: product, error: productError } = await supabase
     .from('products')
     .select('*, brands(*)')
     .eq('slug', slug)
     .eq('is_approved', true)
+    .returns<ProductWithBrandRow[]>()
     .single()
+
+  if (productError) {
+    console.error('[getProductBySlug] product query failed:', productError.message)
+    return null
+  }
 
   if (!product) return null
 
-  const { data: flavors } = await db
+  const { data: flavors, error: flavorsError } = await supabase
     .from('flavors')
     .select('*, flavor_tag_assignments(flavor_tags(*))')
     .eq('product_id', product.id)
     .order('name')
+    .returns<FlavorWithTagAssignments[]>()
 
-  const flavorIds = ((flavors ?? []) as any[]).map((f) => f.id)
+  if (flavorsError) {
+    console.error('[getProductBySlug] flavors query failed:', flavorsError.message)
+    return null
+  }
+
+  const flavorIds = (flavors ?? []).map((f) => f.id)
   const ratingStats: Record<string, { avg: number; count: number; wba_pct: number }> = {}
 
   if (flavorIds.length > 0) {
-    const { data: ratings } = await db
+    const { data: ratings, error: ratingsError } = await supabase
       .from('ratings')
       .select('flavor_id, overall_score, would_buy_again')
       .in('flavor_id', flavorIds)
+      .returns<RatingRow[]>()
+
+    if (ratingsError) {
+      console.error('[getProductBySlug] ratings query failed:', ratingsError.message)
+      return null
+    }
 
     if (ratings) {
-      const grouped: Record<string, any[]> = {}
-      for (const r of ratings as any[]) {
+      const grouped: Record<string, RatingRow[]> = {}
+      for (const r of ratings) {
         if (!grouped[r.flavor_id]) grouped[r.flavor_id] = []
         grouped[r.flavor_id].push(r)
       }
@@ -49,13 +162,13 @@ export async function getProductBySlug(slug: string) {
 
   return {
     product: product as Product & { brands: Brand },
-    flavors: ((flavors ?? []) as any[]).map((f) => ({
-      id: f.id as string,
-      product_id: f.product_id as string,
-      name: f.name as string,
-      slug: f.slug as string,
-      created_at: f.created_at as string,
-      tags: (f.flavor_tag_assignments as any[])
+    flavors: (flavors ?? []).map((f) => ({
+      id: f.id,
+      product_id: f.product_id,
+      name: f.name,
+      slug: f.slug,
+      created_at: f.created_at,
+      tags: f.flavor_tag_assignments
         ?.map((a) => a.flavor_tags)
         .filter(Boolean) as FlavorTag[],
       avg_overall_score: ratingStats[f.id]?.avg ?? null,
@@ -69,72 +182,104 @@ export async function getProductBySlug(slug: string) {
 
 export async function getFlavorBySlug(slug: string) {
   const supabase = await createServerSupabaseClient()
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const db = supabase as any
 
-  const { data: flavor } = await db
+  const { data: flavor, error: flavorError } = await supabase
     .from('flavors')
     .select('*, products(*, brands(*)), flavor_tag_assignments(flavor_tags(*))')
     .eq('slug', slug)
+    .returns<FlavorWithProductAndTags[]>()
     .single()
+
+  if (flavorError) {
+    console.error('[getFlavorBySlug] flavor query failed:', flavorError.message)
+    return null
+  }
 
   if (!flavor) return null
 
   // Batch 1: ratings, siblings, and auth can all run in parallel (depend only on flavor)
-  const [{ data: ratingsRaw }, { data: siblingFlavors }, { data: { user: currentUser } }] = await Promise.all([
-    db.from('ratings').select('*').eq('flavor_id', flavor.id).order('created_at', { ascending: false }).limit(20),
-    db.from('flavors').select('id, name, slug').eq('product_id', flavor.product_id).neq('id', flavor.id).order('name').limit(20),
+  const [ratingsResult, siblingsResult, authResult] = await Promise.all([
+    supabase.from('ratings').select('*').eq('flavor_id', flavor.id).order('created_at', { ascending: false }).limit(20),
+    supabase.from('flavors').select('id, name, slug').eq('product_id', flavor.product_id).neq('id', flavor.id).order('name').limit(20),
     supabase.auth.getUser(),
   ])
 
-  const allRatings = (ratingsRaw ?? []) as any[]
-  const userIds = [...new Set(allRatings.map((r: any) => r.user_id))]
-  const ratingIds = allRatings.map((r: any) => r.id)
+  if (ratingsResult.error) {
+    console.error('[getFlavorBySlug] ratings query failed:', ratingsResult.error.message)
+    return null
+  }
+  if (siblingsResult.error) {
+    console.error('[getFlavorBySlug] siblings query failed:', siblingsResult.error.message)
+    return null
+  }
+
+  const allRatings = (ratingsResult.data ?? []) as Rating[]
+  const siblingFlavors = (siblingsResult.data ?? []) as { id: string; name: string; slug: string }[]
+  const currentUser = authResult.data?.user ?? null
+
+  const userIds = [...new Set(allRatings.map((r) => r.user_id))]
+  const ratingIds = allRatings.map((r) => r.id)
 
   // Batch 2: users, likes, and myLikes can all run in parallel (depend on ratingsRaw)
   const [usersResult, likesResult, myLikesResult] = await Promise.all([
-    userIds.length > 0 ? db.from('users').select('id, username, badge_tier, avatar_url').in('id', userIds) : Promise.resolve({ data: [] }),
-    ratingIds.length > 0 ? db.from('review_likes').select('rating_id').in('rating_id', ratingIds) : Promise.resolve({ data: [] }),
-    currentUser && ratingIds.length > 0 ? db.from('review_likes').select('rating_id').eq('user_id', currentUser.id).in('rating_id', ratingIds) : Promise.resolve({ data: [] }),
+    userIds.length > 0
+      ? supabase.from('users').select('id, username, badge_tier, avatar_url').in('id', userIds).returns<UserBasic[]>()
+      : Promise.resolve({ data: [] as UserBasic[], error: null }),
+    ratingIds.length > 0
+      ? supabase.from('review_likes').select('rating_id').in('rating_id', ratingIds).returns<ReviewLikeRow[]>()
+      : Promise.resolve({ data: [] as ReviewLikeRow[], error: null }),
+    currentUser && ratingIds.length > 0
+      ? supabase.from('review_likes').select('rating_id').eq('user_id', currentUser.id).in('rating_id', ratingIds).returns<ReviewLikeRow[]>()
+      : Promise.resolve({ data: [] as ReviewLikeRow[], error: null }),
   ])
 
-  const userMap: Record<string, any> = {}
-  for (const u of (usersResult.data ?? []) as any[]) userMap[u.id] = u
+  if (usersResult.error) {
+    console.error('[getFlavorBySlug] users query failed:', usersResult.error.message)
+  }
+  if (likesResult.error) {
+    console.error('[getFlavorBySlug] likes query failed:', likesResult.error.message)
+  }
+  if (myLikesResult.error) {
+    console.error('[getFlavorBySlug] myLikes query failed:', myLikesResult.error.message)
+  }
+
+  const userMap: Record<string, UserBasic> = {}
+  for (const u of (usersResult.data ?? [])) userMap[u.id] = u
 
   const likeCountMap: Record<string, number> = {}
-  for (const l of (likesResult.data ?? []) as any[]) {
+  for (const l of (likesResult.data ?? [])) {
     likeCountMap[l.rating_id] = (likeCountMap[l.rating_id] ?? 0) + 1
   }
 
   const likedByMe = new Set<string>()
-  for (const l of (myLikesResult.data ?? []) as any[]) likedByMe.add(l.rating_id)
+  for (const l of (myLikesResult.data ?? [])) likedByMe.add(l.rating_id)
 
   const avg =
     allRatings.length > 0
-      ? allRatings.reduce((sum: number, r: any) => sum + r.overall_score, 0) / allRatings.length
+      ? allRatings.reduce((sum, r) => sum + r.overall_score, 0) / allRatings.length
       : null
   const wba_pct =
     allRatings.length > 0
-      ? (allRatings.filter((r: any) => r.would_buy_again).length / allRatings.length) * 100
+      ? (allRatings.filter((r) => r.would_buy_again).length / allRatings.length) * 100
       : null
 
   return {
-    siblingFlavors: (siblingFlavors ?? []) as { id: string; name: string; slug: string }[],
+    siblingFlavors,
     flavor: {
-      id: flavor.id as string,
-      product_id: flavor.product_id as string,
-      name: flavor.name as string,
-      slug: flavor.slug as string,
-      created_at: flavor.created_at as string,
-      tags: (flavor.flavor_tag_assignments as any[])
-        ?.map((a: any) => a.flavor_tags)
+      id: flavor.id,
+      product_id: flavor.product_id,
+      name: flavor.name,
+      slug: flavor.slug,
+      created_at: flavor.created_at,
+      tags: flavor.flavor_tag_assignments
+        ?.map((a) => a.flavor_tags)
         .filter(Boolean) as FlavorTag[],
       avg_overall_score: avg,
       rating_count: allRatings.length,
       would_buy_again_pct: wba_pct,
       product: flavor.products as Product & { brands: Brand },
     },
-    ratings: allRatings.map((r: any) => ({
+    ratings: allRatings.map((r) => ({
       ...r,
       user: userMap[r.user_id] as User ?? null,
       like_count: likeCountMap[r.id] ?? 0,
@@ -147,19 +292,23 @@ export async function getFlavorBySlug(slug: string) {
 
 export async function getLeaderboard(limit = 20) {
   const supabase = await createServerSupabaseClient()
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const db = supabase as any
 
-  const { data: ratings } = await db
+  const { data: ratings, error: ratingsError } = await supabase
     .from('ratings')
     .select('flavor_id, overall_score, would_buy_again')
     .order('created_at', { ascending: false })
     .limit(2000)
+    .returns<RatingRow[]>()
+
+  if (ratingsError) {
+    console.error('[getLeaderboard] ratings query failed:', ratingsError.message)
+    return []
+  }
 
   if (!ratings || ratings.length === 0) return []
 
-  const grouped: Record<string, any[]> = {}
-  for (const r of ratings as any[]) {
+  const grouped: Record<string, RatingRow[]> = {}
+  for (const r of ratings) {
     if (!grouped[r.flavor_id]) grouped[r.flavor_id] = []
     grouped[r.flavor_id].push(r)
   }
@@ -178,25 +327,31 @@ export async function getLeaderboard(limit = 20) {
   if (aggregated.length === 0) return []
 
   const flavorIds = aggregated.map((a) => a.flavor_id)
-  const { data: flavors } = await db
+  const { data: flavors, error: flavorsError } = await supabase
     .from('flavors')
     .select('*, products(*, brands(*)), flavor_tag_assignments(flavor_tags(*))')
     .in('id', flavorIds)
+    .returns<FlavorWithProductAndTags[]>()
+
+  if (flavorsError) {
+    console.error('[getLeaderboard] flavors query failed:', flavorsError.message)
+    return []
+  }
 
   if (!flavors) return []
 
-  const flavorMap: Record<string, any> = {}
-  for (const f of flavors as any[]) flavorMap[f.id] = f
+  const flavorMap: Record<string, FlavorWithProductAndTags> = {}
+  for (const f of flavors) flavorMap[f.id] = f
 
   return aggregated
     .filter((a) => flavorMap[a.flavor_id])
     .map((a, idx) => ({
       rank: idx + 1,
       flavor_id: a.flavor_id,
-      name: flavorMap[a.flavor_id].name as string,
-      slug: flavorMap[a.flavor_id].slug as string,
-      tags: (flavorMap[a.flavor_id].flavor_tag_assignments as any[])
-        ?.map((t: any) => t.flavor_tags)
+      name: flavorMap[a.flavor_id].name,
+      slug: flavorMap[a.flavor_id].slug,
+      tags: flavorMap[a.flavor_id].flavor_tag_assignments
+        ?.map((t) => t.flavor_tags)
         .filter(Boolean) as FlavorTag[],
       avg_overall_score: a.avg,
       rating_count: a.count,
@@ -209,25 +364,35 @@ export async function getLeaderboard(limit = 20) {
 
 export async function getProductsWithFlavors(categorySlug?: string) {
   const supabase = await createServerSupabaseClient()
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const db = supabase as any
 
-  let query = db
+  let query = supabase
     .from('products')
     .select('*, brands(*), categories(*)')
     .eq('is_approved', true)
     .order('name')
 
   if (categorySlug) {
-    const { data: cat } = await db
+    const catResult = await supabase
       .from('categories')
       .select('id')
       .eq('slug', categorySlug)
-      .single()
+      .limit(1)
+      .returns<{ id: string }[]>()
+
+    if (catResult.error) {
+      console.error('[getProductsWithFlavors] category query failed:', catResult.error.message)
+      return []
+    }
+    const cat = catResult.data?.[0]
     if (cat) query = query.eq('category_id', cat.id)
   }
 
-  const { data: products } = await query
+  const { data: products, error: productsError } = await query.returns<ProductWithBrandAndCategory[]>()
+
+  if (productsError) {
+    console.error('[getProductsWithFlavors] products query failed:', productsError.message)
+    return []
+  }
 
   return (products ?? []) as (Product & { brands: Brand; categories: { name: string; slug: string; icon: string } })[]
 }
@@ -236,19 +401,23 @@ export async function getProductsWithFlavors(categorySlug?: string) {
 
 export async function getTopReviewers(limit = 10) {
   const supabase = await createServerSupabaseClient()
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const db = supabase as any
 
-  const { data: ratings } = await db
+  const { data: ratings, error: ratingsError } = await supabase
     .from('ratings')
     .select('user_id')
     .order('created_at', { ascending: false })
     .limit(2000)
+    .returns<UserIdRow[]>()
+
+  if (ratingsError) {
+    console.error('[getTopReviewers] ratings query failed:', ratingsError.message)
+    return []
+  }
 
   if (!ratings || ratings.length === 0) return []
 
   const countMap: Record<string, number> = {}
-  for (const r of ratings as any[]) {
+  for (const r of ratings) {
     countMap[r.user_id] = (countMap[r.user_id] ?? 0) + 1
   }
 
@@ -259,13 +428,19 @@ export async function getTopReviewers(limit = 10) {
   if (sorted.length === 0) return []
 
   const userIds = sorted.map(([id]) => id)
-  const { data: users } = await db
+  const { data: users, error: usersError } = await supabase
     .from('users')
     .select('id, username, avatar_url, badge_tier')
     .in('id', userIds)
+    .returns<UserBasic[]>()
 
-  const userMap: Record<string, any> = {}
-  for (const u of (users ?? []) as any[]) userMap[u.id] = u
+  if (usersError) {
+    console.error('[getTopReviewers] users query failed:', usersError.message)
+    return []
+  }
+
+  const userMap: Record<string, UserBasic> = {}
+  for (const u of (users ?? [])) userMap[u.id] = u
 
   return sorted
     .map(([id, count]) => ({ ...userMap[id], rating_count: count }))
@@ -282,55 +457,73 @@ export async function getTopReviewers(limit = 10) {
 
 export async function getUnifiedFeed(limit = 30, userId?: string) {
   const supabase = await createServerSupabaseClient()
-  const db = supabase as any
 
-  const { data: ratings } = await db
+  const { data: ratings, error: ratingsError } = await supabase
     .from('ratings')
     .select('id, overall_score, would_buy_again, review_text, photo_url, created_at, flavor_id, user_id, scores, context_tags')
     .order('created_at', { ascending: false })
     .limit(limit)
+    .returns<FeedRatingRow[]>()
+
+  if (ratingsError) {
+    console.error('[getUnifiedFeed] ratings query failed:', ratingsError.message)
+    return []
+  }
 
   if (!ratings || ratings.length === 0) return []
 
-  const flavorIds = (ratings as any[]).map((r) => r.flavor_id)
-  const userIds = (ratings as any[]).map((r) => r.user_id)
-  const ratingIds = (ratings as any[]).map((r) => r.id)
+  const flavorIds = ratings.map((r) => r.flavor_id)
+  const userIds = ratings.map((r) => r.user_id)
+  const ratingIds = ratings.map((r) => r.id)
 
-  const [{ data: flavors }, { data: ratingUsers }, { data: commentCounts }, { data: allLikes }] = await Promise.all([
-    db.from('flavors').select('id, name, slug, product_id, products(id, name, slug, image_url, brands(name))').in('id', flavorIds),
-    db.from('users').select('id, username, avatar_url, badge_tier').in('id', userIds),
-    db.from('review_comments').select('rating_id').in('rating_id', ratingIds),
-    db.from('review_likes').select('rating_id, user_id').in('rating_id', ratingIds),
+  const [flavorsResult, ratingUsersResult, commentCountsResult, allLikesResult] = await Promise.all([
+    supabase.from('flavors').select('id, name, slug, product_id, products(id, name, slug, image_url, brands(name))').in('id', flavorIds).returns<FlavorWithProductForFeed[]>(),
+    supabase.from('users').select('id, username, avatar_url, badge_tier').in('id', userIds).returns<UserBasic[]>(),
+    supabase.from('review_comments').select('rating_id').in('rating_id', ratingIds).returns<CommentCountRow[]>(),
+    supabase.from('review_likes').select('rating_id, user_id').in('rating_id', ratingIds).returns<ReviewLikeRow[]>(),
   ])
 
-  const flavorMap: Record<string, any> = {}
-  for (const f of (flavors ?? []) as any[]) flavorMap[f.id] = f
+  if (flavorsResult.error) {
+    console.error('[getUnifiedFeed] flavors query failed:', flavorsResult.error.message)
+  }
+  if (ratingUsersResult.error) {
+    console.error('[getUnifiedFeed] users query failed:', ratingUsersResult.error.message)
+  }
+  if (commentCountsResult.error) {
+    console.error('[getUnifiedFeed] comments query failed:', commentCountsResult.error.message)
+  }
+  if (allLikesResult.error) {
+    console.error('[getUnifiedFeed] likes query failed:', allLikesResult.error.message)
+  }
 
-  const ratingUserMap: Record<string, any> = {}
-  for (const u of (ratingUsers ?? []) as any[]) ratingUserMap[u.id] = u
+  const flavorMap: Record<string, FlavorWithProductForFeed> = {}
+  for (const f of (flavorsResult.data ?? [])) flavorMap[f.id] = f
+
+  const ratingUserMap: Record<string, UserBasic> = {}
+  for (const u of (ratingUsersResult.data ?? [])) ratingUserMap[u.id] = u
 
   const commentCountMap: Record<string, number> = {}
-  for (const c of (commentCounts ?? []) as any[]) {
+  for (const c of (commentCountsResult.data ?? [])) {
     commentCountMap[c.rating_id] = (commentCountMap[c.rating_id] ?? 0) + 1
   }
 
   const likeCountMap: Record<string, number> = {}
   const likedByMe = new Set<string>()
-  for (const l of (allLikes ?? []) as any[]) {
+  for (const l of (allLikesResult.data ?? [])) {
     likeCountMap[l.rating_id] = (likeCountMap[l.rating_id] ?? 0) + 1
     if (userId && l.user_id === userId) likedByMe.add(l.rating_id)
   }
 
-  return (ratings as any[]).map((r) => ({
+  return ratings.map((r) => ({
     _type: 'rating' as const,
-    id: r.id as string,
-    overall_score: r.overall_score as number,
-    would_buy_again: r.would_buy_again as boolean,
-    review_text: r.review_text as string | null,
-    photo_url: r.photo_url as string | null,
-    created_at: r.created_at as string,
-    scores: r.scores as Record<string, number> | null,
-    context_tags: r.context_tags as string[] | null,
+    id: r.id,
+    overall_score: r.overall_score,
+    would_buy_again: r.would_buy_again,
+    review_text: r.review_text,
+    photo_url: r.photo_url,
+    created_at: r.created_at,
+    scores: r.scores,
+    context_tags: r.context_tags,
     comment_count: commentCountMap[r.id] ?? 0,
     like_count: likeCountMap[r.id] ?? 0,
     user_has_liked: likedByMe.has(r.id),
@@ -341,61 +534,88 @@ export async function getUnifiedFeed(limit = 30, userId?: string) {
 
 export async function getFollowingUnifiedFeed(userId: string, limit = 30) {
   const supabase = await createServerSupabaseClient()
-  const db = supabase as any
 
-  const { data: follows } = await db.from('follows').select('following_id').eq('follower_id', userId)
+  const { data: follows, error: followsError } = await supabase
+    .from('follows')
+    .select('following_id')
+    .eq('follower_id', userId)
+    .returns<FollowRow[]>()
+
+  if (followsError) {
+    console.error('[getFollowingUnifiedFeed] follows query failed:', followsError.message)
+    return []
+  }
   if (!follows || follows.length === 0) return []
 
-  const followingIds = (follows as any[]).map((f: any) => f.following_id)
+  const followingIds = follows.map((f) => f.following_id)
 
-  const { data: ratings } = await db
+  const { data: ratings, error: ratingsError } = await supabase
     .from('ratings')
     .select('id, overall_score, would_buy_again, review_text, photo_url, created_at, flavor_id, user_id, scores, context_tags')
     .in('user_id', followingIds)
     .order('created_at', { ascending: false })
     .limit(limit)
+    .returns<FeedRatingRow[]>()
+
+  if (ratingsError) {
+    console.error('[getFollowingUnifiedFeed] ratings query failed:', ratingsError.message)
+    return []
+  }
 
   if (!ratings || ratings.length === 0) return []
 
-  const flavorIds = (ratings as any[]).map((r) => r.flavor_id)
-  const userIds = (ratings as any[]).map((r) => r.user_id)
-  const ratingIds = (ratings as any[]).map((r) => r.id)
+  const flavorIds = ratings.map((r) => r.flavor_id)
+  const userIds = ratings.map((r) => r.user_id)
+  const ratingIds = ratings.map((r) => r.id)
 
-  const [{ data: flavors }, { data: ratingUsers }, { data: commentCounts }, { data: allLikes }] = await Promise.all([
-    db.from('flavors').select('id, name, slug, product_id, products(id, name, slug, image_url, brands(name))').in('id', flavorIds),
-    db.from('users').select('id, username, avatar_url, badge_tier').in('id', userIds),
-    db.from('review_comments').select('rating_id').in('rating_id', ratingIds),
-    db.from('review_likes').select('rating_id, user_id').in('rating_id', ratingIds),
+  const [flavorsResult, ratingUsersResult, commentCountsResult, allLikesResult] = await Promise.all([
+    supabase.from('flavors').select('id, name, slug, product_id, products(id, name, slug, image_url, brands(name))').in('id', flavorIds).returns<FlavorWithProductForFeed[]>(),
+    supabase.from('users').select('id, username, avatar_url, badge_tier').in('id', userIds).returns<UserBasic[]>(),
+    supabase.from('review_comments').select('rating_id').in('rating_id', ratingIds).returns<CommentCountRow[]>(),
+    supabase.from('review_likes').select('rating_id, user_id').in('rating_id', ratingIds).returns<ReviewLikeRow[]>(),
   ])
 
-  const flavorMap: Record<string, any> = {}
-  for (const f of (flavors ?? []) as any[]) flavorMap[f.id] = f
+  if (flavorsResult.error) {
+    console.error('[getFollowingUnifiedFeed] flavors query failed:', flavorsResult.error.message)
+  }
+  if (ratingUsersResult.error) {
+    console.error('[getFollowingUnifiedFeed] users query failed:', ratingUsersResult.error.message)
+  }
+  if (commentCountsResult.error) {
+    console.error('[getFollowingUnifiedFeed] comments query failed:', commentCountsResult.error.message)
+  }
+  if (allLikesResult.error) {
+    console.error('[getFollowingUnifiedFeed] likes query failed:', allLikesResult.error.message)
+  }
 
-  const ratingUserMap: Record<string, any> = {}
-  for (const u of (ratingUsers ?? []) as any[]) ratingUserMap[u.id] = u
+  const flavorMap: Record<string, FlavorWithProductForFeed> = {}
+  for (const f of (flavorsResult.data ?? [])) flavorMap[f.id] = f
+
+  const ratingUserMap: Record<string, UserBasic> = {}
+  for (const u of (ratingUsersResult.data ?? [])) ratingUserMap[u.id] = u
 
   const commentCountMap: Record<string, number> = {}
-  for (const c of (commentCounts ?? []) as any[]) {
+  for (const c of (commentCountsResult.data ?? [])) {
     commentCountMap[c.rating_id] = (commentCountMap[c.rating_id] ?? 0) + 1
   }
 
   const likeCountMap: Record<string, number> = {}
   const likedByMe = new Set<string>()
-  for (const l of (allLikes ?? []) as any[]) {
+  for (const l of (allLikesResult.data ?? [])) {
     likeCountMap[l.rating_id] = (likeCountMap[l.rating_id] ?? 0) + 1
     if (l.user_id === userId) likedByMe.add(l.rating_id)
   }
 
-  return (ratings as any[]).map((r) => ({
+  return ratings.map((r) => ({
     _type: 'rating' as const,
-    id: r.id as string,
-    overall_score: r.overall_score as number,
-    would_buy_again: r.would_buy_again as boolean,
-    review_text: r.review_text as string | null,
-    photo_url: r.photo_url as string | null,
-    created_at: r.created_at as string,
-    scores: r.scores as Record<string, number> | null,
-    context_tags: r.context_tags as string[] | null,
+    id: r.id,
+    overall_score: r.overall_score,
+    would_buy_again: r.would_buy_again,
+    review_text: r.review_text,
+    photo_url: r.photo_url,
+    created_at: r.created_at,
+    scores: r.scores,
+    context_tags: r.context_tags,
     comment_count: commentCountMap[r.id] ?? 0,
     like_count: likeCountMap[r.id] ?? 0,
     user_has_liked: likedByMe.has(r.id),
