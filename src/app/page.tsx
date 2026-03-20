@@ -292,32 +292,22 @@ export default async function Home({ searchParams }: { searchParams: Promise<{ f
 
           {/* Feed items */}
           {feedItems.length === 0 && isFollowingTab ? (
-            <div style={{ padding: '48px 16px', textAlign: 'center' }}>
-              <div style={{ fontSize: '32px', marginBottom: '12px', opacity: 0.4 }}>👥</div>
-              <p style={{ color: 'var(--text-dim)', fontSize: '14px', margin: '0 0 16px' }}>
-                Follow people to see their reviews here.
-              </p>
-              <Link href="/leaderboard" style={{ color: 'var(--accent)', fontSize: '13px', fontWeight: 600 }}>
-                Discover reviewers →
-              </Link>
+            <div style={{ textAlign: 'center', padding: '48px 16px' }}>
+              <p style={{ fontSize: '18px', fontWeight: 700, color: 'var(--text)', marginBottom: 8 }}>Nothing here yet</p>
+              <p style={{ fontSize: '14px', color: 'var(--text-muted)', marginBottom: 16 }}>Follow people to see their reviews in this feed.</p>
+              <Link href="/browse" style={{ color: 'var(--accent)', fontSize: '14px', fontWeight: 700 }}>Browse flavors</Link>
             </div>
           ) : !user && feed === 'following' ? (
-            <div style={{ padding: '48px 16px', textAlign: 'center' }}>
-              <p style={{ color: 'var(--text-dim)', fontSize: '14px', margin: '0 0 16px' }}>
-                Log in to see reviews from people you follow.
-              </p>
-              <Link href="/login" style={{
-                display: 'inline-block', backgroundColor: 'var(--accent)', color: '#000',
-                fontWeight: 700, fontSize: '13px', padding: '10px 20px',
-                borderRadius: 'var(--radius-md)', textDecoration: 'none',
-              }}>
-                Log in
-              </Link>
+            <div style={{ textAlign: 'center', padding: '48px 16px' }}>
+              <p style={{ fontSize: '18px', fontWeight: 700, color: 'var(--text)', marginBottom: 8 }}>Log in to see your feed</p>
+              <p style={{ fontSize: '14px', color: 'var(--text-muted)', marginBottom: 16 }}>Sign in to follow people and see their reviews here.</p>
+              <Link href="/login" style={{ color: 'var(--accent)', fontSize: '14px', fontWeight: 700 }}>Log in</Link>
             </div>
           ) : feedItems.length === 0 ? (
-            <div style={{ padding: '40px 16px', textAlign: 'center' }}>
-              <p style={{ color: 'var(--text-dim)', fontSize: '14px', margin: '0 0 16px' }}>No one&apos;s posted today. Be the first.</p>
-              <Link href="/rate" className="btn btn-primary" style={{ padding: '10px 20px', fontSize: '13px' }}>Log your session</Link>
+            <div style={{ textAlign: 'center', padding: '48px 16px' }}>
+              <p style={{ fontSize: '18px', fontWeight: 700, color: 'var(--text)', marginBottom: 8 }}>No reviews yet</p>
+              <p style={{ fontSize: '14px', color: 'var(--text-muted)', marginBottom: 16 }}>Be the first to rate a flavor and share your opinion.</p>
+              <Link href="/rate" style={{ color: 'var(--accent)', fontSize: '14px', fontWeight: 700 }}>Rate a flavor</Link>
             </div>
           ) : isFollowingTab ? (
             <div style={{ display: 'flex', flexDirection: 'column' }}>

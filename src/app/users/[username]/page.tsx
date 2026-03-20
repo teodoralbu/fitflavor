@@ -246,14 +246,9 @@ export default async function UserProfilePage({ params }: Props) {
         </div>
 
         {ratings.length === 0 ? (
-          <div style={{
-            backgroundColor: 'var(--bg-card)',
-            border: '1px solid var(--border)',
-            borderRadius: 'var(--radius-lg)',
-            padding: '40px 16px',
-            textAlign: 'center',
-          }}>
-            <div style={{ fontSize: '13px', color: 'var(--text-muted)' }}>No ratings yet.</div>
+          <div style={{ textAlign: 'center', padding: '48px 16px' }}>
+            <p style={{ fontSize: '18px', fontWeight: 700, color: 'var(--text)', marginBottom: 8 }}>No ratings yet</p>
+            <p style={{ fontSize: '14px', color: 'var(--text-muted)', marginBottom: 16 }}>This user has not rated any flavors yet.</p>
           </div>
         ) : (
           <div style={{
@@ -577,19 +572,9 @@ export default async function UserProfilePage({ params }: Props) {
           </h2>
 
           {ratings.length === 0 ? (
-            <div
-              className="card"
-              style={{
-                backgroundColor: 'var(--bg-card)',
-                border: '1px solid var(--border)',
-                borderRadius: 'var(--radius-md)',
-                padding: '40px 24px',
-                textAlign: 'center',
-              }}
-            >
-              <div style={{ fontSize: '13px', color: 'var(--text-muted)' }}>
-                No ratings yet.
-              </div>
+            <div style={{ textAlign: 'center', padding: '48px 16px' }}>
+              <p style={{ fontSize: '18px', fontWeight: 700, color: 'var(--text)', marginBottom: 8 }}>No ratings yet</p>
+              <p style={{ fontSize: '14px', color: 'var(--text-muted)', marginBottom: 16 }}>This user has not rated any flavors yet.</p>
             </div>
           ) : (
             <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>

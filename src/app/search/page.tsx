@@ -120,12 +120,10 @@ export default async function SearchPage({ searchParams }: Props) {
 
       {/* No results */}
       {results && total === 0 && (
-        <div style={{ textAlign: 'center', padding: '64px 0' }}>
-          <div style={{ fontSize: '40px', marginBottom: '16px', opacity: 0.5 }}>🔍</div>
-          <p style={{ fontSize: '16px', margin: 0, color: 'var(--text-muted)' }}>No flavors, products or brands match &ldquo;{query}&rdquo;</p>
-          <Link href="/browse" style={{ color: 'var(--accent)', fontSize: '14px', marginTop: '12px', display: 'inline-block' }}>
-            Browse all products →
-          </Link>
+        <div style={{ textAlign: 'center', padding: '48px 16px' }}>
+          <p style={{ fontSize: '18px', fontWeight: 700, color: 'var(--text)', marginBottom: 8 }}>No results found</p>
+          <p style={{ fontSize: '14px', color: 'var(--text-muted)', marginBottom: 16 }}>Try a different search term or browse all flavors.</p>
+          <Link href="/browse" style={{ color: 'var(--accent)', fontSize: '14px', fontWeight: 700 }}>Browse all</Link>
         </div>
       )}
 

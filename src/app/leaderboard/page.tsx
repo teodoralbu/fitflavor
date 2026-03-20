@@ -186,38 +186,9 @@ export default async function LeaderboardPage() {
 
       {leaderboard.length === 0 ? (
         /* Empty state */
-        <div style={{
-          backgroundColor: 'var(--bg-card)',
-          border: '1px solid var(--border)',
-          borderRadius: 'var(--radius-lg)',
-          padding: '64px 32px',
-          textAlign: 'center',
-        }}>
-          <div style={{ fontSize: '40px', marginBottom: '16px', opacity: 0.5 }}>🏆</div>
-          <div style={{ fontSize: '18px', fontWeight: 700, color: 'var(--text)', marginBottom: '8px' }}>
-            No ratings yet
-          </div>
-          <p style={{ fontSize: '14px', color: 'var(--text-muted)', margin: '0 0 24px' }}>
-            Be the first to rate a flavor and claim the top spot.
-          </p>
-          <Link
-            href="/browse"
-            style={{
-              display: 'inline-flex',
-              alignItems: 'center',
-              gap: '6px',
-              padding: '10px 20px',
-              backgroundColor: 'var(--accent)',
-              color: '#000',
-              borderRadius: 'var(--radius-md)',
-              fontWeight: 700,
-              fontSize: '13px',
-              textDecoration: 'none',
-              letterSpacing: '0.02em',
-            }}
-          >
-            Browse Products
-          </Link>
+        <div style={{ textAlign: 'center', padding: '48px 16px' }}>
+          <p style={{ fontSize: '18px', fontWeight: 700, color: 'var(--text)', marginBottom: 8 }}>No ratings yet</p>
+          <p style={{ fontSize: '14px', color: 'var(--text-muted)', marginBottom: 16 }}>Flavors will appear here once they receive ratings.</p>
         </div>
       ) : (
         <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
