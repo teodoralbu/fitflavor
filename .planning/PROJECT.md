@@ -47,20 +47,38 @@ Users can confidently discover and rate gym supplement flavors through a fast, p
 - Offline/PWA support — deferred
 - Leaderboard materialized view — deferred (bounded query in place as stopgap)
 
+## Current Milestone: v1.1 Feature Expansion
+
+**Goal:** Overhaul the rating system, fix known bugs, expand social features (comment threads, notifications), upgrade the product page, and add a profile-based supplement calculator.
+
+**Target features:**
+- Rating system: new dimensions (flavor, pump, energy & focus) + price capture + auto value score
+- Leaderboard: swipeable by category (best flavor, best pump, best value, best overall) within product types
+- Bug fixes: username dot support, light theme email visibility, taste tag inconsistency, nav cleanup
+- Product page: large hero image + product label button + nutritional values per-quantity slider
+- Comment system: edit/delete with "edited" marker + Instagram-style threaded replies
+- Notifications: follow and like notifications working + followers/following list on profiles
+- Profile setup: height, weight, goal → supplement dosage calculator
+- Landing page: image on "rate it before you waste it" screen
+
 ## Context
 
 - v1.0 shipped 2026-03-21 — 5 phases, 15 plans, 115 files changed
+- v1.1 starts 2026-03-21 — user + client feedback driven
 - Next.js 16 App Router + Supabase (no framework changes planned)
 - 26 remaining `as any` casts — down from 111+; critical paths are now typed
 - Zero test coverage — accepted tech debt for launch
 - Feed uses cursor-based infinite scroll with skeleton loading
 - All file uploads validated (MIME type + size) before reaching Supabase Storage
+- DB has `servings_per_container` and `price_per_serving` on products — value score can be auto-calculated
+- Old reviews (pre-v1.1 rating schema) will be hidden once new system launches
 
 ## Constraints
 
 - **Tech stack**: Next.js 16 + Supabase — no framework changes
 - **Deployment**: Vercel — no infrastructure changes
-- **Scope**: Polish and fix existing features only — no new features until v1.1
+- **Rating migration**: Old reviews hidden, not deleted — new schema going forward only
+- **Supplement calculator**: Must cite safe dosing ranges, not prescribe medical advice
 
 ## Key Decisions
 
@@ -73,4 +91,4 @@ Users can confidently discover and rate gym supplement flavors through a fast, p
 | Skip MOB-04/05, QUAL-01/02 for v1.0 | Not blocking launch, cosmetic/dev-hygiene | ✓ Good — right call, ship now |
 
 ---
-*Last updated: 2026-03-21 after v1.0 milestone*
+*Last updated: 2026-03-21 after v1.1 milestone start*
