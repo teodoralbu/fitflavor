@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useMemo, useCallback, useEffect } from 'react'
+import { useState, useMemo, useCallback, useEffect, useRef } from 'react'
 import { createPortal } from 'react-dom'
 import Link from 'next/link'
 import Image from 'next/image'
@@ -10,8 +10,12 @@ import { timeAgo } from '@/lib/timeAgo'
 
 interface Comment {
   id: string
-  text: string
+  text: string | null
   created_at: string
+  user_id: string
+  parent_comment_id: string | null
+  is_deleted: boolean
+  edited_at: string | null
   user: { username: string; avatar_url: string | null } | null
 }
 
@@ -39,6 +43,19 @@ function CommentBottomSheet({
   const [submitError, setSubmitError] = useState('')
   const [hasLoaded, setHasLoaded] = useState(false)
 
+  // Edit/delete state
+  const [menuOpenFor, setMenuOpenFor] = useState<string | null>(null)
+  const [editingId, setEditingId] = useState<string | null>(null)
+  const [editText, setEditText] = useState('')
+  const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null)
+  const longPressRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+  const touchStartPos = useRef<{ x: number; y: number } | null>(null)
+
+  // Reply state
+  const [replyingTo, setReplyingTo] = useState<{ commentId: string; username: string } | null>(null)
+  const [expandedReplies, setExpandedReplies] = useState<Set<string>>(new Set())
+  const inputRef = useRef<HTMLInputElement>(null)
+
   const db = useMemo(() => createClient(), [])
 
   // Body scroll lock
@@ -49,15 +66,25 @@ function CommentBottomSheet({
     }
   }, [open])
 
+  // Reset state on sheet close
+  useEffect(() => {
+    if (!open) {
+      setMenuOpenFor(null)
+      setEditingId(null)
+      setEditText('')
+      setConfirmDeleteId(null)
+      setReplyingTo(null)
+    }
+  }, [open])
+
   // Load comments when sheet opens (only once per open)
   const loadComments = useCallback(async () => {
     setLoadingComments(true)
     const { data } = await db
       .from('review_comments')
-      .select('id, text, created_at, user_id')
+      .select('id, text, created_at, user_id, parent_comment_id, is_deleted, edited_at')
       .eq('rating_id', ratingId)
       .order('created_at', { ascending: true })
-      .limit(20)
 
     if (!data || data.length === 0) {
       setComments([])
@@ -70,10 +97,14 @@ function CommentBottomSheet({
     const userMap: Record<string, { id: string; username: string; avatar_url: string | null }> = {}
     for (const u of (users ?? [])) userMap[u.id] = u
 
-    setComments(data.map((c: { id: string; text: string | null; created_at: string; user_id: string }) => ({
+    setComments(data.map((c: { id: string; text: string | null; created_at: string; user_id: string; parent_comment_id: string | null; is_deleted: boolean; edited_at: string | null }) => ({
       id: c.id,
-      text: c.text ?? '',
+      text: c.text,
       created_at: c.created_at,
+      user_id: c.user_id,
+      parent_comment_id: c.parent_comment_id,
+      is_deleted: c.is_deleted,
+      edited_at: c.edited_at,
       user: userMap[c.user_id] ?? null,
     })))
     setLoadingComments(false)
@@ -86,24 +117,345 @@ function CommentBottomSheet({
     }
   }, [open, hasLoaded, loadComments])
 
+  // Grouped comments for rendering
+  const { topLevelComments, repliesByParent } = useMemo(() => {
+    const topLevel = comments
+      .filter(c => !c.parent_comment_id)
+      .slice(0, 20)
+    const grouped: Record<string, Comment[]> = {}
+    for (const c of comments.filter(c => c.parent_comment_id)) {
+      const pid = c.parent_comment_id!
+      if (!grouped[pid]) grouped[pid] = []
+      grouped[pid].push(c)
+    }
+    return { topLevelComments: topLevel, repliesByParent: grouped }
+  }, [comments])
+
+  // Long-press handlers
+  const onTouchStart = (e: React.TouchEvent, commentId: string) => {
+    touchStartPos.current = { x: e.touches[0].clientX, y: e.touches[0].clientY }
+    longPressRef.current = setTimeout(() => {
+      setMenuOpenFor(commentId)
+    }, 500)
+  }
+
+  const onTouchMove = (e: React.TouchEvent) => {
+    if (!touchStartPos.current) return
+    const dx = e.touches[0].clientX - touchStartPos.current.x
+    const dy = e.touches[0].clientY - touchStartPos.current.y
+    if (Math.abs(dx) > 10 || Math.abs(dy) > 10) {
+      if (longPressRef.current) clearTimeout(longPressRef.current)
+    }
+  }
+
+  const onTouchEnd = () => {
+    if (longPressRef.current) clearTimeout(longPressRef.current)
+  }
+
+  // Edit handler
+  const handleEditSave = async (commentId: string) => {
+    if (!editText.trim()) return
+    await db
+      .from('review_comments')
+      .update({ text: editText.trim(), edited_at: new Date().toISOString() })
+      .eq('id', commentId)
+    setEditingId(null)
+    await loadComments()
+  }
+
+  // Delete handler
+  const handleDelete = async (comment: Comment) => {
+    const hasReplies = comments.some(c => c.parent_comment_id === comment.id && !c.is_deleted)
+    if (hasReplies) {
+      // Soft delete -- preserve thread structure
+      await db.from('review_comments').update({ is_deleted: true, text: null }).eq('id', comment.id)
+    } else {
+      // Hard delete -- remove row
+      await db.from('review_comments').delete().eq('id', comment.id)
+    }
+    setConfirmDeleteId(null)
+    await loadComments()
+  }
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     if (!user || !text.trim()) return
     setLoading(true)
     setSubmitError('')
-    const { error } = await db.from('review_comments').insert({
+    const insertPayload: { rating_id: string; user_id: string; text: string; parent_comment_id?: string } = {
       rating_id: ratingId,
       user_id: user.id,
       text: text.trim().slice(0, 280),
-    })
+    }
+    if (replyingTo) {
+      insertPayload.parent_comment_id = replyingTo.commentId
+    }
+    const { error } = await db.from('review_comments').insert(insertPayload)
     if (!error) {
       setText('')
+      setReplyingTo(null)
       await loadComments()
       onCommentPosted?.()
     } else {
       setSubmitError('Failed to post. Try again.')
     }
     setLoading(false)
+  }
+
+  // Render a single comment row (used for both top-level and reply)
+  const renderComment = (comment: Comment, isReply: boolean) => {
+    const isOwner = comment.user_id === user?.id
+    const avatarSize = isReply ? 22 : 28
+    const avatarFontSize = isReply ? '9px' : '10px'
+
+    // Deleted comment placeholder
+    if (comment.is_deleted) {
+      return (
+        <div
+          key={comment.id}
+          style={{
+            display: 'flex',
+            gap: '8px',
+            marginBottom: '10px',
+            ...(isReply ? { marginLeft: '24px', borderLeft: '2px solid var(--accent)', paddingLeft: '12px' } : {}),
+          }}
+        >
+          <div style={{
+            width: `${avatarSize}px`, height: `${avatarSize}px`, borderRadius: '50%',
+            backgroundColor: 'var(--bg-elevated)', border: '1px solid var(--border)',
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+            fontSize: avatarFontSize, fontWeight: 800, color: 'var(--text-faint)',
+            flexShrink: 0,
+          }}>
+            ?
+          </div>
+          <div style={{ flex: 1, minWidth: 0 }}>
+            <div style={{ backgroundColor: 'var(--bg-elevated)', borderRadius: '10px', padding: '7px 10px' }}>
+              <div style={{ fontStyle: 'italic', color: 'var(--text-faint)', fontSize: '13px' }}>
+                [Comment deleted]
+              </div>
+            </div>
+          </div>
+        </div>
+      )
+    }
+
+    return (
+      <div
+        key={comment.id}
+        style={{
+          display: 'flex',
+          gap: '8px',
+          marginBottom: isReply ? '10px' : '12px',
+          ...(isReply ? { marginLeft: '24px', borderLeft: '2px solid var(--accent)', paddingLeft: '12px' } : {}),
+        }}
+        onTouchStart={isOwner ? (e) => onTouchStart(e, comment.id) : undefined}
+        onTouchMove={isOwner ? onTouchMove : undefined}
+        onTouchEnd={isOwner ? onTouchEnd : undefined}
+      >
+        <Link href={comment.user?.username ? `/users/${comment.user.username}` : '#'} style={{ textDecoration: 'none', flexShrink: 0 }}>
+          <div style={{
+            width: `${avatarSize}px`, height: `${avatarSize}px`, borderRadius: '50%',
+            backgroundColor: 'var(--bg-elevated)', border: '1px solid var(--border)',
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+            fontSize: avatarFontSize, fontWeight: 800, color: 'var(--accent)', overflow: 'hidden',
+          }}>
+            {comment.user?.avatar_url ? (
+              <Image src={comment.user.avatar_url} alt={`${comment.user?.username ?? 'User'}'s avatar`} width={avatarSize} height={avatarSize} style={{ objectFit: 'cover' }} />
+            ) : (
+              comment.user?.username?.[0]?.toUpperCase() ?? '?'
+            )}
+          </div>
+        </Link>
+        <div style={{ flex: 1, minWidth: 0, position: 'relative' }}>
+          {/* Three-dot menu button */}
+          {isOwner && !editingId && (
+            <div style={{ position: 'absolute', top: '2px', right: '2px', zIndex: 5 }}>
+              <button
+                onClick={(e) => {
+                  e.stopPropagation()
+                  setMenuOpenFor(menuOpenFor === comment.id ? null : comment.id)
+                }}
+                style={{
+                  background: 'none', border: 'none', cursor: 'pointer',
+                  color: 'var(--text-faint)', padding: '4px 6px',
+                  minWidth: '32px', minHeight: '32px',
+                  display: 'flex', alignItems: 'center', justifyContent: 'center',
+                  borderRadius: '50%',
+                  WebkitTapHighlightColor: 'transparent',
+                }}
+                aria-label="Comment options"
+              >
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+                  <circle cx="12" cy="5" r="2" />
+                  <circle cx="12" cy="12" r="2" />
+                  <circle cx="12" cy="19" r="2" />
+                </svg>
+              </button>
+
+              {/* Dropdown menu */}
+              {menuOpenFor === comment.id && (
+                <div style={{
+                  position: 'absolute', top: '100%', right: 0, zIndex: 10,
+                  background: 'var(--bg-card)', border: '1px solid var(--border)',
+                  borderRadius: '8px', boxShadow: '0 2px 8px rgba(0,0,0,0.15)',
+                  overflow: 'hidden', minWidth: '100px',
+                }}>
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation()
+                      setEditingId(comment.id)
+                      setEditText(comment.text ?? '')
+                      setMenuOpenFor(null)
+                    }}
+                    style={{
+                      display: 'block', width: '100%', textAlign: 'left',
+                      background: 'none', border: 'none', cursor: 'pointer',
+                      padding: '10px 14px', fontSize: '13px', fontWeight: 600,
+                      color: 'var(--text)', fontFamily: 'inherit',
+                      WebkitTapHighlightColor: 'transparent',
+                    }}
+                  >
+                    Edit
+                  </button>
+                  <div style={{ height: '1px', background: 'var(--border)' }} />
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation()
+                      setConfirmDeleteId(comment.id)
+                      setMenuOpenFor(null)
+                    }}
+                    style={{
+                      display: 'block', width: '100%', textAlign: 'left',
+                      background: 'none', border: 'none', cursor: 'pointer',
+                      padding: '10px 14px', fontSize: '13px', fontWeight: 600,
+                      color: '#ef4444', fontFamily: 'inherit',
+                      WebkitTapHighlightColor: 'transparent',
+                    }}
+                  >
+                    Delete
+                  </button>
+                </div>
+              )}
+            </div>
+          )}
+
+          {/* Comment bubble */}
+          {editingId === comment.id ? (
+            // Inline edit mode
+            <div>
+              <textarea
+                value={editText}
+                onChange={(e) => setEditText(e.target.value)}
+                maxLength={280}
+                style={{
+                  width: '100%', background: 'var(--bg-elevated)',
+                  border: '1px solid var(--accent)', borderRadius: '8px',
+                  padding: '7px 10px', fontSize: '13px', color: 'var(--text)',
+                  fontFamily: 'inherit', resize: 'none', outline: 'none',
+                  minHeight: '60px', boxSizing: 'border-box',
+                }}
+              />
+              <div style={{ display: 'flex', gap: '8px', marginTop: '6px' }}>
+                <button
+                  onClick={() => handleEditSave(comment.id)}
+                  disabled={!editText.trim()}
+                  style={{
+                    minHeight: '32px', fontSize: '12px', fontWeight: 600,
+                    borderRadius: '16px', padding: '4px 12px',
+                    border: 'none', cursor: 'pointer',
+                    backgroundColor: 'var(--accent)', color: '#000',
+                    fontFamily: 'inherit',
+                    WebkitTapHighlightColor: 'transparent',
+                  }}
+                >
+                  Save
+                </button>
+                <button
+                  onClick={() => setEditingId(null)}
+                  style={{
+                    minHeight: '32px', fontSize: '12px', fontWeight: 600,
+                    borderRadius: '16px', padding: '4px 12px',
+                    border: 'none', cursor: 'pointer',
+                    background: 'transparent', color: 'var(--text-dim)',
+                    fontFamily: 'inherit',
+                    WebkitTapHighlightColor: 'transparent',
+                  }}
+                >
+                  Cancel
+                </button>
+              </div>
+            </div>
+          ) : (
+            // Normal display
+            <div style={{ backgroundColor: 'var(--bg-elevated)', borderRadius: '10px', padding: '7px 10px' }}>
+              <div style={{ fontSize: '12px', fontWeight: 700, color: 'var(--text)', marginBottom: '2px', paddingRight: '28px' }}>
+                {comment.user?.username ?? 'anon'}
+                <span style={{ fontSize: '11px', color: 'var(--text-faint)', fontWeight: 400, marginLeft: '6px' }}>
+                  {timeAgo(comment.created_at)}
+                  {comment.edited_at && ' \u00b7 edited'}
+                </span>
+              </div>
+              <div style={{ fontSize: '13px', color: 'var(--text-muted)', lineHeight: 1.5 }}>
+                {comment.text}
+              </div>
+            </div>
+          )}
+
+          {/* Delete confirmation */}
+          {confirmDeleteId === comment.id && (
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginTop: '6px', fontSize: '12px' }}>
+              <span style={{ color: 'var(--text-dim)' }}>Delete this comment?</span>
+              <button
+                onClick={() => handleDelete(comment)}
+                style={{
+                  minHeight: '32px', fontSize: '12px', fontWeight: 600,
+                  borderRadius: '16px', padding: '4px 12px',
+                  border: 'none', cursor: 'pointer',
+                  background: 'transparent', color: '#ef4444',
+                  fontFamily: 'inherit',
+                  WebkitTapHighlightColor: 'transparent',
+                }}
+              >
+                Delete
+              </button>
+              <button
+                onClick={() => setConfirmDeleteId(null)}
+                style={{
+                  minHeight: '32px', fontSize: '12px', fontWeight: 600,
+                  borderRadius: '16px', padding: '4px 12px',
+                  border: 'none', cursor: 'pointer',
+                  background: 'transparent', color: 'var(--text-dim)',
+                  fontFamily: 'inherit',
+                  WebkitTapHighlightColor: 'transparent',
+                }}
+              >
+                Cancel
+              </button>
+            </div>
+          )}
+
+          {/* Reply button -- top-level non-deleted comments only */}
+          {!isReply && !comment.is_deleted && editingId !== comment.id && (
+            <button
+              onClick={() => {
+                setReplyingTo({ commentId: comment.id, username: comment.user?.username ?? 'anon' })
+                inputRef.current?.focus()
+              }}
+              style={{
+                background: 'none', border: 'none', cursor: 'pointer',
+                color: 'var(--text-faint)', fontSize: '11px', fontWeight: 600,
+                padding: '4px 0', marginTop: '2px', minHeight: '44px',
+                display: 'flex', alignItems: 'center',
+                WebkitTapHighlightColor: 'transparent',
+              }}
+            >
+              Reply
+            </button>
+          )}
+        </div>
+      </div>
+    )
   }
 
   if (typeof document === 'undefined') return null
@@ -193,8 +545,11 @@ function CommentBottomSheet({
           </button>
         </div>
 
-        {/* Comments list — scrollable middle area */}
-        <div style={{ flex: 1, overflowY: 'auto', padding: '4px 16px 8px' }}>
+        {/* Comments list -- scrollable middle area */}
+        <div
+          style={{ flex: 1, overflowY: 'auto', padding: '4px 16px 8px' }}
+          onClick={() => setMenuOpenFor(null)}
+        >
           {loadingComments && (
             <div style={{ padding: '24px 0', display: 'flex', justifyContent: 'center' }}>
               <div style={{
@@ -205,102 +560,128 @@ function CommentBottomSheet({
             </div>
           )}
 
-          {!loadingComments && comments.length === 0 && (
+          {!loadingComments && topLevelComments.length === 0 && (
             <p style={{ textAlign: 'center', fontSize: '13px', color: 'var(--text-faint)', padding: '24px 0', margin: 0 }}>
               No comments yet. Be the first!
             </p>
           )}
 
-          {comments.map((comment) => (
-            <div key={comment.id} style={{ display: 'flex', gap: '8px', marginBottom: '12px' }}>
-              <Link href={comment.user?.username ? `/users/${comment.user.username}` : '#'} style={{ textDecoration: 'none', flexShrink: 0 }}>
-                <div style={{
-                  width: '28px', height: '28px', borderRadius: '50%',
-                  backgroundColor: 'var(--bg-elevated)', border: '1px solid var(--border)',
-                  display: 'flex', alignItems: 'center', justifyContent: 'center',
-                  fontSize: '10px', fontWeight: 800, color: 'var(--accent)', overflow: 'hidden',
-                }}>
-                  {comment.user?.avatar_url ? (
-                    <Image src={comment.user.avatar_url} alt={`${comment.user?.username ?? 'User'}'s avatar`} width={28} height={28} style={{ objectFit: 'cover' }} />
-                  ) : (
-                    comment.user?.username?.[0]?.toUpperCase() ?? '?'
-                  )}
-                </div>
-              </Link>
-              <div style={{ flex: 1, minWidth: 0 }}>
-                <div style={{ backgroundColor: 'var(--bg-elevated)', borderRadius: '10px', padding: '7px 10px' }}>
-                  <div style={{ fontSize: '12px', fontWeight: 700, color: 'var(--text)', marginBottom: '2px' }}>
-                    {comment.user?.username ?? 'anon'}
-                    <span style={{ fontSize: '11px', color: 'var(--text-faint)', fontWeight: 400, marginLeft: '6px' }}>
-                      {timeAgo(comment.created_at)}
-                    </span>
-                  </div>
-                  <div style={{ fontSize: '13px', color: 'var(--text-muted)', lineHeight: 1.5 }}>
-                    {comment.text}
-                  </div>
-                </div>
+          {topLevelComments.map((comment) => {
+            const replies = repliesByParent[comment.id] ?? []
+            const visibleReplies = expandedReplies.has(comment.id) ? replies : replies.slice(0, 5)
+            const hiddenCount = replies.length - 5
+
+            return (
+              <div key={comment.id}>
+                {renderComment(comment, false)}
+
+                {/* Replies */}
+                {visibleReplies.map((reply) => renderComment(reply, true))}
+
+                {/* View more replies link */}
+                {hiddenCount > 0 && !expandedReplies.has(comment.id) && (
+                  <button
+                    onClick={() => setExpandedReplies(prev => new Set(prev).add(comment.id))}
+                    style={{
+                      background: 'none', border: 'none', cursor: 'pointer',
+                      color: 'var(--text-faint)', fontSize: '12px', fontWeight: 600,
+                      padding: '4px 0 4px 44px', minHeight: '44px',
+                      display: 'flex', alignItems: 'center',
+                      WebkitTapHighlightColor: 'transparent',
+                    }}
+                  >
+                    View {hiddenCount} more {hiddenCount === 1 ? 'reply' : 'replies'}
+                  </button>
+                )}
               </div>
-            </div>
-          ))}
+            )
+          })}
         </div>
 
-        {/* Input form — sticky at bottom */}
+        {/* Input form -- sticky at bottom */}
         <div style={{
           position: 'sticky',
           bottom: 0,
           background: 'var(--bg-card)',
           borderTop: '1px solid var(--border-soft)',
-          padding: '10px 16px',
-          paddingBottom: 'env(safe-area-inset-bottom)',
           flexShrink: 0,
         }}>
-          {user ? (
-            <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
-              {submitError && (
-                <p style={{ fontSize: '12px', color: 'var(--red)', margin: 0 }}>{submitError}</p>
-              )}
-              <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
-                <div style={{
-                  width: '28px', height: '28px', borderRadius: '50%', flexShrink: 0,
-                  backgroundColor: 'var(--bg-elevated)', border: '1px solid var(--border)',
+          {/* Reply mode chip */}
+          {replyingTo && (
+            <div style={{
+              display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+              padding: '6px 16px', fontSize: '12px', color: 'var(--text-dim)',
+              background: 'var(--bg-elevated)',
+            }}>
+              <span>Replying to @{replyingTo.username}</span>
+              <button
+                onClick={() => setReplyingTo(null)}
+                aria-label="Cancel reply"
+                style={{
+                  background: 'none', border: 'none', cursor: 'pointer',
+                  color: 'var(--text-dim)', minWidth: '32px', minHeight: '32px',
                   display: 'flex', alignItems: 'center', justifyContent: 'center',
-                  fontSize: '10px', fontWeight: 800, color: 'var(--accent)',
-                }}>
-                  {profile?.username?.[0]?.toUpperCase() ?? '?'}
-                </div>
-                <input
-                  value={text}
-                  onChange={(e) => setText(e.target.value)}
-                  placeholder="Add a comment..."
-                  maxLength={280}
-                  style={{
-                    flex: 1, background: 'var(--bg-elevated)', border: '1px solid var(--border)',
-                    borderRadius: '20px', padding: '8px 14px', fontSize: '16px',
-                    color: 'var(--text)', outline: 'none', fontFamily: 'inherit',
-                  }}
-                />
-                <button
-                  type="submit"
-                  disabled={!text.trim() || loading}
-                  style={{
-                    padding: '8px 14px', borderRadius: '20px', fontSize: '12px',
-                    fontWeight: 700, border: 'none', cursor: 'pointer',
-                    backgroundColor: text.trim() ? 'var(--accent)' : 'var(--bg-elevated)',
-                    color: text.trim() ? '#000' : 'var(--text-faint)',
-                    transition: 'all 0.15s', fontFamily: 'inherit',
-                    WebkitTapHighlightColor: 'transparent',
-                    flexShrink: 0,
-                  }}
-                >
-                  {loading ? '...' : 'Post'}
-                </button>
-              </div>
-            </form>
-          ) : (
-            <Link href="/login" style={{ fontSize: '13px', color: 'var(--accent)', display: 'block', textAlign: 'center', padding: '4px 0' }}>
-              Log in to comment
-            </Link>
+                  WebkitTapHighlightColor: 'transparent',
+                }}
+              >
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                  <line x1="18" y1="6" x2="6" y2="18" />
+                  <line x1="6" y1="6" x2="18" y2="18" />
+                </svg>
+              </button>
+            </div>
           )}
+
+          <div style={{ padding: '10px 16px', paddingBottom: 'env(safe-area-inset-bottom)' }}>
+            {user ? (
+              <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                {submitError && (
+                  <p style={{ fontSize: '12px', color: 'var(--red)', margin: 0 }}>{submitError}</p>
+                )}
+                <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+                  <div style={{
+                    width: '28px', height: '28px', borderRadius: '50%', flexShrink: 0,
+                    backgroundColor: 'var(--bg-elevated)', border: '1px solid var(--border)',
+                    display: 'flex', alignItems: 'center', justifyContent: 'center',
+                    fontSize: '10px', fontWeight: 800, color: 'var(--accent)',
+                  }}>
+                    {profile?.username?.[0]?.toUpperCase() ?? '?'}
+                  </div>
+                  <input
+                    ref={inputRef}
+                    value={text}
+                    onChange={(e) => setText(e.target.value)}
+                    placeholder={replyingTo ? `Reply to @${replyingTo.username}...` : 'Add a comment...'}
+                    maxLength={280}
+                    style={{
+                      flex: 1, background: 'var(--bg-elevated)', border: '1px solid var(--border)',
+                      borderRadius: '20px', padding: '8px 14px', fontSize: '16px',
+                      color: 'var(--text)', outline: 'none', fontFamily: 'inherit',
+                    }}
+                  />
+                  <button
+                    type="submit"
+                    disabled={!text.trim() || loading}
+                    style={{
+                      padding: '8px 14px', borderRadius: '20px', fontSize: '12px',
+                      fontWeight: 700, border: 'none', cursor: 'pointer',
+                      backgroundColor: text.trim() ? 'var(--accent)' : 'var(--bg-elevated)',
+                      color: text.trim() ? '#000' : 'var(--text-faint)',
+                      transition: 'all 0.15s', fontFamily: 'inherit',
+                      WebkitTapHighlightColor: 'transparent',
+                      flexShrink: 0,
+                    }}
+                  >
+                    {loading ? '...' : 'Post'}
+                  </button>
+                </div>
+              </form>
+            ) : (
+              <Link href="/login" style={{ fontSize: '13px', color: 'var(--accent)', display: 'block', textAlign: 'center', padding: '4px 0' }}>
+                Log in to comment
+              </Link>
+            )}
+          </div>
         </div>
       </div>
     </>,
@@ -312,15 +693,12 @@ export function CommentsSection({ ratingId, initialCount }: Props) {
   const [open, setOpen] = useState(false)
   const [count, setCount] = useState(initialCount)
 
-  // Keep count in sync: when sheet closes after a submit, the
-  // loadComments inside the sheet already refreshes comments.
-  // We expose a callback so the sheet can bump the count.
   const handleOpen = () => setOpen(true)
   const handleClose = () => setOpen(false)
 
   return (
     <>
-      {/* Trigger button — lives on the card */}
+      {/* Trigger button -- lives on the card */}
       <div style={{ borderTop: '1px solid var(--border-soft)' }}>
         <button
           onClick={handleOpen}
