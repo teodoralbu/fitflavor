@@ -42,8 +42,8 @@ export default function SettingsPage() {
     setSuccess('')
 
     if (form.username.length < 3) return setError('Username must be at least 3 characters.')
-    if (!/^[a-z0-9_]+$/.test(form.username))
-      return setError('Username can only contain lowercase letters, numbers, and underscores.')
+    if (!/^[a-z0-9_.]+$/.test(form.username))
+      return setError('Username can only contain lowercase letters, numbers, underscores, and dots.')
 
     setSaving(true)
 
@@ -190,7 +190,7 @@ export default function SettingsPage() {
             label="Username"
             value={form.username}
             onChange={(e) => setForm({ ...form, username: e.target.value.toLowerCase() })}
-            hint="Lowercase letters, numbers, underscores only"
+            hint="Lowercase letters, numbers, underscores, and dots only"
           />
           <div className="flex flex-col gap-1.5">
             <label className="text-sm font-medium" style={{ color: 'var(--text)' }}>Bio</label>

@@ -22,8 +22,8 @@ export default function SignupPage() {
       return setError('Supabase is not configured. Add your credentials to .env.local to enable auth.')
     }
     if (form.username.length < 3) return setError('Username must be at least 3 characters.')
-    if (!/^[a-z0-9_]+$/.test(form.username))
-      return setError('Username can only contain lowercase letters, numbers, and underscores.')
+    if (!/^[a-z0-9_.]+$/.test(form.username))
+      return setError('Username can only contain lowercase letters, numbers, underscores, and dots.')
     if (form.password.length < 8) return setError('Password must be at least 8 characters.')
 
     setLoading(true)
@@ -74,7 +74,7 @@ export default function SignupPage() {
             placeholder="yourname"
             value={form.username}
             onChange={(e) => setForm({ ...form, username: e.target.value.toLowerCase() })}
-            hint="Lowercase letters, numbers, underscores only"
+            hint="Lowercase letters, numbers, underscores, and dots only"
             required
           />
           <Input
