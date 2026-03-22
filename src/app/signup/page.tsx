@@ -45,7 +45,7 @@ export default function SignupPage() {
           <h2 className="text-xl font-bold mb-2">Check your email</h2>
           <p className="text-[#A0A0A0] text-sm leading-relaxed">
             We sent a confirmation link to{' '}
-            <span className="text-white font-medium">{form.email}</span>. Click it to activate your
+            <span style={{ color: 'var(--text)', fontWeight: 500 }}>{form.email}</span>. Click it to activate your
             account.
           </p>
           <Link
