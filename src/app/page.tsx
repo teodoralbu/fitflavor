@@ -1,6 +1,7 @@
 export const dynamic = 'force-dynamic'
 
 import Link from 'next/link'
+import Image from 'next/image'
 import { createServerSupabaseClient } from '@/lib/supabase-server'
 import { getLeaderboard, getUnifiedFeed, getFollowingUnifiedFeed } from '@/lib/queries'
 import { FeedCard } from '@/components/feed/FeedCard'
@@ -92,55 +93,73 @@ export default async function Home({ searchParams }: { searchParams: Promise<{ f
           {/* Hero card — logged-out */}
           {!user && (
             <div style={{
-              padding: '28px 20px',
               borderRadius: 'var(--radius-lg)',
               backgroundColor: 'var(--bg-card)',
               border: '1px solid var(--border)',
+              overflow: 'hidden',
               textAlign: 'center',
               boxSizing: 'border-box',
               marginBottom: '24px',
             }}>
-              <h1 style={{
-                fontSize: 'clamp(26px, 8vw, 36px)',
-                fontWeight: 900,
-                lineHeight: 1.05,
-                letterSpacing: '-0.03em',
-                margin: '0 0 10px',
-                color: 'var(--text)',
-              }}>
-                Rate it before you{' '}
-                <span style={{ color: 'var(--accent)' }}>waste it.</span>
-              </h1>
-              <p style={{
-                fontSize: '14px',
-                color: 'var(--text-dim)',
-                margin: '0 0 20px',
-                lineHeight: 1.6,
-              }}>
-                Discover what the fitness community actually thinks. Real experiences, real ratings.
-              </p>
-              <Link
-                href="/browse"
+              {/* Hero image -- full-width, no padding, rounded top corners via overflow hidden */}
+              <Image
+                src="/hero-placeholder.jpg"
+                alt="Pre-workout supplement"
+                width={800}
+                height={400}
                 style={{
-                  display: 'block', width: '100%', textAlign: 'center',
-                  padding: '13px 20px', boxSizing: 'border-box',
-                  backgroundColor: 'var(--accent)', color: '#000',
-                  borderRadius: 'var(--radius-md)', fontSize: '15px', fontWeight: 700,
-                  textDecoration: 'none', marginBottom: '10px',
+                  width: '100%',
+                  height: 'auto',
+                  maxHeight: '200px',
+                  objectFit: 'cover',
+                  display: 'block',
                 }}
-              >
-                Browse Products
-              </Link>
-              <Link
-                href="/leaderboard"
-                style={{
-                  display: 'block', textAlign: 'center',
-                  padding: '6px 0', fontSize: '13px', fontWeight: 600,
-                  color: 'var(--text-dim)', textDecoration: 'none',
-                }}
-              >
-                See Top Rated →
-              </Link>
+                priority
+              />
+              {/* Text content with padding below image */}
+              <div style={{ padding: '28px 20px' }}>
+                <h1 style={{
+                  fontSize: 'clamp(26px, 8vw, 36px)',
+                  fontWeight: 900,
+                  lineHeight: 1.05,
+                  letterSpacing: '-0.03em',
+                  margin: '0 0 10px',
+                  color: 'var(--text)',
+                }}>
+                  Rate it before you{' '}
+                  <span style={{ color: 'var(--accent)' }}>waste it.</span>
+                </h1>
+                <p style={{
+                  fontSize: '14px',
+                  color: 'var(--text-dim)',
+                  margin: '0 0 20px',
+                  lineHeight: 1.6,
+                }}>
+                  Discover what the fitness community actually thinks. Real experiences, real ratings.
+                </p>
+                <Link
+                  href="/browse"
+                  style={{
+                    display: 'block', width: '100%', textAlign: 'center',
+                    padding: '13px 20px', boxSizing: 'border-box',
+                    backgroundColor: 'var(--accent)', color: '#000',
+                    borderRadius: 'var(--radius-md)', fontSize: '15px', fontWeight: 700,
+                    textDecoration: 'none', marginBottom: '10px',
+                  }}
+                >
+                  Browse Products
+                </Link>
+                <Link
+                  href="/leaderboard"
+                  style={{
+                    display: 'block', textAlign: 'center',
+                    padding: '6px 0', fontSize: '13px', fontWeight: 600,
+                    color: 'var(--text-dim)', textDecoration: 'none',
+                  }}
+                >
+                  See Top Rated →
+                </Link>
+              </div>
             </div>
           )}
 
