@@ -24,7 +24,7 @@ Full archive: `.planning/milestones/v1.0-ROADMAP.md`
 
 **Milestone Goal:** Overhaul the rating system, fix known bugs, expand social features (comment threads, notifications), upgrade the product page, and add a profile-based supplement calculator.
 
-- [ ] **Phase 6: Bug Fixes & UX Quick Wins** - Fix known bugs and add landing page hero image
+- [x] **Phase 6: Bug Fixes & UX Quick Wins** - Fix known bugs and add landing page hero image (completed 2026-03-22)
 - [ ] **Phase 7: Rating System Overhaul** - New rating dimensions, price capture, schema versioning
 - [ ] **Phase 8: Comment System Upgrade** - Edit, delete, and single-level threaded replies
 - [ ] **Phase 9: Notification System** - Follow/like notifications, unread badge, followers list
@@ -44,7 +44,7 @@ Full archive: `.planning/milestones/v1.0-ROADMAP.md`
   3. Taste/flavor tags display consistently across all product cards, or are absent consistently when not applicable
   4. Bottom navigation has no browse/search button (clean nav with only valid routes)
   5. Landing page displays a hero image alongside the "rate it before you waste it" tagline
-**Plans:** 2 plans
+**Plans:** 2/2 plans complete
 
 Plans:
 - [ ] 06-01-PLAN.md — Fix username regex, email text color, and tag consistency (FIX-01, FIX-02, FIX-03)
@@ -123,7 +123,7 @@ Plans:
 | 3. Performance | v1.0 | 3/3 | Complete | 2026-03-19 |
 | 4. Quality & Accessibility | v1.0 | 4/4 | Complete | 2026-03-21 |
 | 5. Security & Accessibility Polish | v1.0 | 1/1 | Complete | 2026-03-20 |
-| 6. Bug Fixes & UX Quick Wins | v1.1 | 0/2 | Planning complete | - |
+| 6. Bug Fixes & UX Quick Wins | v1.1 | Complete    | 2026-03-22 | - |
 | 7. Rating System Overhaul | v1.1 | 0/? | Not started | - |
 | 8. Comment System Upgrade | v1.1 | 0/? | Not started | - |
 | 9. Notification System | v1.1 | 0/? | Not started | - |
