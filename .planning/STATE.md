@@ -4,12 +4,12 @@ milestone: v1.1
 milestone_name: Feature Expansion
 status: unknown
 stopped_at: Phase 7 context gathered
-last_updated: "2026-03-22T10:07:03.627Z"
+last_updated: "2026-03-22T10:30:45.012Z"
 progress:
   total_phases: 7
   completed_phases: 1
-  total_plans: 2
-  completed_plans: 2
+  total_plans: 5
+  completed_plans: 3
 ---
 
 # Project State
@@ -19,12 +19,12 @@ progress:
 See: .planning/PROJECT.md (updated 2026-03-21)
 
 **Core value:** Users can confidently discover and rate gym supplement flavors through a fast, polished mobile experience
-**Current focus:** Phase 06 — bug-fixes-ux-quick-wins
+**Current focus:** Phase 07 — rating-system-overhaul
 
 ## Current Position
 
-Phase: 06 (bug-fixes-ux-quick-wins) — COMPLETE
-Plan: 2 of 2 (all complete)
+Phase: 07 (rating-system-overhaul) — EXECUTING
+Plan: 2 of 3
 
 ## Performance Metrics
 
@@ -40,6 +40,7 @@ Plan: 2 of 2 (all complete)
 |-------|------|----------|-------|-------|
 | 06-01 | Bug fixes (username, email, tags) | 1min | 3 | 2 |
 | 06-02 | Nav cleanup and hero image | 2min | 2 | 3 |
+| 07-01 | Schema & types foundation | 2min | 2 | 4 |
 
 ## Accumulated Context
 
@@ -52,6 +53,8 @@ v1.1 decisions:
 - Used var(--text) CSS variable for theme-aware email text color (06-01)
 - Used alternative Unsplash image after original URL 404'd (06-02)
 - Kept padding on inner text wrapper for edge-to-edge hero image (06-02)
+- V1 ratings default to schema_version=1; dropped unique constraint for v2 re-rating (07-01)
+- 3 rating dimensions (flavor/pump/energy_focus) with 0.33/0.33/0.34 weights (07-01)
 
 Carried forward from v1.0:
 
@@ -74,6 +77,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-03-22T10:07:03.625Z
-Stopped at: Phase 7 context gathered
-Resume file: .planning/phases/07-rating-system-overhaul/07-CONTEXT.md
+Last session: 2026-03-22T10:30:00Z
+Stopped at: Completed 07-01-PLAN.md
+Resume file: .planning/phases/07-rating-system-overhaul/07-01-SUMMARY.md

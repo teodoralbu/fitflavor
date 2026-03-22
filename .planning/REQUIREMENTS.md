@@ -57,10 +57,10 @@
 
 ### Rating System
 
-- [ ] **RATE-01**: User can rate a pre-workout on Flavor, Pump, and Energy & Focus (replaces taste/sweetness/pump/energy/intensity)
-- [ ] **RATE-02**: User can enter the price paid per container when submitting a review
-- [ ] **RATE-03**: Value score is auto-calculated from price paid and quality score (no manual value slider)
-- [ ] **RATE-04**: Old reviews (pre-v1.1 schema) are hidden from all feeds and product pages
+- [x] **RATE-01**: User can rate a pre-workout on Flavor, Pump, and Energy & Focus (replaces taste/sweetness/pump/energy/intensity)
+- [x] **RATE-02**: User can enter the price paid per container when submitting a review
+- [x] **RATE-03**: Value score is auto-calculated from price paid and quality score (no manual value slider)
+- [x] **RATE-04**: Old reviews (pre-v1.1 schema) are hidden from all feeds and product pages
 
 ### Comments
 
@@ -156,10 +156,10 @@
 | FIX-03 | Phase 6 | Complete |
 | FIX-04 | Phase 6 | Complete |
 | FIX-05 | Phase 6 | Complete |
-| RATE-01 | Phase 7 | Pending |
-| RATE-02 | Phase 7 | Pending |
-| RATE-03 | Phase 7 | Pending |
-| RATE-04 | Phase 7 | Pending |
+| RATE-01 | Phase 7 | Complete |
+| RATE-02 | Phase 7 | Complete |
+| RATE-03 | Phase 7 | Complete |
+| RATE-04 | Phase 7 | Complete |
 | COMM-01 | Phase 8 | Pending |
 | COMM-02 | Phase 8 | Pending |
 | COMM-03 | Phase 8 | Pending |
