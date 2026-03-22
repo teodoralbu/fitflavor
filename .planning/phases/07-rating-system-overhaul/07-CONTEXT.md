@@ -104,7 +104,10 @@ No external specs — requirements fully captured in decisions above.
 <deferred>
 ## Deferred Ideas
 
-None — discussion stayed within phase scope.
+### Phase 12: Profile & Dosage Calculator
+- Height and weight capture should happen **at account creation** (onboarding), not only in settings — so the profile is populated from day one
+- Body stats (height, weight) should have a **privacy toggle** — user decides whether they show publicly on their profile or remain private (visible only to themselves)
+- These expand on CALC-01 ("enter height, weight, and fitness goal on their profile settings") — Phase 12 planning should address where in the signup flow these are collected and how the privacy setting is stored/enforced
 
 </deferred>
 
