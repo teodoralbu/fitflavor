@@ -3,13 +3,13 @@ gsd_state_version: 1.0
 milestone: v1.1
 milestone_name: Feature Expansion
 status: unknown
-stopped_at: Completed 07-01-PLAN.md
-last_updated: "2026-03-22T10:34:34.166Z"
+stopped_at: Completed 07-03-PLAN.md
+last_updated: "2026-03-22T10:38:46.789Z"
 progress:
   total_phases: 7
-  completed_phases: 1
+  completed_phases: 2
   total_plans: 5
-  completed_plans: 4
+  completed_plans: 5
 ---
 
 # Project State
@@ -42,6 +42,7 @@ Plan: 3 of 3
 | 06-02 | Nav cleanup and hero image | 2min | 2 | 3 |
 | 07-01 | Schema & types foundation | 2min | 2 | 4 |
 | 07-02 | Rating form overhaul | 2min | 2 | 2 |
+| Phase 07-03 PDisplay filters and value pill | 2min | 2 tasks | 5 files |
 
 ## Accumulated Context
 
@@ -66,6 +67,8 @@ Carried forward from v1.0:
 - Old ratings hidden (not deleted) when new rating schema launches
 - Supplement calculator must reference safe dosing, not prescribe medical advice
 - DB already has servings_per_container + price_per_serving — use these for value score
+- [Phase 07-03]: Value pill uses != null to handle both null and undefined
+- [Phase 07-03]: Home page stats and getTopReviewers excluded from schema_version filter (vanity metrics)
 
 ### Pending Todos
 
@@ -80,6 +83,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-03-22T10:33:44Z
-Stopped at: Completed 07-02-PLAN.md
-Resume file: .planning/phases/07-rating-system-overhaul/07-02-SUMMARY.md
+Last session: 2026-03-22T10:38:46.786Z
+Stopped at: Completed 07-03-PLAN.md
+Resume file: None

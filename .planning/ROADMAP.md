@@ -25,7 +25,7 @@ Full archive: `.planning/milestones/v1.0-ROADMAP.md`
 **Milestone Goal:** Overhaul the rating system, fix known bugs, expand social features (comment threads, notifications), upgrade the product page, and add a profile-based supplement calculator.
 
 - [x] **Phase 6: Bug Fixes & UX Quick Wins** - Fix known bugs and add landing page hero image (completed 2026-03-22)
-- [ ] **Phase 7: Rating System Overhaul** - New rating dimensions, price capture, schema versioning
+- [x] **Phase 7: Rating System Overhaul** - New rating dimensions, price capture, schema versioning (completed 2026-03-22)
 - [ ] **Phase 8: Comment System Upgrade** - Edit, delete, and single-level threaded replies
 - [ ] **Phase 9: Notification System** - Follow/like notifications, unread badge, followers list
 - [ ] **Phase 10: Product Page Upgrade** - Hero image, label viewer, nutritional slider
@@ -59,7 +59,7 @@ Plans:
   2. User can enter the price they paid per container during review submission
   3. Value score appears automatically on the review, calculated from price and quality (no manual slider)
   4. Old reviews (pre-v1.1 schema) are hidden from all feeds, product pages, and leaderboards
-**Plans:** 1/3 plans executed
+**Plans:** 3/3 plans complete
 
 Plans:
 - [ ] 07-01-PLAN.md — DB migration + types + constants for v2 rating schema (RATE-01, RATE-02, RATE-03, RATE-04)
@@ -129,7 +129,7 @@ Plans:
 | 4. Quality & Accessibility | v1.0 | 4/4 | Complete | 2026-03-21 |
 | 5. Security & Accessibility Polish | v1.0 | 1/1 | Complete | 2026-03-20 |
 | 6. Bug Fixes & UX Quick Wins | v1.1 | Complete    | 2026-03-22 | - |
-| 7. Rating System Overhaul | 1/3 | In Progress|  | - |
+| 7. Rating System Overhaul | 3/3 | Complete   | 2026-03-22 | - |
 | 8. Comment System Upgrade | v1.1 | 0/? | Not started | - |
 | 9. Notification System | v1.1 | 0/? | Not started | - |
 | 10. Product Page Upgrade | v1.1 | 0/? | Not started | - |
