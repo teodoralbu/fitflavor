@@ -26,15 +26,23 @@ interface Props {
 }
 
 const DEFAULT_SCORES: Record<string, number> = {
-  taste: 7,
-  sweetness: 7,
+  flavor: 7,
   pump: 7,
-  energy: 7,
-  intensity: 7,
+  energy_focus: 7,
 }
 
 function calcOverall(scores: Record<string, number>): number {
   return RATING_DIMENSIONS.reduce((sum, dim) => sum + (scores[dim.key] ?? 5) * dim.weight, 0)
+}
+
+function calcValueScore(overallScore: number, pricePaid: number, servingsPerContainer: number | null): number | null {
+  if (!servingsPerContainer || servingsPerContainer <= 0 || pricePaid <= 0) return null
+  const pricePerServing = pricePaid / servingsPerContainer
+  const rawValue = overallScore / pricePerServing
+  const MIN_RAW = 1.0
+  const MAX_RAW = 12.0
+  const normalized = 1 + ((rawValue - MIN_RAW) / (MAX_RAW - MIN_RAW)) * 9
+  return Math.round(Math.min(10, Math.max(1, normalized)) * 10) / 10
 }
 
 interface SliderRowProps {
@@ -130,6 +138,7 @@ export function RatingForm({ flavor }: Props) {
   const [photoFile, setPhotoFile] = useState<File | null>(null)
   const [photoPreview, setPhotoPreview] = useState<string | null>(null)
   const [photoError, setPhotoError] = useState<string | null>(null)
+  const [pricePaid, setPricePaid] = useState<string>('')
 
   const overall = calcOverall(scores)
   const scoreColor = getScoreColor(overall)
@@ -180,6 +189,11 @@ export function RatingForm({ flavor }: Props) {
       .eq('user_id', user.id)
     const isFirst = existingCount === 0
 
+    const priceNum = pricePaid ? parseFloat(pricePaid) : null
+    const valueScore = priceNum && priceNum > 0
+      ? calcValueScore(parseFloat(overall.toFixed(2)), priceNum, flavor.product.servings_per_container)
+      : null
+
     const { error: insertError } = await supabase.from('ratings').insert({
       user_id: user.id,
       flavor_id: flavor.id,
@@ -189,9 +203,9 @@ export function RatingForm({ flavor }: Props) {
       context_tags: contextTags,
       review_text: reviewText.trim() || null,
       photo_url: photoUrl,
-      schema_version: 1,
-      price_paid: null,
-      value_score: null,
+      schema_version: 2,
+      price_paid: priceNum,
+      value_score: valueScore,
     })
 
     if (insertError) {
@@ -286,7 +300,11 @@ export function RatingForm({ flavor }: Props) {
           letterSpacing: '0.02em',
           position: 'relative',
         }}>
-          Taste ×0.25 · Sweetness ×0.10 · Pump ×0.25 · Energy ×0.25 · Intensity ×0.15
+          {RATING_DIMENSIONS.map((dim, i) => (
+            <span key={dim.key}>
+              {dim.label} ×{dim.weight}{i < RATING_DIMENSIONS.length - 1 ? ' · ' : ''}
+            </span>
+          ))}
         </div>
       </div>
 
@@ -303,6 +321,26 @@ export function RatingForm({ flavor }: Props) {
                 onChange={handleScoreChange}
               />
             ))}
+          </div>
+        </Section>
+
+        {/* Price paid */}
+        <Section title="Price paid" subtitle="optional">
+          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+            <span style={{ fontSize: '18px', fontWeight: 700, color: 'var(--text-dim)' }}>$</span>
+            <input
+              type="number"
+              min="0"
+              step="0.01"
+              placeholder="e.g. 39.99"
+              value={pricePaid}
+              onChange={(e) => setPricePaid(e.target.value)}
+              className="input"
+              style={{ flex: 1, fontSize: '16px' }}
+            />
+          </div>
+          <div style={{ fontSize: '11px', color: 'var(--text-faint)', marginTop: '8px' }}>
+            What you paid for the whole container
           </div>
         </Section>
 
