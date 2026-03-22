@@ -84,6 +84,9 @@ export function BottomNav() {
         {topActive && <span style={{ position: 'absolute', top: '6px', left: '50%', transform: 'translateX(-50%)', width: '16px', height: '2px', borderRadius: '999px', backgroundColor: 'var(--accent)' }} />}
       </Link>
 
+      {/* Center spacer — pushes Top left and Alerts right, + button floats above */}
+      <div style={{ flexShrink: 0, width: '64px' }} aria-hidden="true" />
+
       {/* Notifications */}
       <Link href="/notifications" style={tabStyle(notifActive)}>
         <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={notifActive ? 2.5 : 2} strokeLinecap="round" strokeLinejoin="round">
