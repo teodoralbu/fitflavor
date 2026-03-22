@@ -31,6 +31,7 @@ Users can confidently discover and rate gym supplement flavors through a fast, p
 - ✓ Code quality — as-any removed from critical paths, error handling in queries.ts — v1.0 (partial)
 - ✓ UX/accessibility — skeleton states, empty states, focus rings, WCAG AA contrast, alt text — v1.0
 - ✓ Upload security — MIME type + size validation on RatingForm and AvatarUpload — v1.0
+- ✓ Bug fixes v1.1 — username dot support, light-theme email visibility, taste tag consistency, nav cleanup, landing hero image — Phase 6
 
 ### Active
 
@@ -64,6 +65,7 @@ Users can confidently discover and rate gym supplement flavors through a fast, p
 ## Context
 
 - v1.0 shipped 2026-03-21 — 5 phases, 15 plans, 115 files changed
+- v1.1 Phase 6 complete 2026-03-22 — 5 bug fixes shipped, landing hero image added
 - v1.1 starts 2026-03-21 — user + client feedback driven
 - Next.js 16 App Router + Supabase (no framework changes planned)
 - 26 remaining `as any` casts — down from 111+; critical paths are now typed
