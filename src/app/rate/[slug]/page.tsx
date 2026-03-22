@@ -20,6 +20,7 @@ export default async function RatePage({ params }: Props) {
       id: string
       name: string
       slug: string
+      servings_per_container: number | null
       brands: { name: string } | null
     }
     flavor_tag_assignments: { flavor_tags: { id: string; name: string; slug: string } }[]
@@ -27,7 +28,7 @@ export default async function RatePage({ params }: Props) {
 
   const { data: flavor, error: flavorError } = await supabase
     .from('flavors')
-    .select('id, name, slug, products(id, name, slug, brands(name)), flavor_tag_assignments(flavor_tags(id, name, slug))')
+    .select('id, name, slug, products(id, name, slug, servings_per_container, brands(name)), flavor_tag_assignments(flavor_tags(id, name, slug))')
     .eq('slug', slug)
     .returns<RatePageFlavor[]>()
     .single()
@@ -46,6 +47,7 @@ export default async function RatePage({ params }: Props) {
       id: flavor.products.id,
       name: flavor.products.name,
       slug: flavor.products.slug,
+      servings_per_container: flavor.products.servings_per_container ?? null,
       brand: { name: flavor.products.brands?.name ?? '' },
     },
     tags: flavor.flavor_tag_assignments

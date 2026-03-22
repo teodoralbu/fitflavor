@@ -15,6 +15,7 @@ interface FlavorBasic {
     id: string
     name: string
     slug: string
+    servings_per_container: number | null
     brand: { name: string }
   }
   tags: FlavorTag[]
