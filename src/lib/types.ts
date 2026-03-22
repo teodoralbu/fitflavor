@@ -92,6 +92,9 @@ export interface Rating {
   context_tags: string[]
   review_text: string | null
   photo_url: string | null
+  schema_version: number
+  price_paid: number | null
+  value_score: number | null
   created_at: string
 }
 
@@ -222,6 +225,9 @@ export interface RatingWithFlavorJoin {
   photo_url: string | null
   scores: Record<string, number>
   context_tags: string[]
+  schema_version: number
+  price_paid: number | null
+  value_score: number | null
   created_at: string
   flavors: {
     id: string

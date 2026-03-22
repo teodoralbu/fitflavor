@@ -141,11 +141,9 @@ export const CONTEXT_TAGS = [
 export type ContextTag = (typeof CONTEXT_TAGS)[number]['value']
 
 export const RATING_DIMENSIONS = [
-  { key: 'taste',     label: 'Taste',     weight: 0.25 },
-  { key: 'sweetness', label: 'Sweetness', weight: 0.10 },
-  { key: 'pump',      label: 'Pump',      weight: 0.25 },
-  { key: 'energy',    label: 'Energy',    weight: 0.25 },
-  { key: 'intensity', label: 'Intensity', weight: 0.15 },
+  { key: 'flavor',       label: 'Flavor',         weight: 0.33 },
+  { key: 'pump',         label: 'Pump',           weight: 0.33 },
+  { key: 'energy_focus', label: 'Energy & Focus', weight: 0.34 },
 ] as const
 
 export type RatingDimension = (typeof RATING_DIMENSIONS)[number]['key']

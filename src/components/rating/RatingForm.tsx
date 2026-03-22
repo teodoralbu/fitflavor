@@ -188,6 +188,9 @@ export function RatingForm({ flavor }: Props) {
       context_tags: contextTags,
       review_text: reviewText.trim() || null,
       photo_url: photoUrl,
+      schema_version: 1,
+      price_paid: null,
+      value_score: null,
     })
 
     if (insertError) {
