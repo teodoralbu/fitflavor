@@ -52,8 +52,8 @@
 - [x] **FIX-01**: Username field allows `.` (dot) character
 - [x] **FIX-02**: Email text is visible on light theme (not white on white)
 - [x] **FIX-03**: All products consistently show taste/flavor tags (or none if not applicable)
-- [ ] **FIX-04**: Browse/search button removed from bottom navigation
-- [ ] **FIX-05**: Landing page ("rate it before you waste it") displays a hero image
+- [x] **FIX-04**: Browse/search button removed from bottom navigation
+- [x] **FIX-05**: Landing page ("rate it before you waste it") displays a hero image
 
 ### Rating System
 
@@ -154,8 +154,8 @@
 | FIX-01 | Phase 6 | Complete |
 | FIX-02 | Phase 6 | Complete |
 | FIX-03 | Phase 6 | Complete |
-| FIX-04 | Phase 6 | Pending |
-| FIX-05 | Phase 6 | Pending |
+| FIX-04 | Phase 6 | Complete |
+| FIX-05 | Phase 6 | Complete |
 | RATE-01 | Phase 7 | Pending |
 | RATE-02 | Phase 7 | Pending |
 | RATE-03 | Phase 7 | Pending |

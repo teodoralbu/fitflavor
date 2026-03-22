@@ -3,13 +3,13 @@ gsd_state_version: 1.0
 milestone: v1.1
 milestone_name: Feature Expansion
 status: unknown
-stopped_at: Phase 6 UI-SPEC approved
-last_updated: "2026-03-22T09:41:58.139Z"
+stopped_at: Completed 06-01-PLAN.md
+last_updated: "2026-03-22T09:42:29.113Z"
 progress:
   total_phases: 7
-  completed_phases: 0
+  completed_phases: 1
   total_plans: 2
-  completed_plans: 1
+  completed_plans: 2
 ---
 
 # Project State
@@ -23,8 +23,8 @@ See: .planning/PROJECT.md (updated 2026-03-21)
 
 ## Current Position
 
-Phase: 06 (bug-fixes-ux-quick-wins) — EXECUTING
-Plan: 2 of 2
+Phase: 06 (bug-fixes-ux-quick-wins) — COMPLETE
+Plan: 2 of 2 (all complete)
 
 ## Performance Metrics
 
@@ -39,6 +39,7 @@ Plan: 2 of 2
 | Phase | Plan | Duration | Tasks | Files |
 |-------|------|----------|-------|-------|
 | 06-01 | Bug fixes (username, email, tags) | 1min | 3 | 2 |
+| 06-02 | Nav cleanup and hero image | 2min | 2 | 3 |
 
 ## Accumulated Context
 
@@ -47,7 +48,10 @@ Plan: 2 of 2
 Decisions are logged in PROJECT.md Key Decisions table.
 
 v1.1 decisions:
+
 - Used var(--text) CSS variable for theme-aware email text color (06-01)
+- Used alternative Unsplash image after original URL 404'd (06-02)
+- Kept padding on inner text wrapper for edge-to-edge hero image (06-02)
 
 Carried forward from v1.0:
 
@@ -70,6 +74,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-03-22T09:41:14Z
-Stopped at: Completed 06-01-PLAN.md
-Resume file: .planning/phases/06-bug-fixes-ux-quick-wins/06-02-PLAN.md
+Last session: 2026-03-22T09:41:39Z
+Stopped at: Completed 06-02-PLAN.md (Phase 06 complete)
+Resume file: Next phase
