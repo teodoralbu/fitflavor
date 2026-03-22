@@ -129,7 +129,7 @@ Plans:
 | 4. Quality & Accessibility | v1.0 | 4/4 | Complete | 2026-03-21 |
 | 5. Security & Accessibility Polish | v1.0 | 1/1 | Complete | 2026-03-20 |
 | 6. Bug Fixes & UX Quick Wins | v1.1 | Complete    | 2026-03-22 | - |
-| 7. Rating System Overhaul | 3/3 | Complete   | 2026-03-22 | - |
+| 7. Rating System Overhaul | 3/3 | Complete    | 2026-03-22 | - |
 | 8. Comment System Upgrade | v1.1 | 0/? | Not started | - |
 | 9. Notification System | v1.1 | 0/? | Not started | - |
 | 10. Product Page Upgrade | v1.1 | 0/? | Not started | - |
