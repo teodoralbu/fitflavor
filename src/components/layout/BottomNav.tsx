@@ -72,44 +72,6 @@ export function BottomNav() {
         {homeActive && <span style={{ position: 'absolute', top: '6px', left: '50%', transform: 'translateX(-50%)', width: '16px', height: '2px', borderRadius: '999px', backgroundColor: 'var(--accent)' }} />}
       </Link>
 
-      {/* Rate — floating center action */}
-      <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', position: 'relative', overflow: 'visible' }}>
-        <Link
-          href="/rate"
-          style={{
-            position: 'absolute',
-            bottom: '8px',
-            left: '50%',
-            transform: 'translateX(-50%)',
-            width: '54px',
-            height: '54px',
-            borderRadius: '50%',
-            backgroundColor: rateActive ? 'color-mix(in srgb, var(--accent) 90%, #000)' : 'var(--accent)',
-            display: 'flex',
-            flexDirection: 'column',
-            alignItems: 'center',
-            justifyContent: 'center',
-            textDecoration: 'none',
-            boxShadow: `0 4px 16px color-mix(in srgb, var(--accent) 50%, transparent), 0 2px 6px rgba(0,0,0,0.4)`,
-            WebkitTapHighlightColor: 'transparent',
-            touchAction: 'manipulation',
-            zIndex: 10,
-            transition: 'transform 0.15s ease, box-shadow 0.15s ease',
-          }}
-          onMouseDown={(e) => { (e.currentTarget as HTMLElement).style.transform = 'translateX(-50%) scale(0.93)' }}
-          onMouseUp={(e) => { (e.currentTarget as HTMLElement).style.transform = 'translateX(-50%) scale(1)' }}
-          onTouchStart={(e) => { (e.currentTarget as HTMLElement).style.transform = 'translateX(-50%) scale(0.93)' }}
-          onTouchEnd={(e) => { (e.currentTarget as HTMLElement).style.transform = 'translateX(-50%) scale(1)' }}
-        >
-          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#000" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-            <line x1="12" y1="5" x2="12" y2="19" />
-            <line x1="5" y1="12" x2="19" y2="12" />
-          </svg>
-        </Link>
-        {/* Invisible spacer to keep flex layout */}
-        <span style={{ fontSize: '10px', color: 'transparent', marginTop: 'auto', paddingBottom: '8px', fontWeight: 700 }}>Rate</span>
-      </div>
-
       {/* Top Rated */}
       <Link href="/leaderboard" style={tabStyle(topActive)}>
         <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={topActive ? 2.5 : 2} strokeLinecap="round" strokeLinejoin="round">
@@ -121,6 +83,9 @@ export function BottomNav() {
         {topActive && <span style={{ position: 'absolute', top: '6px', left: '50%', transform: 'translateX(-50%)', width: '16px', height: '2px', borderRadius: '999px', backgroundColor: 'var(--accent)' }} />}
       </Link>
 
+      {/* Ghost slot — keeps Profile on the right while + floats at true center */}
+      <div style={{ flex: 1 }} aria-hidden="true" />
+
       {/* Profile */}
       <Link href={profileHref} style={tabStyle(profileActive)}>
         <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={profileActive ? 2.5 : 2} strokeLinecap="round" strokeLinejoin="round">
@@ -129,6 +94,40 @@ export function BottomNav() {
         </svg>
         <span style={labelStyle(profileActive)}>Profile</span>
         {profileActive && <span style={{ position: 'absolute', top: '6px', left: '50%', transform: 'translateX(-50%)', width: '16px', height: '2px', borderRadius: '999px', backgroundColor: 'var(--accent)' }} />}
+      </Link>
+
+      {/* Rate — absolutely centered on the nav bar */}
+      <Link
+        href="/rate"
+        aria-label="Rate a product"
+        style={{
+          position: 'absolute',
+          left: '50%',
+          bottom: 'calc(8px + env(safe-area-inset-bottom))',
+          transform: 'translateX(-50%)',
+          width: '54px',
+          height: '54px',
+          borderRadius: '50%',
+          backgroundColor: rateActive ? 'color-mix(in srgb, var(--accent) 90%, #000)' : 'var(--accent)',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          textDecoration: 'none',
+          boxShadow: `0 4px 16px color-mix(in srgb, var(--accent) 50%, transparent), 0 2px 6px rgba(0,0,0,0.4)`,
+          WebkitTapHighlightColor: 'transparent',
+          touchAction: 'manipulation',
+          zIndex: 10,
+          transition: 'transform 0.15s ease, box-shadow 0.15s ease',
+        }}
+        onMouseDown={(e) => { (e.currentTarget as HTMLElement).style.transform = 'translateX(-50%) scale(0.93)' }}
+        onMouseUp={(e) => { (e.currentTarget as HTMLElement).style.transform = 'translateX(-50%) scale(1)' }}
+        onTouchStart={(e) => { (e.currentTarget as HTMLElement).style.transform = 'translateX(-50%) scale(0.93)' }}
+        onTouchEnd={(e) => { (e.currentTarget as HTMLElement).style.transform = 'translateX(-50%) scale(1)' }}
+      >
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#000" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+          <line x1="12" y1="5" x2="12" y2="19" />
+          <line x1="5" y1="12" x2="19" y2="12" />
+        </svg>
       </Link>
     </nav>
   )
