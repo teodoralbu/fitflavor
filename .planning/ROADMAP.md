@@ -104,7 +104,7 @@ Plans:
   2. User can open a label view showing full ingredients, sweeteners, and chemicals
   3. User can switch nutritional values between per scoop, per serving, and per 100g using a swipeable control
   4. Nutritional values display is visually polished and easy to scan
-**Plans:** 2 plans
+**Plans:** 1/2 plans executed
 
 Plans:
 - [ ] 10-01-PLAN.md — DB migration + types for nutritional/label columns (PROD-01, PROD-02, PROD-03, PROD-04)
@@ -152,7 +152,7 @@ Plans:
 | 7. Rating System Overhaul | 3/3 | Complete    | 2026-03-22 | - |
 | 8. Comment System Upgrade | v1.1 | Complete    | 2026-03-23 | - |
 | 9. Notification System | v1.1 | 2/2 | Complete | 2026-03-23 |
-| 10. Product Page Upgrade | v1.1 | 0/2 | Planning complete | - |
+| 10. Product Page Upgrade | 1/2 | In Progress|  | - |
 | 11. Leaderboard Category Tabs | v1.1 | 0/? | Not started | - |
 | 12. Profile & Dosage Calculator | v1.1 | 0/? | Not started | - |
 

@@ -77,10 +77,10 @@
 
 ### Product Page
 
-- [ ] **PROD-01**: Product page shows a large hero image at the top
-- [ ] **PROD-02**: User can open a product label view with full ingredients, sweeteners, and chemicals
-- [ ] **PROD-03**: Nutritional values can be viewed per scoop / per serving / per 100g (swipeable)
-- [ ] **PROD-04**: Nutritional values display has an improved visual design
+- [x] **PROD-01**: Product page shows a large hero image at the top
+- [x] **PROD-02**: User can open a product label view with full ingredients, sweeteners, and chemicals
+- [x] **PROD-03**: Nutritional values can be viewed per scoop / per serving / per 100g (swipeable)
+- [x] **PROD-04**: Nutritional values display has an improved visual design
 
 ### Leaderboard
 
@@ -167,10 +167,10 @@
 | NOTIF-02 | Phase 9 | Complete |
 | NOTIF-03 | Phase 9 | Complete |
 | NOTIF-04 | Phase 9 | Complete |
-| PROD-01 | Phase 10 | Pending |
-| PROD-02 | Phase 10 | Pending |
-| PROD-03 | Phase 10 | Pending |
-| PROD-04 | Phase 10 | Pending |
+| PROD-01 | Phase 10 | Complete |
+| PROD-02 | Phase 10 | Complete |
+| PROD-03 | Phase 10 | Complete |
+| PROD-04 | Phase 10 | Complete |
 | LEAD-01 | Phase 11 | Pending |
 | LEAD-02 | Phase 11 | Pending |
 | CALC-01 | Phase 12 | Pending |
