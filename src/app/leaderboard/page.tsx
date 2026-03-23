@@ -2,8 +2,7 @@ export const revalidate = 300
 
 import Link from 'next/link'
 import Image from 'next/image'
-import { getLeaderboard, getTopReviewers } from '@/lib/queries'
-
+import { getLeaderboard, getTopReviewers, type LeaderboardTab } from '@/lib/queries'
 import { getScoreColor, getBadgeTier, BADGE_TIERS } from '@/lib/constants'
 
 const PODIUM_ACCENTS: Record<number, { color: string; label: string; glow: string }> = {
@@ -12,9 +11,20 @@ const PODIUM_ACCENTS: Record<number, { color: string; label: string; glow: strin
   3: { color: '#CD7F32', label: 'Bronze', glow: 'rgba(205,127,50,0.12)' },
 }
 
-export default async function LeaderboardPage() {
+const TABS: { key: LeaderboardTab; label: string }[] = [
+  { key: 'overall',      label: 'Overall' },
+  { key: 'flavor',       label: 'Flavor' },
+  { key: 'pump',         label: 'Pump' },
+  { key: 'energy_focus', label: 'Energy' },
+  { key: 'value',        label: 'Value' },
+]
+
+export default async function LeaderboardPage({ searchParams }: { searchParams: Promise<{ tab?: string }> }) {
+  const { tab: tabParam } = await searchParams
+  const activeTab: LeaderboardTab = (TABS.find(t => t.key === tabParam)?.key) ?? 'overall'
+
   const [leaderboard, topReviewers] = await Promise.all([
-    getLeaderboard(50),
+    getLeaderboard(50, activeTab),
     getTopReviewers(10),
   ])
 
@@ -228,29 +238,51 @@ export default async function LeaderboardPage() {
       )}
 
       {/* ── Flavor Leaderboard ── */}
-      <div style={{ marginBottom: '20px' }}>
-        <div style={{
-          fontSize: '11px',
-          fontWeight: 700,
-          color: 'var(--accent)',
-          letterSpacing: '0.12em',
-          textTransform: 'uppercase',
-          marginBottom: '8px',
-        }}>
-          Flavor Rankings
-        </div>
+      <div style={{ marginBottom: '16px' }}>
         <h2 style={{
           fontSize: 'clamp(20px, 4vw, 28px)',
           fontWeight: 900,
-          margin: '0 0 6px',
+          margin: '0 0 16px',
           color: 'var(--text)',
           lineHeight: 1.1,
         }}>
           Top Rated Flavors
         </h2>
-        <p style={{ fontSize: '13px', color: 'var(--text-muted)', margin: '0 0 20px' }}>
-          Ranked by community score across all verified ratings.
-        </p>
+
+        {/* Category tabs */}
+        <div style={{
+          display: 'flex',
+          gap: '8px',
+          overflowX: 'auto',
+          paddingBottom: '4px',
+          marginBottom: '20px',
+          scrollbarWidth: 'none',
+        }}>
+          {TABS.map(({ key, label }) => {
+            const isActive = key === activeTab
+            return (
+              <Link
+                key={key}
+                href={key === 'overall' ? '/leaderboard' : `/leaderboard?tab=${key}`}
+                style={{
+                  flexShrink: 0,
+                  padding: '7px 16px',
+                  borderRadius: '999px',
+                  fontSize: '13px',
+                  fontWeight: 700,
+                  textDecoration: 'none',
+                  backgroundColor: isActive ? 'var(--accent)' : 'var(--bg-elevated)',
+                  color: isActive ? '#000' : 'var(--text-dim)',
+                  border: `1px solid ${isActive ? 'var(--accent)' : 'var(--border)'}`,
+                  transition: 'all 0.15s ease',
+                  WebkitTapHighlightColor: 'transparent',
+                }}
+              >
+                {label}
+              </Link>
+            )
+          })}
+        </div>
       </div>
 
       {leaderboard.length === 0 ? (

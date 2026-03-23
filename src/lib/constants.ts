@@ -161,7 +161,7 @@ export const REPORT_REASONS = [
   { value: 'other', label: 'Other' },
 ] as const
 
-export const MIN_RATINGS_FOR_LEADERBOARD = 5
+export const MIN_RATINGS_FOR_LEADERBOARD = 1
 
 export const MAX_RATINGS_PER_HOUR = 20
 export const MAX_COMMENTS_PER_HOUR = 50

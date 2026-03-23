@@ -53,6 +53,8 @@ interface RatingRow {
   flavor_id: string
   overall_score: number
   would_buy_again: boolean
+  scores?: Record<string, number> | null
+  value_score?: number | null
 }
 
 interface UserBasic {
@@ -303,12 +305,20 @@ export async function getFlavorBySlug(slug: string) {
 
 // ─── Leaderboard ────────────────────────────────────────────────────────────
 
-export async function getLeaderboard(limit = 20) {
+export type LeaderboardTab = 'overall' | 'flavor' | 'pump' | 'energy_focus' | 'value'
+
+export async function getLeaderboard(limit = 20, tab: LeaderboardTab = 'overall') {
   const supabase = await createServerSupabaseClient()
+
+  const selectCols = tab === 'value'
+    ? 'flavor_id, overall_score, would_buy_again, value_score'
+    : tab === 'overall'
+    ? 'flavor_id, overall_score, would_buy_again'
+    : 'flavor_id, overall_score, would_buy_again, scores'
 
   const { data: ratings, error: ratingsError } = await supabase
     .from('ratings')
-    .select('flavor_id, overall_score, would_buy_again')
+    .select(selectCols)
     .eq('schema_version', 2)
     .order('created_at', { ascending: false })
     .limit(2000)
@@ -327,14 +337,25 @@ export async function getLeaderboard(limit = 20) {
     grouped[r.flavor_id].push(r)
   }
 
+  const getScore = (r: RatingRow): number | null => {
+    if (tab === 'overall') return r.overall_score
+    if (tab === 'value') return r.value_score ?? null
+    return (r.scores as Record<string, number> | null)?.[tab] ?? null
+  }
+
   const aggregated = Object.entries(grouped)
     .filter(([, rs]) => rs.length >= MIN_RATINGS_FOR_LEADERBOARD)
-    .map(([flavor_id, rs]) => ({
-      flavor_id,
-      avg: rs.reduce((sum, r) => sum + r.overall_score, 0) / rs.length,
-      count: rs.length,
-      wba_pct: (rs.filter((r) => r.would_buy_again).length / rs.length) * 100,
-    }))
+    .map(([flavor_id, rs]) => {
+      const validScores = rs.map(getScore).filter((s): s is number => s !== null)
+      if (validScores.length === 0) return null
+      return {
+        flavor_id,
+        avg: validScores.reduce((sum, s) => sum + s, 0) / validScores.length,
+        count: rs.length,
+        wba_pct: (rs.filter((r) => r.would_buy_again).length / rs.length) * 100,
+      }
+    })
+    .filter((a): a is NonNullable<typeof a> => a !== null)
     .sort((a, b) => b.avg - a.avg || b.count - a.count)
     .slice(0, limit)
 
