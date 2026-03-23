@@ -73,7 +73,7 @@
 - [ ] **NOTIF-01**: User receives a notification when someone follows them
 - [ ] **NOTIF-02**: User receives a notification when someone likes their review
 - [ ] **NOTIF-03**: Unread notification badge appears on the notifications icon
-- [ ] **NOTIF-04**: User can see their followers list and following list from their profile
+- [x] **NOTIF-04**: User can see their followers list and following list from their profile
 
 ### Product Page
 
@@ -166,7 +166,7 @@
 | NOTIF-01 | Phase 9 | Pending |
 | NOTIF-02 | Phase 9 | Pending |
 | NOTIF-03 | Phase 9 | Pending |
-| NOTIF-04 | Phase 9 | Pending |
+| NOTIF-04 | Phase 9 | Complete |
 | PROD-01 | Phase 10 | Pending |
 | PROD-02 | Phase 10 | Pending |
 | PROD-03 | Phase 10 | Pending |
