@@ -15,6 +15,7 @@ import { Navbar } from '@/components/layout/Navbar'
 import { Footer } from '@/components/layout/Footer'
 import { BottomNav } from '@/components/layout/BottomNav'
 import { PageTransition } from '@/components/layout/PageTransition'
+import { getUnreadNotificationCount } from '@/app/actions/notifications'
 
 export const viewport: Viewport = {
   width: 'device-width',
@@ -43,11 +44,13 @@ export const metadata: Metadata = {
   },
 }
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode
 }>) {
+  const unreadCount = await getUnreadNotificationCount()
+
   return (
     <html lang="en" data-theme="blue" className={inter.variable}>
       <head>
@@ -68,7 +71,7 @@ export default function RootLayout({
               <div className="hidden sm:block">
                 <Footer />
               </div>
-              <BottomNav />
+              <BottomNav unreadCount={unreadCount} />
             </ToastProvider>
           </AuthProvider>
         </ThemeProvider>

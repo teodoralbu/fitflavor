@@ -4,7 +4,7 @@ import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { useAuth } from '@/context/auth-context'
 
-export function BottomNav() {
+export function BottomNav({ unreadCount = 0 }: { unreadCount?: number }) {
   const pathname = usePathname()
   const { profile } = useAuth()
 
@@ -93,6 +93,30 @@ export function BottomNav() {
           <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9" />
           <path d="M13.73 21a2 2 0 0 1-3.46 0" />
         </svg>
+        {unreadCount > 0 && (
+          <span style={{
+            position: 'absolute',
+            top: '6px',
+            right: '50%',
+            transform: 'translateX(14px)',
+            minWidth: '16px',
+            height: '16px',
+            borderRadius: '999px',
+            backgroundColor: '#EF4444',
+            color: '#fff',
+            fontSize: '10px',
+            fontWeight: 700,
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            padding: '0 4px',
+            lineHeight: 1,
+            boxShadow: '0 1px 3px rgba(0,0,0,0.3)',
+            zIndex: 2,
+          }}>
+            {unreadCount > 9 ? '9+' : unreadCount}
+          </span>
+        )}
         <span style={labelStyle(notifActive)}>Alerts</span>
         {notifActive && <span style={{ position: 'absolute', top: '6px', left: '50%', transform: 'translateX(-50%)', width: '16px', height: '2px', borderRadius: '999px', backgroundColor: 'var(--accent)' }} />}
       </Link>

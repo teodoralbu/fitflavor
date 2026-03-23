@@ -4,6 +4,7 @@ import Link from 'next/link'
 import Image from 'next/image'
 import { createServerSupabaseClient } from '@/lib/supabase-server'
 import { timeAgo } from '@/lib/timeAgo'
+import { markNotificationsSeen } from '@/app/actions/notifications'
 import type { RatingIdFlavorId, UserBasicRow, FlavorBasicRow } from '@/lib/types'
 
 interface NotificationItem {
@@ -177,6 +178,7 @@ export default async function NotificationsPage() {
   }
 
   const notifications = await getNotifications(user.id)
+  await markNotificationsSeen()
 
   // Split into Today / Earlier
   const todayItems = notifications.filter((n) => isToday(n.created_at))
