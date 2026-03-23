@@ -29,7 +29,7 @@ Full archive: `.planning/milestones/v1.0-ROADMAP.md`
 - [x] **Phase 8: Comment System Upgrade** - Edit, delete, and single-level threaded replies (completed 2026-03-23)
 - [x] **Phase 9: Notification System** - Follow/like notifications, unread badge, followers list (completed 2026-03-23)
 - [x] **Phase 10: Product Page Upgrade** - Hero image, label viewer, nutritional slider (completed 2026-03-23)
-- [ ] **Phase 11: Leaderboard Category Tabs** - Swipeable tabs by dimension and product type
+- [x] **Phase 11: Leaderboard Category Tabs** - Swipeable tabs by dimension and product type (completed 2026-03-23)
 - [ ] **Phase 12: Profile & Dosage Calculator** - Body stats, personalized dosage ranges, safety disclaimers
 
 ## Phase Details
@@ -117,7 +117,7 @@ Plans:
 **Success Criteria** (what must be TRUE):
   1. User can swipe between leaderboard tabs: Best Overall, Best Flavor, Best Pump, Best Value
   2. Leaderboards are filtered by product type, with Pre-workout as the first available category
-**Plans:** 2 plans
+**Plans:** 1/1 plans complete
 
 Plans:
 - [ ] 09-01-PLAN.md — Unread badge on bell icon with DB tracking (NOTIF-01, NOTIF-02, NOTIF-03)
@@ -153,7 +153,7 @@ Plans:
 | 8. Comment System Upgrade | v1.1 | Complete    | 2026-03-23 | - |
 | 9. Notification System | v1.1 | 2/2 | Complete | 2026-03-23 |
 | 10. Product Page Upgrade | v1.1 | 2/2 | Complete | 2026-03-23 |
-| 11. Leaderboard Category Tabs | v1.1 | 0/? | Not started | - |
+| 11. Leaderboard Category Tabs | v1.1 | 1/1 | Complete   | 2026-03-23 |
 | 12. Profile & Dosage Calculator | v1.1 | 0/? | Not started | - |
 
 ---
