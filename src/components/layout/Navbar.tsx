@@ -23,7 +23,7 @@ export function Navbar() {
   }, [])
 
   return (
-    <nav className="sticky top-0 z-40 backdrop-blur-sm" style={{ borderBottom: '1px solid var(--border)', backgroundColor: 'color-mix(in srgb, var(--bg) 95%, transparent)' }}>
+    <nav className="sticky top-0 z-40 backdrop-blur-sm" style={{ borderBottom: '1px solid var(--border)', backgroundColor: 'color-mix(in srgb, var(--bg) 95%, transparent)', paddingTop: 'env(safe-area-inset-top)' }}>
       <div className="max-w-6xl mx-auto px-4 sm:px-6 h-14 flex items-center gap-4">
 
         {/* Logo */}
