@@ -90,9 +90,8 @@ export default async function Home({ searchParams }: { searchParams: Promise<{ f
             </div>
           </div>
 
-          {/* Hero card — logged-out */}
-          {!user && (
-            <div style={{
+          {/* Hero card — always visible */}
+          <div style={{
               borderRadius: 'var(--radius-lg)',
               backgroundColor: 'var(--bg-card)',
               border: '1px solid var(--border)',
@@ -161,7 +160,6 @@ export default async function Home({ searchParams }: { searchParams: Promise<{ f
                 </Link>
               </div>
             </div>
-          )}
 
           {/* Rate strip — logged-in */}
           {user && (
