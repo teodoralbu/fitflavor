@@ -197,8 +197,8 @@ export function RateSearch({ products }: Props) {
                 {/* Product image / icon */}
                 <div
                   style={{
-                    width: '48px',
-                    height: '48px',
+                    width: '68px',
+                    height: '68px',
                     borderRadius: '10px',
                     flexShrink: 0,
                     backgroundColor: 'var(--bg-elevated)',
@@ -220,7 +220,7 @@ export function RateSearch({ products }: Props) {
                         width: '100%',
                         height: '100%',
                         objectFit: 'contain',
-                        padding: '5px',
+                        padding: '2px',
                       }}
                     />
                   ) : (

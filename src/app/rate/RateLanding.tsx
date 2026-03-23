@@ -148,7 +148,7 @@ export function RateLanding({ products }: Props) {
               >
                 {/* Product image */}
                 <div style={{
-                  width: '44px', height: '44px', borderRadius: '10px', flexShrink: 0,
+                  width: '68px', height: '68px', borderRadius: '10px', flexShrink: 0,
                   backgroundColor: 'var(--bg-elevated)', border: '1px solid var(--border)',
                   display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden',
                 }}>
@@ -159,7 +159,7 @@ export function RateLanding({ products }: Props) {
                       alt={`${product.name} by ${product.brands?.name ?? 'Unknown'}`}
                       loading="lazy"
                       decoding="async"
-                      style={{ width: '100%', height: '100%', objectFit: 'contain', padding: '4px' }}
+                      style={{ width: '100%', height: '100%', objectFit: 'contain', padding: '2px' }}
                     />
                   ) : (
                     <span style={{ fontSize: '18px' }}>⚡</span>
