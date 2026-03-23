@@ -159,38 +159,47 @@ export default async function UserProfilePage({ params }: Props) {
           gap: '8px',
           marginBottom: '16px',
         }}>
-          {statCards.map((stat) => (
-            <div
-              key={stat.label}
-              style={{
-                backgroundColor: 'var(--bg-elevated)',
-                border: '1px solid var(--border-soft)',
-                borderRadius: 'var(--radius-lg)',
-                padding: '14px 8px',
-                textAlign: 'center',
-              }}
-            >
-              <div style={{
-                fontSize: '24px',
-                fontWeight: 900,
-                color: stat.color,
-                lineHeight: 1,
-                marginBottom: '4px',
-                letterSpacing: '-0.02em',
-              }}>
-                {stat.value}
+          {statCards.map((stat) => {
+            const inner = (
+              <div
+                style={{
+                  backgroundColor: 'var(--bg-elevated)',
+                  border: '1px solid var(--border-soft)',
+                  borderRadius: 'var(--radius-lg)',
+                  padding: '14px 8px',
+                  textAlign: 'center',
+                }}
+              >
+                <div style={{
+                  fontSize: '24px',
+                  fontWeight: 900,
+                  color: stat.color,
+                  lineHeight: 1,
+                  marginBottom: '4px',
+                  letterSpacing: '-0.02em',
+                }}>
+                  {stat.value}
+                </div>
+                <div style={{
+                  fontSize: '10px',
+                  color: 'var(--text-faint)',
+                  textTransform: 'uppercase',
+                  letterSpacing: '0.07em',
+                  fontWeight: 600,
+                }}>
+                  {stat.label}
+                </div>
               </div>
-              <div style={{
-                fontSize: '10px',
-                color: 'var(--text-faint)',
-                textTransform: 'uppercase',
-                letterSpacing: '0.07em',
-                fontWeight: 600,
-              }}>
-                {stat.label}
-              </div>
-            </div>
-          ))}
+            )
+
+            if (stat.label === 'Followers') {
+              return <Link key={stat.label} href={`/users/${username}/followers`} style={{ textDecoration: 'none', color: 'inherit' }}>{inner}</Link>
+            }
+            if (stat.label === 'Following') {
+              return <Link key={stat.label} href={`/users/${username}/following`} style={{ textDecoration: 'none', color: 'inherit' }}>{inner}</Link>
+            }
+            return <div key={stat.label}>{inner}</div>
+          })}
         </div>
 
         {/* Badge progress */}
@@ -461,37 +470,46 @@ export default async function UserProfilePage({ params }: Props) {
                 : []),
               { value: followerCount ?? 0, label: 'Followers', color: 'var(--text)' },
               { value: followingCount ?? 0, label: 'Following', color: 'var(--text)' },
-            ].map((stat) => (
-              <div
-                key={stat.label}
-                style={{
-                  backgroundColor: 'var(--bg-elevated)',
-                  border: '1px solid var(--border-soft)',
-                  borderRadius: 'var(--radius-md)',
-                  padding: '14px 8px',
-                  textAlign: 'center',
-                }}
-              >
-                <div style={{
-                  fontSize: '26px',
-                  fontWeight: 900,
-                  color: stat.color,
-                  lineHeight: 1,
-                  marginBottom: '5px',
-                }}>
-                  {stat.value}
+            ].map((stat) => {
+              const inner = (
+                <div
+                  style={{
+                    backgroundColor: 'var(--bg-elevated)',
+                    border: '1px solid var(--border-soft)',
+                    borderRadius: 'var(--radius-md)',
+                    padding: '14px 8px',
+                    textAlign: 'center',
+                  }}
+                >
+                  <div style={{
+                    fontSize: '26px',
+                    fontWeight: 900,
+                    color: stat.color,
+                    lineHeight: 1,
+                    marginBottom: '5px',
+                  }}>
+                    {stat.value}
+                  </div>
+                  <div style={{
+                    fontSize: '10px',
+                    color: 'var(--text-faint)',
+                    textTransform: 'uppercase',
+                    letterSpacing: '0.07em',
+                    fontWeight: 600,
+                  }}>
+                    {stat.label}
+                  </div>
                 </div>
-                <div style={{
-                  fontSize: '10px',
-                  color: 'var(--text-faint)',
-                  textTransform: 'uppercase',
-                  letterSpacing: '0.07em',
-                  fontWeight: 600,
-                }}>
-                  {stat.label}
-                </div>
-              </div>
-            ))}
+              )
+
+              if (stat.label === 'Followers') {
+                return <Link key={stat.label} href={`/users/${username}/followers`} style={{ textDecoration: 'none', color: 'inherit' }}>{inner}</Link>
+              }
+              if (stat.label === 'Following') {
+                return <Link key={stat.label} href={`/users/${username}/following`} style={{ textDecoration: 'none', color: 'inherit' }}>{inner}</Link>
+              }
+              return <div key={stat.label}>{inner}</div>
+            })}
           </div>
         </div>
 
