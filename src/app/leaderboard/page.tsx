@@ -30,7 +30,7 @@ export default async function LeaderboardPage() {
           textTransform: 'uppercase',
           marginBottom: '10px',
         }}>
-          GymTaste
+          FitFlavor
         </div>
         <h1 style={{
           fontSize: 'clamp(26px, 5vw, 44px)',

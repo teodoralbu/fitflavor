@@ -20,7 +20,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const data = await getFlavorBySlug(slug)
   if (!data) return {}
   return {
-    title: `Rating Submitted — ${data.flavor.name} | GymTaste`,
+    title: `Rating Submitted — ${data.flavor.name} | FitFlavor`,
   }
 }
 
@@ -109,7 +109,7 @@ export default async function RateSuccessPage({ params, searchParams }: Props) {
           letterSpacing: '-0.02em',
         }}
       >
-        {isFirstRating ? 'Welcome to GymTaste.' : 'Rating submitted!'}
+        {isFirstRating ? 'Welcome to FitFlavor.' : 'Rating submitted!'}
       </h1>
 
       {/* Flavor context */}

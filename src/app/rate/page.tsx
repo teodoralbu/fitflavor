@@ -7,7 +7,7 @@ import { getProductsWithFlavors } from '@/lib/queries'
 import { RateLanding } from './RateLanding'
 
 export const metadata: Metadata = {
-  title: 'Rate a Flavor — GymTaste',
+  title: 'Rate a Flavor — FitFlavor',
   description: 'Pick a supplement flavor you tried and rate it.',
 }
 

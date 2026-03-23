@@ -19,7 +19,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { product, flavors } = data
   const brand = (product as any).brands
   return {
-    title: `${product.name} — ${brand?.name ?? ''} | GymTaste`,
+    title: `${product.name} — ${brand?.name ?? ''} | FitFlavor`,
     description: `${flavors.length} flavor${flavors.length !== 1 ? 's' : ''} of ${product.name} by ${brand?.name ?? 'brand'}. Read community ratings and find the best flavor.`,
   }
 }

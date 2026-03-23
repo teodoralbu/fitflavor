@@ -8,7 +8,7 @@ import { getScoreColor } from '@/lib/constants'
 import type { ProductBrowseRow, FlavorIdRow, RatingScoreRow } from '@/lib/types'
 
 export const metadata: Metadata = {
-  title: 'Browse Pre-Workout Supplements — GymTaste',
+  title: 'Browse Pre-Workout Supplements — FitFlavor',
   description: 'Browse all pre-workout supplements with community flavor ratings. Find the best-tasting pre-workout before you buy.',
 }
 

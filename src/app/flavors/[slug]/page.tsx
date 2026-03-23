@@ -21,7 +21,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const brand = (product as unknown as { brands?: { name: string } }).brands
   const score = flavor.avg_overall_score !== null ? ` · ${flavor.avg_overall_score.toFixed(1)}/10` : ''
   return {
-    title: `${flavor.name} — ${product.name} | GymTaste`,
+    title: `${flavor.name} — ${product.name} | FitFlavor`,
     description: `Community ratings for ${flavor.name} by ${brand?.name ?? product.name}${score}. ${flavor.rating_count} review${flavor.rating_count !== 1 ? 's' : ''} from real lifters.`,
   }
 }

@@ -5,7 +5,7 @@ export default function PrivacyPage() {
       <p style={{ color: '#555', fontSize: '13px', marginBottom: '48px' }}>Last updated: March 2026</p>
 
       <Section title="1. Who we are">
-        GymTaste is a supplement flavor rating platform operated by GymTaste. We help gym-goers discover and rate supplement flavors based on real community feedback.
+        FitFlavor is a supplement flavor rating platform operated by FitFlavor. We help gym-goers discover and rate supplement flavors based on real community feedback.
       </Section>
 
       <Section title="2. What data we collect">
@@ -13,7 +13,7 @@ export default function PrivacyPage() {
       </Section>
 
       <Section title="3. How we use your data">
-        We use your data to operate your account, display your ratings and profile, and improve GymTaste. We do not sell your data to third parties.
+        We use your data to operate your account, display your ratings and profile, and improve FitFlavor. We do not sell your data to third parties.
       </Section>
 
       <Section title="4. Who we share data with">

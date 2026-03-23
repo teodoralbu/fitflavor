@@ -74,7 +74,7 @@ export default async function Home({ searchParams }: { searchParams: Promise<{ f
 
           {/* Compact header */}
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
-            <div style={{ fontSize: '20px', fontWeight: 900, color: 'var(--text)', letterSpacing: '-0.02em' }}>GymTaste</div>
+            <div style={{ fontSize: '20px', fontWeight: 900, color: 'var(--text)', letterSpacing: '-0.02em' }}>FitFlavor</div>
             <div style={{ display: 'flex', alignItems: 'center', gap: '14px' }}>
               <Link
                 href="/notifications"

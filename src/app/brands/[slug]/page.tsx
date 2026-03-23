@@ -17,8 +17,8 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { data: brand, error } = await supabase.from('brands').select('name').eq('slug', slug).single()
   if (error || !brand) return {}
   return {
-    title: `${brand.name} Pre-Workout Flavors | GymTaste`,
-    description: `All ${brand.name} products and flavor ratings on GymTaste. Find the best-tasting pre-workout from ${brand.name}.`,
+    title: `${brand.name} Pre-Workout Flavors | FitFlavor`,
+    description: `All ${brand.name} products and flavor ratings on FitFlavor. Find the best-tasting pre-workout from ${brand.name}.`,
   }
 }
 

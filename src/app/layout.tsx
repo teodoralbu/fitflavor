@@ -37,7 +37,7 @@ export const metadata: Metadata = {
   appleWebApp: {
     capable: true,
     statusBarStyle: 'black-translucent',
-    title: 'GymTaste',
+    title: 'FitFlavor',
   },
   formatDetection: {
     telephone: false,

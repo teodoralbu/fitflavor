@@ -123,12 +123,12 @@ export function Footer() {
             lineHeight: 1.6,
             maxWidth: '480px',
           }}>
-            All reviews represent the personal opinions of individual users. GymTaste does not endorse
+            All reviews represent the personal opinions of individual users. FitFlavor does not endorse
             or verify user-submitted content. Supplement information is for informational purposes only
             and does not constitute medical advice.
           </p>
           <p style={{ fontSize: '12px', color: 'var(--text-muted)', margin: 0, whiteSpace: 'nowrap' }}>
-            &copy; {new Date().getFullYear()} GymTaste
+            &copy; {new Date().getFullYear()} FitFlavor
           </p>
         </div>
 
