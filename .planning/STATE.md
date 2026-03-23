@@ -4,7 +4,7 @@ milestone: v1.1
 milestone_name: Feature Expansion
 status: Phase complete — ready for verification
 stopped_at: Completed 11-nav-restructure-11-01-PLAN.md
-last_updated: "2026-03-23T17:32:56.956Z"
+last_updated: "2026-03-23T17:36:49.944Z"
 progress:
   total_phases: 7
   completed_phases: 6
@@ -50,6 +50,7 @@ Plan: 2 of 2 (all complete)
 | Phase 10-01 PSchema & types foundation | 1min | 2 tasks | 3 files |
 | 10-02 | Product page UI: hero, nutrition, label | 2min | 3 | 3 |
 | Phase 11-nav-restructure P01 | 5 | 1 tasks | 1 files |
+| Phase 11-nav-restructure P01 | 5min | 1 tasks | 1 files |
 
 ## Accumulated Context
 
@@ -90,6 +91,7 @@ Carried forward from v1.0:
 - [Phase 10-02]: Per-serving as canonical storage basis; scoop and 100g derived via multiplier
 - [Phase 10-02]: Nutrition section and label button hidden entirely when all data is null
 - [Phase 11-nav-restructure]: homeActive binds to /leaderboard; feedActive binds to / — variable names match new tab semantics
+- [Phase 11-nav-restructure]: homeActive binds to /leaderboard; feedActive binds to / — variable names match new tab semantics
 
 ### Pending Todos
 
@@ -104,6 +106,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-03-23T17:32:56.953Z
+Last session: 2026-03-23T17:36:49.940Z
 Stopped at: Completed 11-nav-restructure-11-01-PLAN.md
 Resume file: None
