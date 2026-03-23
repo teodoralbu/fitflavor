@@ -35,6 +35,8 @@ Users can confidently discover and rate gym supplement flavors through a fast, p
 
 ### Active
 
+- ✓ Notification badge on bottom nav (NOTIF-01, NOTIF-02, NOTIF-03) — Validated in Phase 9: notification-system
+- ✓ Followers/following list pages on profiles (NOTIF-04) — Validated in Phase 9: notification-system
 - [ ] Profile/settings mobile layout polish (MOB-04) — deferred from v1.0
 - [ ] Page transition smoothness (MOB-05) — deferred from v1.0
 - [ ] Remove remaining `as any` casts (26 total, mostly feed/admin/sitemap) — deferred from v1.0
@@ -66,6 +68,7 @@ Users can confidently discover and rate gym supplement flavors through a fast, p
 
 - v1.0 shipped 2026-03-21 — 5 phases, 15 plans, 115 files changed
 - v1.1 Phase 6 complete 2026-03-22 — 5 bug fixes shipped, landing hero image added
+- v1.1 Phase 9 complete 2026-03-23 — notification badge + followers/following list pages shipped
 - v1.1 starts 2026-03-21 — user + client feedback driven
 - Next.js 16 App Router + Supabase (no framework changes planned)
 - 26 remaining `as any` casts — down from 111+; critical paths are now typed
@@ -93,4 +96,4 @@ Users can confidently discover and rate gym supplement flavors through a fast, p
 | Skip MOB-04/05, QUAL-01/02 for v1.0 | Not blocking launch, cosmetic/dev-hygiene | ✓ Good — right call, ship now |
 
 ---
-*Last updated: 2026-03-21 after v1.1 milestone start*
+*Last updated: 2026-03-23 after Phase 9 completion*
