@@ -25,27 +25,26 @@ export default async function LeaderboardPage() {
   const carouselItems = topThisMonth.slice(0, 8)
 
   return (
-    <div style={{ maxWidth: '860px', margin: '0 auto', padding: '0 0 96px' }}>
+    <div style={{ maxWidth: '860px', margin: '0 auto', padding: '16px 16px 96px' }}>
 
       {/* ── Hero CTA card ── */}
       <div style={{
-        borderRadius: '0',
+        borderRadius: 'var(--radius-lg)',
         backgroundColor: 'var(--bg-card)',
-        border: 'none',
-        borderBottom: '1px solid var(--border)',
+        border: '1px solid var(--border)',
         overflow: 'hidden',
         textAlign: 'center',
-        marginBottom: '0',
+        marginBottom: '16px',
       }}>
         <Image
           src="/hero-placeholder.jpg"
           alt="Pre-workout supplement"
           width={800}
           height={400}
-          style={{ width: '100%', height: 'auto', maxHeight: '200px', objectFit: 'cover', display: 'block' }}
+          style={{ width: '100%', height: 'auto', maxHeight: '160px', objectFit: 'cover', display: 'block' }}
           priority
         />
-        <div style={{ padding: '24px 16px 20px' }}>
+        <div style={{ padding: '20px 16px 18px' }}>
           <h1 style={{
             fontSize: 'clamp(24px, 7vw, 34px)',
             fontWeight: 900,
