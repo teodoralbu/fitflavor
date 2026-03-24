@@ -6,6 +6,7 @@ import type { Metadata } from 'next'
 import { createServerSupabaseClient } from '@/lib/supabase-server'
 import { getScoreColor } from '@/lib/constants'
 import type { ProductBrowseRow, FlavorIdRow, RatingScoreRow } from '@/lib/types'
+import { BrowseFilters } from '@/components/browse/BrowseFilters'
 
 export const metadata: Metadata = {
   title: 'Browse Pre-Workout Supplements — FitFlavor',
@@ -64,6 +65,8 @@ async function getProductsWithStats() {
       image_url: p.image_url,
       brand: p.brands as { name: string; slug: string },
       caffeine_mg: p.caffeine_mg,
+      region: (p as unknown as { region: string[] }).region ?? [],
+      stim_type: (p as unknown as { stim_type: string | null }).stim_type ?? null,
       flavor_count: flavorCountMap[p.id] ?? 0,
       avg_score: avg,
       rating_count: scores.length,
@@ -72,26 +75,39 @@ async function getProductsWithStats() {
 }
 
 interface BrowseProps {
-  searchParams: Promise<{ q?: string; brand?: string }>
+  searchParams: Promise<{ q?: string; brand?: string; stim?: string; region?: string; min_rating?: string }>
 }
 
 export default async function BrowsePage({ searchParams }: BrowseProps) {
-  const { q, brand } = await searchParams
+  const { q, brand, stim, region, min_rating } = await searchParams
   const query = (q ?? '').toLowerCase().trim()
+  const activeRegions = region ? region.split(',').filter(Boolean) : []
+  const minRating = min_rating ? parseFloat(min_rating) : null
   const allProducts = await getProductsWithStats()
 
-  // Filter by search query and/or brand slug
+  // Filter by all active filters
   const products = allProducts.filter((p) => {
     const matchesQuery = !query ||
       p.name.toLowerCase().includes(query) ||
       (p.brand?.name ?? '').toLowerCase().includes(query)
     const matchesBrand = !brand || p.brand?.slug === brand
-    return matchesQuery && matchesBrand
+    const matchesStim = !stim || p.stim_type === stim
+    const matchesRegion = activeRegions.length === 0 ||
+      activeRegions.some((r) => p.region.includes(r))
+    const matchesRating = minRating === null || (p.avg_score !== null && p.avg_score >= minRating)
+    return matchesQuery && matchesBrand && matchesStim && matchesRegion && matchesRating
   })
 
   const activeBrandName = brand
     ? allProducts.find((p) => p.brand?.slug === brand)?.brand?.name
     : null
+
+  // Unique brand list for filter sheet
+  const uniqueBrands = Array.from(
+    new Map(allProducts.map((p) => [p.brand?.slug, p.brand])).values()
+  )
+    .filter((b): b is { name: string; slug: string } => !!b?.slug)
+    .sort((a, b) => a.name.localeCompare(b.name))
 
   const byBrand: Record<string, typeof products> = {}
   for (const p of products) {
@@ -169,59 +185,17 @@ export default async function BrowsePage({ searchParams }: BrowseProps) {
           </div>
         </form>
 
-        {/* Filter chips — brand filter row */}
-        {allBrandsSorted.length > 1 && (
-          <div style={{
-            display: 'flex',
-            gap: '8px',
-            overflowX: 'auto',
-            paddingBottom: '4px',
-            marginBottom: '20px',
-            scrollbarWidth: 'none',
-          }}>
-            <a
-              href={q ? `/browse?q=${q}` : '/browse'}
-              style={{
-                flexShrink: 0,
-                padding: '8px 16px',
-                borderRadius: '999px',
-                fontSize: '13px',
-                fontWeight: 600,
-                textDecoration: 'none',
-                whiteSpace: 'nowrap',
-                backgroundColor: !brand ? 'var(--accent)' : 'var(--bg-elevated)',
-                color: !brand ? '#000' : 'var(--text-dim)',
-                border: !brand ? 'none' : '1px solid var(--border)',
-              }}
-            >
-              All
-            </a>
-            {allBrandsSorted.map((brandName) => {
-              const brandSlug = byBrand[brandName][0]?.brand?.slug ?? ''
-              const isActive = brand === brandSlug
-              return (
-                <a
-                  key={brandName}
-                  href={isActive ? (q ? `/browse?q=${q}` : '/browse') : (q ? `/browse?brand=${brandSlug}&q=${q}` : `/browse?brand=${brandSlug}`)}
-                  style={{
-                    flexShrink: 0,
-                    padding: '8px 16px',
-                    borderRadius: '999px',
-                    fontSize: '13px',
-                    fontWeight: 600,
-                    textDecoration: 'none',
-                    whiteSpace: 'nowrap',
-                    backgroundColor: isActive ? 'var(--accent)' : 'var(--bg-elevated)',
-                    color: isActive ? '#000' : 'var(--text-dim)',
-                    border: isActive ? 'none' : '1px solid var(--border)',
-                  }}
-                >
-                  {brandName}
-                </a>
-              )
-            })}
-          </div>
-        )}
+        {/* Filter row — Vivino-style */}
+        <div style={{ marginBottom: '20px' }}>
+          <BrowseFilters
+            allBrands={uniqueBrands}
+            currentBrand={brand ?? ''}
+            currentStim={stim ?? ''}
+            currentRegions={activeRegions}
+            currentMinRating={min_rating ?? ''}
+            currentQuery={q ?? ''}
+          />
+        </div>
 
         {/* Dark Horse — daily underdog spotlight */}
         {!query && !brand && darkHorse && (

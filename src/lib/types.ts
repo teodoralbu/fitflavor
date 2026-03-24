@@ -78,6 +78,8 @@ export interface Product {
   sweeteners: string[] | null
   chemicals: string[] | null
   barcode: string | null
+  region: string[]
+  stim_type: 'stim' | 'stim-free' | null
   is_approved: boolean
   submitted_by: string | null
   created_at: string
@@ -215,6 +217,8 @@ export interface ProductBrowseRow {
   slug: string
   image_url: string | null
   caffeine_mg: number | null
+  region: string[]
+  stim_type: 'stim' | 'stim-free' | null
   is_approved: boolean
   brands: { name: string; slug: string }
   categories: { name: string; slug: string } | null
