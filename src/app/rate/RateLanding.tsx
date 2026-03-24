@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useRef, useEffect } from 'react'
+import { createPortal } from 'react-dom'
 import Link from 'next/link'
 
 const REGIONS = ['US', 'EU', 'Asia', 'Africa'] as const
@@ -315,32 +316,36 @@ export function RateLanding({ products }: Props) {
         </div>
       )}
 
-      {/* ── Filter bottom sheet backdrop ── */}
-      {sheetOpen && (
-        <div
-          onClick={() => setSheetOpen(false)}
-          style={{
-            position: 'fixed', inset: 0, zIndex: 100,
-            backgroundColor: 'rgba(0,0,0,0.55)',
-            backdropFilter: 'blur(2px)',
-            WebkitBackdropFilter: 'blur(2px)',
-          }}
-        />
-      )}
+      {/* ── Filter bottom sheet (portal → body, bypasses any parent transform) ── */}
+      {typeof window !== 'undefined' && createPortal(
+        <>
+          {/* Backdrop */}
+          <div
+            onClick={() => setSheetOpen(false)}
+            style={{
+              position: 'fixed', inset: 0, zIndex: 200,
+              backgroundColor: 'rgba(0,0,0,0.55)',
+              backdropFilter: 'blur(2px)',
+              WebkitBackdropFilter: 'blur(2px)',
+              opacity: sheetOpen ? 1 : 0,
+              pointerEvents: sheetOpen ? 'auto' : 'none',
+              transition: 'opacity 0.3s ease',
+            }}
+          />
 
-      {/* ── Filter bottom sheet ── */}
-      <div style={{
-        position: 'fixed', left: 0, right: 0, bottom: 0, zIndex: 101,
-        backgroundColor: 'var(--bg-card)',
-        borderTop: '1px solid var(--border)',
-        borderRadius: '20px 20px 0 0',
-        paddingBottom: 'max(24px, env(safe-area-inset-bottom))',
-        transform: sheetOpen ? 'translateY(0)' : 'translateY(100%)',
-        transition: 'transform 0.3s cubic-bezier(0.32, 0.72, 0, 1)',
-        maxHeight: '88vh',
-        overflowY: 'auto',
-        willChange: 'transform',
-      }}>
+          {/* Sheet */}
+          <div style={{
+            position: 'fixed', left: 0, right: 0, bottom: 0, zIndex: 201,
+            backgroundColor: 'var(--bg-card)',
+            borderTop: '1px solid var(--border)',
+            borderRadius: '20px 20px 0 0',
+            paddingBottom: 'max(24px, env(safe-area-inset-bottom))',
+            transform: sheetOpen ? 'translateY(0)' : 'translateY(100%)',
+            transition: 'transform 0.3s cubic-bezier(0.32, 0.72, 0, 1)',
+            maxHeight: '88vh',
+            overflowY: 'auto',
+            willChange: 'transform',
+          }}>
         {/* Handle */}
         <div style={{ display: 'flex', justifyContent: 'center', padding: '12px 0 4px' }}>
           <div style={{ width: '36px', height: '4px', borderRadius: '999px', backgroundColor: 'var(--border)' }} />
@@ -447,7 +452,10 @@ export function RateLanding({ products }: Props) {
             Apply filters
           </button>
         </div>
-      </div>
+        </div>
+        </>,
+        document.body
+      )}
     </div>
   )
 }
