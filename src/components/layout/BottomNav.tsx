@@ -10,7 +10,7 @@ export function BottomNav({ unreadCount = 0 }: { unreadCount?: number }) {
 
   const profileHref = profile?.username ? `/users/${profile.username}` : '/login'
 
-  const feedActive    = pathname === '/'
+  const browseActive  = pathname.startsWith('/browse')
   const rateActive    = pathname.startsWith('/rate')
   const homeActive    = pathname.startsWith('/leaderboard')
   const notifActive   = pathname.startsWith('/notifications')
@@ -73,18 +73,14 @@ export function BottomNav({ unreadCount = 0 }: { unreadCount?: number }) {
         {homeActive && <span style={{ position: 'absolute', top: '6px', left: '50%', transform: 'translateX(-50%)', width: '16px', height: '2px', borderRadius: '999px', backgroundColor: 'var(--accent)' }} />}
       </Link>
 
-      {/* Feed */}
-      <Link href="/" style={tabStyle(feedActive)}>
-        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={feedActive ? 2.5 : 2} strokeLinecap="round" strokeLinejoin="round">
-          <line x1="8" y1="6" x2="21" y2="6" />
-          <line x1="8" y1="12" x2="21" y2="12" />
-          <line x1="8" y1="18" x2="21" y2="18" />
-          <line x1="3" y1="6" x2="3.01" y2="6" />
-          <line x1="3" y1="12" x2="3.01" y2="12" />
-          <line x1="3" y1="18" x2="3.01" y2="18" />
+      {/* Browse */}
+      <Link href="/browse" style={tabStyle(browseActive)}>
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={browseActive ? 2.5 : 2} strokeLinecap="round" strokeLinejoin="round">
+          <circle cx="11" cy="11" r="8" />
+          <line x1="21" y1="21" x2="16.65" y2="16.65" />
         </svg>
-        <span style={labelStyle(feedActive)}>Feed</span>
-        {feedActive && <span style={{ position: 'absolute', top: '6px', left: '50%', transform: 'translateX(-50%)', width: '16px', height: '2px', borderRadius: '999px', backgroundColor: 'var(--accent)' }} />}
+        <span style={labelStyle(browseActive)}>Browse</span>
+        {browseActive && <span style={{ position: 'absolute', top: '6px', left: '50%', transform: 'translateX(-50%)', width: '16px', height: '2px', borderRadius: '999px', backgroundColor: 'var(--accent)' }} />}
       </Link>
 
       {/* Center spacer — pushes Top left and Alerts right, + button floats above */}
