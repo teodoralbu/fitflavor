@@ -4,12 +4,7 @@ import Link from 'next/link'
 import Image from 'next/image'
 import { getLeaderboard, getTopReviewers, getTopRatedThisMonth, type LeaderboardTab } from '@/lib/queries'
 import { getScoreColor, getBadgeTier, BADGE_TIERS } from '@/lib/constants'
-
-const PODIUM_ACCENTS: Record<number, { color: string; label: string; glow: string }> = {
-  1: { color: '#FFD700', label: 'Gold',   glow: 'rgba(255,215,0,0.15)' },
-  2: { color: '#C0C0C0', label: 'Silver', glow: 'rgba(192,192,192,0.10)' },
-  3: { color: '#CD7F32', label: 'Bronze', glow: 'rgba(205,127,50,0.12)' },
-}
+import { SwipeableLeaderboard } from './SwipeableLeaderboard'
 
 const TABS: { key: LeaderboardTab; label: string }[] = [
   { key: 'overall',      label: 'Overall' },
@@ -19,14 +14,11 @@ const TABS: { key: LeaderboardTab; label: string }[] = [
   { key: 'value',        label: 'Value' },
 ]
 
-export default async function LeaderboardPage({ searchParams }: { searchParams: Promise<{ tab?: string }> }) {
-  const { tab: tabParam } = await searchParams
-  const activeTab: LeaderboardTab = (TABS.find(t => t.key === tabParam)?.key) ?? 'overall'
-
-  const [leaderboard, topReviewers, topThisMonth] = await Promise.all([
-    getLeaderboard(50, activeTab),
+export default async function LeaderboardPage() {
+  const [topReviewers, topThisMonth, ...allLeaderboards] = await Promise.all([
     getTopReviewers(10),
     getTopRatedThisMonth(10),
+    ...TABS.map(t => getLeaderboard(50, t.key)),
   ])
 
   const featuredItem = topThisMonth[0] ?? null
@@ -347,110 +339,13 @@ export default async function LeaderboardPage({ searchParams }: { searchParams: 
           </div>
         )}
 
-        {/* ── Flavor Leaderboard ── */}
+        {/* ── Flavor Leaderboard — swipeable ── */}
         <div style={{ marginBottom: '16px' }}>
-          <h2 style={{ fontSize: 'clamp(20px, 4vw, 28px)', fontWeight: 900, margin: '0 0 16px', color: 'var(--text)', lineHeight: 1.1 }}>
+          <h2 style={{ fontSize: 'clamp(20px, 4vw, 28px)', fontWeight: 900, margin: '0 0 20px', color: 'var(--text)', lineHeight: 1.1, padding: '0 16px' }}>
             Top Rated Flavors
           </h2>
-          <div style={{ display: 'flex', gap: '8px', overflowX: 'auto', paddingBottom: '4px', marginBottom: '20px', scrollbarWidth: 'none' }}>
-            {TABS.map(({ key, label }) => {
-              const isActive = key === activeTab
-              return (
-                <Link
-                  key={key}
-                  href={key === 'overall' ? '/leaderboard' : `/leaderboard?tab=${key}`}
-                  style={{
-                    flexShrink: 0, padding: '7px 16px', borderRadius: '999px',
-                    fontSize: '13px', fontWeight: 700, textDecoration: 'none',
-                    backgroundColor: isActive ? 'var(--accent)' : 'var(--bg-elevated)',
-                    color: isActive ? '#000' : 'var(--text-dim)',
-                    border: `1px solid ${isActive ? 'var(--accent)' : 'var(--border)'}`,
-                    transition: 'all 0.15s ease',
-                    WebkitTapHighlightColor: 'transparent',
-                  }}
-                >
-                  {label}
-                </Link>
-              )
-            })}
-          </div>
         </div>
-
-        {leaderboard.length === 0 ? (
-          <div style={{ textAlign: 'center', padding: '48px 16px' }}>
-            <p style={{ fontSize: '18px', fontWeight: 700, color: 'var(--text)', marginBottom: 8 }}>No ratings yet</p>
-            <p style={{ fontSize: '14px', color: 'var(--text-muted)', marginBottom: 16 }}>Flavors will appear here once they receive ratings.</p>
-          </div>
-        ) : (
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-            {leaderboard.map((item) => {
-              const podium = PODIUM_ACCENTS[item.rank]
-              const isPodium = item.rank <= 3
-              return (
-                <Link key={item.flavor_id} href={`/flavors/${item.slug}`} style={{ textDecoration: 'none', color: 'inherit' }}>
-                  <div
-                    className="card-hover card-press"
-                    style={{
-                      backgroundColor: isPodium ? 'var(--bg-elevated)' : 'var(--bg-card)',
-                      border: isPodium ? `1px solid ${podium.color}40` : '1px solid var(--border)',
-                      borderRadius: isPodium ? 'var(--radius-lg)' : 'var(--radius-md)',
-                      padding: isPodium ? '20px 24px' : '14px 20px',
-                      display: 'flex', alignItems: 'center', gap: '16px',
-                      boxShadow: isPodium ? `0 0 24px ${podium.glow}` : 'none',
-                      transition: 'box-shadow var(--transition-fast, 150ms ease), transform var(--transition-fast, 150ms ease)',
-                      position: 'relative', overflow: 'hidden',
-                    }}
-                  >
-                    {isPodium && (
-                      <div style={{ position: 'absolute', left: 0, top: 0, bottom: 0, width: '3px', backgroundColor: podium.color, borderRadius: '3px 0 0 3px' }} />
-                    )}
-                    <div style={{ width: isPodium ? '36px' : '30px', textAlign: 'center', flexShrink: 0 }}>
-                      {isPodium ? (
-                        <div style={{ fontSize: '20px', fontWeight: 900, color: podium.color, lineHeight: 1 }}>
-                          {item.rank === 1 ? '🥇' : item.rank === 2 ? '🥈' : '🥉'}
-                        </div>
-                      ) : (
-                        <div style={{ fontSize: '13px', fontWeight: 700, color: item.rank <= 10 ? 'var(--text-dim)' : 'var(--text-faint)' }}>
-                          #{item.rank}
-                        </div>
-                      )}
-                    </div>
-                    <div style={{ flex: 1, minWidth: 0 }}>
-                      <div style={{ fontSize: '11px', color: 'var(--text-faint)', marginBottom: '3px', textTransform: 'uppercase', letterSpacing: '0.06em', fontWeight: 600 }}>
-                        {item.product.brands?.name ?? ''} · {item.product.name}
-                      </div>
-                      <div style={{ fontSize: isPodium ? '17px' : '15px', fontWeight: isPodium ? 800 : 700, color: 'var(--text)', marginBottom: '6px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
-                        {item.name}
-                      </div>
-                      {item.tags && item.tags.length > 0 && (
-                        <div style={{ display: 'flex', gap: '5px', flexWrap: 'wrap' }}>
-                          {item.tags.slice(0, 4).map((tag) => (
-                            <span key={tag.id} className="tag" style={{ fontSize: '10px', padding: '2px 8px', borderRadius: '999px', backgroundColor: 'var(--bg-hover)', color: 'var(--text-dim)', border: '1px solid var(--border-soft)', fontWeight: 500 }}>
-                              {tag.name}
-                            </span>
-                          ))}
-                        </div>
-                      )}
-                    </div>
-                    <div style={{ textAlign: 'right', flexShrink: 0 }}>
-                      <div style={{ fontSize: isPodium ? '32px' : '26px', fontWeight: 900, color: getScoreColor(item.avg_overall_score), lineHeight: 1, marginBottom: '4px' }}>
-                        {item.avg_overall_score.toFixed(1)}
-                      </div>
-                      <div style={{ fontSize: '11px', color: 'var(--text-faint)', marginBottom: item.would_buy_again_pct !== null ? '3px' : 0 }}>
-                        {item.rating_count} {item.rating_count === 1 ? 'rating' : 'ratings'}
-                      </div>
-                      {item.would_buy_again_pct !== null && (
-                        <div style={{ fontSize: '11px', color: 'var(--green)', fontWeight: 600 }}>
-                          {Math.round(item.would_buy_again_pct)}% WBA
-                        </div>
-                      )}
-                    </div>
-                  </div>
-                </Link>
-              )
-            })}
-          </div>
-        )}
+        <SwipeableLeaderboard allData={allLeaderboards} />
       </div>
     </div>
   )
