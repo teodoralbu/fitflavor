@@ -117,33 +117,27 @@ def build_card(product_png: bytes) -> bytes:
 def score_result(r: dict) -> int:
     """
     Score a DDG image result — higher is better.
-    Penalises portrait images (label shots) and tiny thumbnails.
+    Penalises portrait images (label shots).
     Rewards square/landscape images from known supplement retailers.
+    Only applies size/ratio checks when dimensions are actually provided.
     """
     score = 0
-    url   = (r.get("image") or "").lower()
-    w     = r.get("width", 0) or 0
-    h     = r.get("height", 0) or 0
+    url = (r.get("image") or "").lower()
+    w   = r.get("width", 0) or 0
+    h   = r.get("height", 0) or 0
 
-    # Minimum size — skip tiny thumbnails
-    if w < 200 or h < 200:
-        return -999
-
-    # Strong penalty for very tall portrait (back-label shots)
-    if h > 0 and w / h < 0.6:
-        score -= 80
-
-    # Reward square-ish images (most front-facing product shots)
-    if h > 0:
+    # Only apply dimension checks when DDG provides them
+    if w > 0 and h > 0:
+        # Strong penalty for very tall portrait (back-label shots)
+        if w / h < 0.6:
+            score -= 80
+        # Reward square-ish images (front-facing product shots)
         ratio = w / h
         if 0.75 <= ratio <= 1.35:
             score += 40
-
-    # Reward large images
-    if w >= 500 and h >= 500:
-        score += 20
-    if w >= 800 and h >= 800:
-        score += 10
+        # Reward large images
+        if w >= 500 and h >= 500:
+            score += 20
 
     # Reward direct image file extensions
     if any(url.endswith(ext) for ext in (".jpg", ".jpeg", ".png", ".webp")):
