@@ -81,10 +81,14 @@ def build_card(product_png: bytes) -> bytes:
         )
     card = Image.alpha_composite(card, glow)
 
-    # ── Product layer: bg-removed image, fitted inside 90% of card
+    # ── Product layer: bg-removed image, scaled to fill ~92% of card
     product = Image.open(io.BytesIO(product_png)).convert("RGBA")
-    max_dim = int(CARD_W * 0.88)
-    product.thumbnail((max_dim, max_dim), Image.LANCZOS)
+    target = int(CARD_W * 0.92)
+    # Scale so the longest side equals target (never downsample below target)
+    scale = target / max(product.width, product.height)
+    new_w = max(int(product.width * scale), 1)
+    new_h = max(int(product.height * scale), 1)
+    product = product.resize((new_w, new_h), Image.LANCZOS)
 
     # Centre the product on the card
     px = (CARD_W - product.width) // 2
