@@ -2,4 +2,4 @@ rembg[cpu]
 Pillow
 requests
 supabase
-duckduckgo-search
+ddgs

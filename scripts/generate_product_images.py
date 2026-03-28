@@ -35,7 +35,7 @@ import requests
 from PIL import Image, ImageFilter, ImageDraw, ImageChops
 from rembg import remove as rembg_remove
 from supabase import create_client, Client
-from duckduckgo_search import DDGS
+from ddgs import DDGS
 
 # ── Config ────────────────────────────────────────────────────────────────────
 
