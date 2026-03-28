@@ -110,40 +110,87 @@ def build_card(product_png: bytes) -> bytes:
 
 # ── Image search ──────────────────────────────────────────────────────────────
 
+def score_result(r: dict) -> int:
+    """
+    Score a DDG image result — higher is better.
+    Penalises portrait images (label shots) and tiny thumbnails.
+    Rewards square/landscape images from known supplement retailers.
+    """
+    score = 0
+    url   = (r.get("image") or "").lower()
+    w     = r.get("width", 0) or 0
+    h     = r.get("height", 0) or 0
+
+    # Minimum size — skip tiny thumbnails
+    if w < 200 or h < 200:
+        return -999
+
+    # Strong penalty for very tall portrait (back-label shots)
+    if h > 0 and w / h < 0.6:
+        score -= 80
+
+    # Reward square-ish images (most front-facing product shots)
+    if h > 0:
+        ratio = w / h
+        if 0.75 <= ratio <= 1.35:
+            score += 40
+
+    # Reward large images
+    if w >= 500 and h >= 500:
+        score += 20
+    if w >= 800 and h >= 800:
+        score += 10
+
+    # Reward direct image file extensions
+    if any(url.endswith(ext) for ext in (".jpg", ".jpeg", ".png", ".webp")):
+        score += 15
+
+    # Reward known supplement retail domains
+    good_domains = ("iherb", "bodybuilding.com", "gnc.com", "amazon", "vitaminworld",
+                    "supplementwarehouse", "strongsupplementshop", "tigerfitness")
+    if any(d in url for d in good_domains):
+        score += 30
+
+    return score
+
+
 def search_product_image(brand: str, product: str) -> str | None:
     """
-    Returns the first plausible image URL from DuckDuckGo Images.
-    Tries specific query first, then broader fallback.
+    Returns the best image URL from DuckDuckGo Images.
+    Uses retail-oriented queries to get front-facing product shots.
+    Scores all candidates and picks the highest-quality one.
     """
     queries = [
-        f"{brand} {product} pre-workout supplement",
-        f"{brand} {product} pre workout",
-        f"{product} pre-workout supplement",
+        f"{brand} {product} pre-workout buy",           # retail listings = front shots
+        f"{brand} {product} pre workout supplement",
+        f"{product} pre-workout buy supplement",
     ]
     with DDGS() as ddgs:
         for query in queries:
             try:
-                results = list(ddgs.images(
-                    query,
-                    max_results=8,
-                    type_image="photo",
-                ))
-                for r in results:
-                    url = r.get("image", "")
-                    # Prefer direct image files, skip tiny thumbnails
-                    if any(url.lower().endswith(ext) for ext in (".jpg", ".jpeg", ".png", ".webp")):
-                        return url
-                # Accept any URL if nothing matched
-                if results:
-                    return results[0].get("image")
+                results = list(ddgs.images(query, max_results=12))
+                if not results:
+                    time.sleep(SEARCH_DELAY)
+                    continue
+
+                # Score all candidates and take the best
+                scored = [(score_result(r), r) for r in results]
+                scored.sort(key=lambda x: x[0], reverse=True)
+                best_score, best = scored[0]
+
+                if best_score > -999:
+                    return best.get("image")
             except Exception:
                 pass
             time.sleep(SEARCH_DELAY)
     return None
 
 
-def download_image(url: str) -> bytes | None:
-    """Downloads an image URL, returns raw bytes or None on failure."""
+def download_image(url: str, min_dim: int = 250) -> bytes | None:
+    """
+    Downloads an image URL, returns raw bytes or None on failure.
+    Rejects images smaller than min_dim on either side.
+    """
     try:
         resp = requests.get(url, timeout=15, headers={
             "User-Agent": "Mozilla/5.0 (compatible; FitFlavor-ImageBot/1.0)"
@@ -153,8 +200,10 @@ def download_image(url: str) -> bytes | None:
             return None
         if len(resp.content) > MAX_BYTES:
             return None
-        # Validate it's actually an image
-        Image.open(io.BytesIO(resp.content)).verify()
+        # Validate it's actually an image and meets minimum size
+        img = Image.open(io.BytesIO(resp.content))
+        if img.width < min_dim or img.height < min_dim:
+            return None
         return resp.content
     except Exception:
         return None
